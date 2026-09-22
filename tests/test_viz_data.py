@@ -397,7 +397,8 @@ def test_sequence_from_a_synthetic_tree(tmp_path):
                           data_dir=data_dir)
     assert viz_data.validate(data) == []
     seq = data["sequence"]
-    assert len(seq) == viz_data.SEQUENCE_SIZE
+    # the tree only holds 60 cases, so the export is capped by what exists
+    assert len(seq) == min(60, viz_data.SEQUENCE_SIZE)
     assert all(c["text"] for c in seq)
     assert set(seq[0]["systems"]) == {"jev", "haiku45-nothink"}
     assert seq[0]["systems"]["jev"]["output_text"]

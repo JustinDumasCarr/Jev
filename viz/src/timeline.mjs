@@ -60,7 +60,7 @@ export function beats(data, layout) {
   const list = [
     {
       id: 'quadrants',
-      seconds: wide ? 17 : 16,
+      seconds: wide ? 31 : 30,
       caption: 'One decision. Is this a prompt injection?',
     },
     {

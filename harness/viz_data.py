@@ -42,7 +42,7 @@ TASK_SLUG = {"task2": "injection", "task1": "routing"}
 SAMPLE_SIZE = 300
 #: ANIMATION-PLAN.md §5e: the quadrant beat replays a run of real cases, one after
 #: another, so it needs a sequence rather than a single hero call.
-SEQUENCE_SIZE = 40
+SEQUENCE_SIZE = 80  # the quadrant beat runs ~30 s; Jev gets through about 60
 
 #: What the quadrant beat may show (Justin, 2026-09-22). English only, and nothing
 #: from the domain-specific slice: the film is about the decision, not about the
