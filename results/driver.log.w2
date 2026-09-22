@@ -249,3 +249,25 @@
   180/191 {'ok': 178, 'truncated': 0, 'refusal': 2, 'error': 0}
   190/191 {'ok': 187, 'truncated': 0, 'refusal': 3, 'error': 0}
 {"task": "task2", "system": "opus5", "counts": {"ok": 188, "truncated": 0, "refusal": 3, "error": 0}, "elapsed_s": 305.6, "pauses": []}
+{"task": "task1", "system": "sonnet5", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
+  10/514 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/514 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/514 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/514 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/514 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/514 {'ok': 60, 'truncated': 0, 'refusal': 0, 'error': 0}
+  70/514 {'ok': 70, 'truncated': 0, 'refusal': 0, 'error': 0}
+  80/514 {'ok': 79, 'truncated': 0, 'refusal': 1, 'error': 0}
+  90/514 {'ok': 89, 'truncated': 0, 'refusal': 1, 'error': 0}
+  100/514 {'ok': 99, 'truncated': 0, 'refusal': 1, 'error': 0}
+  110/514 {'ok': 109, 'truncated': 0, 'refusal': 1, 'error': 0}
+  120/514 {'ok': 119, 'truncated': 0, 'refusal': 1, 'error': 0}
+  130/514 {'ok': 129, 'truncated': 0, 'refusal': 1, 'error': 0}
+  140/514 {'ok': 139, 'truncated': 0, 'refusal': 1, 'error': 0}
+  150/514 {'ok': 149, 'truncated': 0, 'refusal': 1, 'error': 0}
+  160/514 {'ok': 159, 'truncated': 0, 'refusal': 1, 'error': 0}
+  170/514 {'ok': 169, 'truncated': 0, 'refusal': 1, 'error': 0}
+  180/514 {'ok': 179, 'truncated': 0, 'refusal': 1, 'error': 0}
+  190/514 {'ok': 189, 'truncated': 0, 'refusal': 1, 'error': 0}
+  200/514 {'ok': 199, 'truncated': 0, 'refusal': 1, 'error': 0}
+  210/514 {'ok': 209, 'truncated': 0, 'refusal': 1, 'error': 0}

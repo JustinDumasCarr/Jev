@@ -886,3 +886,9 @@
 2026-09-22 20:10:47 [w3] run task1 sonnet5-nothink full
 2026-09-22 20:10:48 [w3] full task1 sonnet5-nothink: error rate 0%
 2026-09-22 20:10:54 [w3] run task2 sonnet5-nothink full
+2026-09-22 20:13:42 [w2] committed: 200-case subset opus5, both tasks
+2026-09-22 20:13:42 [w2] run task1 sonnet5 full
+2026-09-22 20:13:43 [w2] full task1 sonnet5: error rate 0%
+2026-09-22 20:13:46 [w1] run task2 fable51-nothink variance-first
+2026-09-22 20:13:47 [w2] run task2 sonnet5 full
+2026-09-22 20:14:26 [w4] run task2 fable51 variance-first

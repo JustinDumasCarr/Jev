@@ -244,3 +244,25 @@
   140/200 {'ok': 140, 'truncated': 0, 'refusal': 0, 'error': 0}
   150/200 {'ok': 150, 'truncated': 0, 'refusal': 0, 'error': 0}
   160/200 {'ok': 160, 'truncated': 0, 'refusal': 0, 'error': 0}
+  170/200 {'ok': 170, 'truncated': 0, 'refusal': 0, 'error': 0}
+  180/200 {'ok': 180, 'truncated': 0, 'refusal': 0, 'error': 0}
+  190/200 {'ok': 190, 'truncated': 0, 'refusal': 0, 'error': 0}
+  200/200 {'ok': 200, 'truncated': 0, 'refusal': 0, 'error': 0}
+{"task": "task1", "system": "fable51", "counts": {"ok": 200, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 323.2, "pauses": []}
+  10/191 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/191 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/191 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/191 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/191 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/191 {'ok': 60, 'truncated': 0, 'refusal': 0, 'error': 0}
+  70/191 {'ok': 70, 'truncated': 0, 'refusal': 0, 'error': 0}
+  80/191 {'ok': 80, 'truncated': 0, 'refusal': 0, 'error': 0}
+  90/191 {'ok': 90, 'truncated': 0, 'refusal': 0, 'error': 0}
+  100/191 {'ok': 99, 'truncated': 0, 'refusal': 1, 'error': 0}
+  110/191 {'ok': 109, 'truncated': 0, 'refusal': 1, 'error': 0}
+  120/191 {'ok': 119, 'truncated': 0, 'refusal': 1, 'error': 0}
+  130/191 {'ok': 129, 'truncated': 0, 'refusal': 1, 'error': 0}
+  140/191 {'ok': 139, 'truncated': 0, 'refusal': 1, 'error': 0}
+  150/191 {'ok': 148, 'truncated': 0, 'refusal': 2, 'error': 0}
+  160/191 {'ok': 158, 'truncated': 0, 'refusal': 2, 'error': 0}
+  170/191 {'ok': 168, 'truncated': 0, 'refusal': 2, 'error': 0}

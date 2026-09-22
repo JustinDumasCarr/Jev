@@ -253,3 +253,25 @@
   90/529 {'ok': 89, 'truncated': 0, 'refusal': 1, 'error': 0}
   100/529 {'ok': 99, 'truncated': 0, 'refusal': 1, 'error': 0}
   110/529 {'ok': 109, 'truncated': 0, 'refusal': 1, 'error': 0}
+  120/529 {'ok': 119, 'truncated': 0, 'refusal': 1, 'error': 0}
+  130/529 {'ok': 129, 'truncated': 0, 'refusal': 1, 'error': 0}
+  140/529 {'ok': 139, 'truncated': 0, 'refusal': 1, 'error': 0}
+  150/529 {'ok': 149, 'truncated': 0, 'refusal': 1, 'error': 0}
+  160/529 {'ok': 159, 'truncated': 0, 'refusal': 1, 'error': 0}
+  170/529 {'ok': 169, 'truncated': 0, 'refusal': 1, 'error': 0}
+  180/529 {'ok': 179, 'truncated': 0, 'refusal': 1, 'error': 0}
+  190/529 {'ok': 189, 'truncated': 0, 'refusal': 1, 'error': 0}
+  200/529 {'ok': 199, 'truncated': 0, 'refusal': 1, 'error': 0}
+  210/529 {'ok': 209, 'truncated': 0, 'refusal': 1, 'error': 0}
+  220/529 {'ok': 219, 'truncated': 0, 'refusal': 1, 'error': 0}
+  230/529 {'ok': 229, 'truncated': 0, 'refusal': 1, 'error': 0}
+  240/529 {'ok': 238, 'truncated': 0, 'refusal': 2, 'error': 0}
+  250/529 {'ok': 247, 'truncated': 0, 'refusal': 3, 'error': 0}
+  260/529 {'ok': 257, 'truncated': 0, 'refusal': 3, 'error': 0}
+  270/529 {'ok': 267, 'truncated': 0, 'refusal': 3, 'error': 0}
+  280/529 {'ok': 276, 'truncated': 0, 'refusal': 4, 'error': 0}
+  290/529 {'ok': 286, 'truncated': 0, 'refusal': 4, 'error': 0}
+  300/529 {'ok': 296, 'truncated': 0, 'refusal': 4, 'error': 0}
+  310/529 {'ok': 306, 'truncated': 0, 'refusal': 4, 'error': 0}
+  320/529 {'ok': 316, 'truncated': 0, 'refusal': 4, 'error': 0}
+  330/529 {'ok': 326, 'truncated': 0, 'refusal': 4, 'error': 0}
