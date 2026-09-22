@@ -52,6 +52,8 @@ Task 2, prompt-injection validation: the guardrail that would sit on every chat 
 
 **The glasses are out.** Justin: "the buckets at the beginning is terrible, just show the blocks". The thousand-square blocks (P5) are the film's centrepiece and also carry the single-decision race. Storyboard now: (1) prompt, (2) Jev stamps, (3) **blocks**: nine 1,000-cell blocks appear, Jev's on top; first, in real time, one cell lights in each block when that model's single decision returns (Jev's first, at its real time, then the others at theirs); then a "×N speed" tag appears and the time-lapse runs, Jev's block flooding while the others crawl, with the count row and clocks, ending on the freeze and flash; (4) accuracy targets; (5) end card. Square under 35 s. §5 below is superseded where it conflicts.
 
+**Declutter (Justin, after the first blocks render):** the speed tag and the stamp result are not front and centre. They live in one small asterisk footnote at the bottom of the frame. The blocks fill the frame; the only text near them is model names and counts.
+
 ## 5. Storyboard (square cut, ≤ 40 s; wide cut ≤ 55 s)
 
 Justin, 2026-09-22: **it has to be Jev against the different Claude models, not one hero model.** The wall is the main event. The stopwatch is the protagonist: enormous tabular numerals, present from the first frame to the last, always real elapsed time for the current call.
