@@ -64,18 +64,33 @@ SIM_THRESHOLD = 0.78   # token-set Jaccard above which a new prompt is a duplica
 SELF_REF = re.compile(r"(jev|typesafe|\bnoul\b|catalogue\.json)", re.I)
 
 # The dataset is published, so no case may carry the operator's own business: the company
-# and product names, the people, or the industry and locale the five team skills were
-# originally written for. A prompt that does is rejected and the case is asked for again,
-# which is what keeps the scrub at the generator instead of in hand-edited rows.
-PRIVATE_DOMAIN = re.compile(
-    r"arianne|siasola|orson|manon|j[e\u00e9]r[o\u00f4]me"
-    r"|montr[e\u00e9]al|qu[e\u00e9]bec|hub-?plan"
-    r"|relocat|relocali|d[e\u00e9]m[e\u00e9]nag|immigration|titre de s[e\u00e9]jour"
-    r"|notaire|notary|centris|courtier|courtage|immobili"
-    r"|real[- ]estate|realtor|neighbou?rhood|quartier|copropri"
-    r"|condo|duplex|triplex|\bplex\b|welcome tax|droits de mutation|promesse d",
-    re.I,
+# and product names, the people, or the industry and locale this set was originally written
+# against. A generated text that does is rejected and the case is asked for again, which is
+# what keeps the scrub at the generator instead of in hand-edited rows.
+#
+# The term list itself lives OUTSIDE the repo, because a list of the things that must not be
+# published is itself a description of them. Default path ~/.config/jev/private-terms.txt,
+# overridable with JEV_PRIVATE_TERMS: one case-insensitive regex fragment per line, # for a
+# comment. With no such file the guard is a no-op and says so once, which is the right
+# behaviour for anyone who clones this repo: they have no such business to protect.
+PRIVATE_TERMS_PATH = Path(
+    os.environ.get("JEV_PRIVATE_TERMS", Path.home() / ".config" / "jev" / "private-terms.txt")
 )
+
+
+def _load_private_domain() -> "re.Pattern | None":
+    if not PRIVATE_TERMS_PATH.exists():
+        print(f"[privacy] no term list at {PRIVATE_TERMS_PATH}; the private-domain guard is off")
+        return None
+    terms = [
+        line.strip()
+        for line in PRIVATE_TERMS_PATH.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    return re.compile("|".join(terms), re.I) if terms else None
+
+
+PRIVATE_DOMAIN = _load_private_domain()
 
 # PLAN.md section 3, "Distribution of the 1,000 prompts".
 SLICE_COUNTS = {
@@ -195,8 +210,8 @@ Hard rules:
 - Do not use the words "skill", "agent", "capability", "catalogue", "tool" or "route" unless a rule below tells you to name something.
 - Do not mimic a template. Vary sentence shape, opening word and length.
 - The dataset is published: invent every company, product, site, person and place name, and
-  keep them plainly fictional. Never write about real estate, property, relocation or
-  immigration, and never name a real city, a real firm or a real person.
+  keep them plainly fictional. Never name a real city, a real firm or a real person, and keep
+  the subject matter to ordinary software, office and small-business work.
 - Return JSON matching the schema and nothing else."""
 
 PROMPT_SCHEMA = json.dumps(
@@ -597,7 +612,7 @@ def validate(prompt: str, spec: dict) -> str | None:
         return "model_voice"
     if SELF_REF.search(prompt):
         return "self_reference"
-    if PRIVATE_DOMAIN.search(prompt):
+    if PRIVATE_DOMAIN is not None and PRIVATE_DOMAIN.search(prompt):
         return "private_domain"
     return None
 
