@@ -1,0 +1,21 @@
+We ran 1,000 prompt-injection attempts past a model that never writes a single token.
+
+Jev (TypeSafe) returns a typed decision with a probability. No text. So we raced it against every current Claude model on the same 1,000 labelled texts, half attacks, half harmless, 25% French.
+
+Jev → 93% correct, 0.5 s per decision, 3 cents per 1,000.
+
+Claude Haiku 4.5 → 94% correct, 11 s per decision, $6 per 1,000 at list price.
+
+Same accuracy. Twenty times faster. Two hundred times cheaper.
+
+The interesting part is how they fail. Jev almost never flags a harmless message but misses about one attack in eight. Haiku catches nearly every attack but flags one harmless message in seven.
+
+Verdict against the full Claude line-up: Jev is as good as [VERDICT PENDING: Sonnet / Opus tier lands tonight].
+
+The video shows one decision as it happens, then a thousand.
+
+Measured, not quoted: every number comes from our own run, Claude via Claude Code at low effort, Jev via OpenRouter, 700-case test split, 95% intervals in the report. Link in comments.
+
+Where would a 0.5 s guardrail change what you ship?
+
+#promptinjection #llm #aisecurity #claude #evals
