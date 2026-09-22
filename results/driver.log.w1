@@ -48,3 +48,26 @@
   470/480 {'ok': 470, 'truncated': 0, 'refusal': 0, 'error': 0}
   480/480 {'ok': 480, 'truncated': 0, 'refusal': 0, 'error': 0}
 {"task": "task2", "system": "haiku45", "counts": {"ok": 480, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 2053.6, "pauses": []}
+  10/1000 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/1000 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/1000 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/1000 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/1000 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/1000 {'ok': 60, 'truncated': 0, 'refusal': 0, 'error': 0}
+  70/1000 {'ok': 70, 'truncated': 0, 'refusal': 0, 'error': 0}
+  80/1000 {'ok': 80, 'truncated': 0, 'refusal': 0, 'error': 0}
+  90/1000 {'ok': 90, 'truncated': 0, 'refusal': 0, 'error': 0}
+  100/1000 {'ok': 100, 'truncated': 0, 'refusal': 0, 'error': 0}
+  110/1000 {'ok': 110, 'truncated': 0, 'refusal': 0, 'error': 0}
+  120/1000 {'ok': 120, 'truncated': 0, 'refusal': 0, 'error': 0}
+  130/1000 {'ok': 130, 'truncated': 0, 'refusal': 0, 'error': 0}
+  140/1000 {'ok': 140, 'truncated': 0, 'refusal': 0, 'error': 0}
+  150/1000 {'ok': 150, 'truncated': 0, 'refusal': 0, 'error': 0}
+  160/1000 {'ok': 160, 'truncated': 0, 'refusal': 0, 'error': 0}
+  170/1000 {'ok': 170, 'truncated': 0, 'refusal': 0, 'error': 0}
+  180/1000 {'ok': 180, 'truncated': 0, 'refusal': 0, 'error': 0}
+  190/1000 {'ok': 190, 'truncated': 0, 'refusal': 0, 'error': 0}
+  200/1000 {'ok': 200, 'truncated': 0, 'refusal': 0, 'error': 0}
+  210/1000 {'ok': 210, 'truncated': 0, 'refusal': 0, 'error': 0}
+  220/1000 {'ok': 220, 'truncated': 0, 'refusal': 0, 'error': 0}
+  230/1000 {'ok': 230, 'truncated': 0, 'refusal': 0, 'error': 0}

@@ -19,6 +19,18 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>" >/dev/null 2>&1 && log
 err_rate(){ local d=results/$1/$2; local r=$( [ -f $d/results.jsonl ] && wc -l < $d/results.jsonl || echo 0 ); local e=$( [ -f $d/errors.jsonl ] && wc -l < $d/errors.jsonl || echo 0 ); [ $((r+e)) -eq 0 ] && echo 0 || echo $(( 100*e/(r+e) )); }
 worker(){
   local w=$1
+  # phase 0 (Justin, 2026-09-22 evening): the 200-case stratified variance subset, rep 1, for
+  # every system on both tasks FIRST, so real data exists for all 16 Claude configurations
+  # within the hour and the films can render on it (n=200, stated on screen). The full run
+  # (phase 1) then resumes and skips these rows.
+  for s in $SYSTEMS; do
+    mkdir $LOCKS/p0-$s 2>/dev/null || continue
+    for t in task1 task2; do
+      log $w "run $t $s variance-first"
+      $PY -m harness.run --task $t --system $s --rep 1 --split variance >> $LOG.$w 2>&1 || log $w "run.py exit $? $t $s p0"
+    done
+    commit "200-case subset $s, both tasks" $w
+  done
   # phase 1: full runs
   for s in $SYSTEMS; do
     mkdir $LOCKS/full-$s 2>/dev/null || continue

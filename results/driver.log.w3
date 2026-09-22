@@ -103,3 +103,29 @@
   20/953 {'ok': 18, 'truncated': 0, 'refusal': 2, 'error': 0}
   30/953 {'ok': 28, 'truncated': 0, 'refusal': 2, 'error': 0}
   40/953 {'ok': 38, 'truncated': 0, 'refusal': 2, 'error': 0}
+  50/953 {'ok': 48, 'truncated': 0, 'refusal': 2, 'error': 0}
+  60/953 {'ok': 58, 'truncated': 0, 'refusal': 2, 'error': 0}
+  70/953 {'ok': 68, 'truncated': 0, 'refusal': 2, 'error': 0}
+  80/953 {'ok': 76, 'truncated': 0, 'refusal': 4, 'error': 0}
+  90/953 {'ok': 86, 'truncated': 0, 'refusal': 4, 'error': 0}
+  100/953 {'ok': 96, 'truncated': 0, 'refusal': 4, 'error': 0}
+  110/953 {'ok': 106, 'truncated': 0, 'refusal': 4, 'error': 0}
+  120/953 {'ok': 116, 'truncated': 0, 'refusal': 4, 'error': 0}
+  130/953 {'ok': 126, 'truncated': 0, 'refusal': 4, 'error': 0}
+  140/953 {'ok': 136, 'truncated': 0, 'refusal': 4, 'error': 0}
+  150/953 {'ok': 146, 'truncated': 0, 'refusal': 4, 'error': 0}
+  160/953 {'ok': 156, 'truncated': 0, 'refusal': 4, 'error': 0}
+  170/953 {'ok': 166, 'truncated': 0, 'refusal': 4, 'error': 0}
+  180/953 {'ok': 176, 'truncated': 0, 'refusal': 4, 'error': 0}
+  190/953 {'ok': 185, 'truncated': 0, 'refusal': 5, 'error': 0}
+  200/953 {'ok': 195, 'truncated': 0, 'refusal': 5, 'error': 0}
+  210/953 {'ok': 204, 'truncated': 0, 'refusal': 6, 'error': 0}
+  220/953 {'ok': 214, 'truncated': 0, 'refusal': 6, 'error': 0}
+  230/953 {'ok': 223, 'truncated': 0, 'refusal': 7, 'error': 0}
+  240/953 {'ok': 233, 'truncated': 0, 'refusal': 7, 'error': 0}
+  250/953 {'ok': 243, 'truncated': 0, 'refusal': 7, 'error': 0}
+  260/953 {'ok': 253, 'truncated': 0, 'refusal': 7, 'error': 0}
+  270/953 {'ok': 263, 'truncated': 0, 'refusal': 7, 'error': 0}
+  280/953 {'ok': 272, 'truncated': 0, 'refusal': 8, 'error': 0}
+  290/953 {'ok': 282, 'truncated': 0, 'refusal': 8, 'error': 0}
+  300/953 {'ok': 292, 'truncated': 0, 'refusal': 8, 'error': 0}
