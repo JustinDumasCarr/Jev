@@ -48,6 +48,7 @@ export type VizData = {
       weakest_stratum: {key: string; group: string; vs: string; delta_pts: number; point: number} | null;
     };
   };
+  sequence: unknown[];
   systems: System[];
 };
 

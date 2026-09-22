@@ -1,32 +1,24 @@
 1
-00:00:00,000 --> 00:00:03,200
+00:00:00,000 --> 00:00:12,500
 [PLACEHOLDER DATA — no run has happened yet]
 
 2
-00:00:00,000 --> 00:00:03,067
-One real case. One question: is this a prompt injection?
+00:00:00,000 --> 00:00:12,367
+One decision. Is this a prompt injection?
 
 3
-00:00:03,200 --> 00:00:04,867
-Jev answers.
+00:00:12,500 --> 00:00:27,767
+One decision, then a thousand.
 
 4
-00:00:05,000 --> 00:00:17,067
-Jev has categorized before Claude has finished thinking.
-
-5
-00:00:17,200 --> 00:00:25,567
-Now do it a thousand times.
-
-6
-00:00:25,700 --> 00:00:35,567
+00:00:27,900 --> 00:00:37,367
 Jev is as good as Opus 4.6 (thinking off).
 
-7
-00:00:33,200 --> 00:00:35,567
+5
+00:00:35,100 --> 00:00:37,367
 Weakest slice: French -6 points vs English.
 
-8
-00:00:35,700 --> 00:00:40,067
+6
+00:00:37,500 --> 00:00:41,867
 Jev is as good as Opus 4.6 (thinking off); as good as Sonnet 5 (thinking on).
 

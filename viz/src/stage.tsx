@@ -66,6 +66,9 @@ export type CamKey = {at: number; zoom: number; x: number; y: number};
 export const useCamera = (keys: CamKey[]) => {
   const frame = useCurrentFrame();
   const {width, height} = useVideoConfig();
+  // interpolate() demands a strictly increasing input range, and keyframes derived
+  // from data can land on the same frame; keep the first of any such pair.
+  keys = keys.filter((k, i, a) => i === 0 || k.at > a[i - 1].at);
   if (keys.length === 0) return {transform: 'none', zoom: 1, dx: 0, dy: 0};
   const ats = keys.map((k) => k.at);
   const pick = (get: (k: CamKey) => number) =>

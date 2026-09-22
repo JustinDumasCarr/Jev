@@ -2,23 +2,12 @@ import React from 'react';
 import {AbsoluteFill, Sequence, useVideoConfig} from 'remotion';
 import {Watermark} from './chrome';
 import {C} from './theme';
-import {captionLines, raceWindowSeconds} from './timeline.mjs';
+import {captionLines} from './timeline.mjs';
+import {Decision} from './beats/Decision';
+import {Quadrants} from './beats/Quadrants';
 import {EndCard} from './beats/EndCard';
-import {JevStamp} from './beats/JevStamp';
-import {Prompt} from './beats/Prompt';
 import {Targets} from './beats/Targets';
-import {Thousand} from './beats/Thousand';
-import {Race} from './beats/Race';
 import type {FilmProps} from './types';
-
-const GLOW: Record<string, string> = {
-  prompt: 'rgba(70,110,190,0.18)',
-  jev: 'rgba(255,106,43,0.22)',
-  race: 'rgba(70,110,190,0.20)',
-  thousand: 'rgba(70,110,190,0.16)',
-  accuracy: 'rgba(120,120,160,0.14)',
-  end: 'rgba(255,106,43,0.20)',
-};
 
 export const Film: React.FC<FilmProps> = ({layout, data}) => {
   const {width, height} = useVideoConfig();
@@ -30,12 +19,9 @@ export const Film: React.FC<FilmProps> = ({layout, data}) => {
   }[];
 
   const render = (id: string, caption: string) => {
-    const props = {layout, data, caption};
-    if (id === 'prompt') return <Prompt {...props} />;
-    if (id === 'jev') return <JevStamp {...props} />;
-    if (id === 'race') return <Race {...props} windowSeconds={raceWindowSeconds(layout)} />;
-    if (id === 'thousand') return <Thousand {...props} />;
-    if (id === 'accuracy') return <Targets {...props} />;
+    if (id === 'quadrants') return <Quadrants layout={layout} data={data} />;
+    if (id === 'decision') return <Decision layout={layout} data={data} />;
+    if (id === 'accuracy') return <Targets layout={layout} data={data} caption={caption} />;
     return <EndCard layout={layout} data={data} />;
   };
 

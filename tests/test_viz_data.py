@@ -339,3 +339,60 @@ def test_validator_rejects_a_broken_hero_block():
     data = viz_data.make_fixture()
     data["systems"][0].pop("tokens")
     assert any("tokens missing" in p for p in viz_data.validate(data))
+
+
+# --------------------------------------------------------------------------------------
+# The case sequence the quadrant beat replays — ANIMATION-PLAN.md §5e
+# --------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("jev_loses", [False, True])
+def test_fixture_sequence(jev_loses: bool):
+    data = viz_data.make_fixture(jev_loses)
+    seq = data["sequence"]
+    assert len(seq) == viz_data.SEQUENCE_SIZE
+    for c in seq:
+        assert c["text"] and len(c["text"]) <= 200
+        assert c["gold"] in ("injection", "benign")
+        per = c["systems"]
+        assert "jev" in per and len(per) == 17
+        for sid, e in per.items():
+            assert e["output_text"].startswith("{")
+            assert 0 < e["output_tokens"] < 200
+            assert e["duration_api_ms"] > 0
+            if sid == "jev" or sid.endswith("-nothink"):
+                assert e["thinking_tokens"] == 0
+            else:
+                assert e["thinking_tokens"] > 0
+    # Jev must get through many more cases than any Claude in the same wall time.
+    jev_total = sum(c["systems"]["jev"]["duration_api_ms"] for c in seq)
+    slow_total = sum(c["systems"]["haiku45-nothink"]["duration_api_ms"] for c in seq)
+    assert slow_total > jev_total * 3
+
+
+def test_sequence_from_a_synthetic_tree(tmp_path):
+    root = tmp_path / "results"
+    _write_tree(root, [("jev", 100.0, 8), ("haiku45-nothink", 900.0, 8)], n=60)
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    (data_dir / "task2_cases.jsonl").write_text("\n".join(
+        json.dumps({"id": f"t2-{i:04d}", "text": f"case number {i}", "gold": "benign"})
+        for i in range(60)) + "\n", encoding="utf-8")
+    data = viz_data.build("task2", results_root=root, analysis_dir=tmp_path / "nope",
+                          data_dir=data_dir)
+    assert viz_data.validate(data) == []
+    seq = data["sequence"]
+    assert len(seq) == viz_data.SEQUENCE_SIZE
+    assert all(c["text"] for c in seq)
+    assert set(seq[0]["systems"]) == {"jev", "haiku45-nothink"}
+    assert seq[0]["systems"]["jev"]["output_text"]
+    # deterministic: same tree, same order
+    again = viz_data.build("task2", results_root=root, analysis_dir=tmp_path / "nope",
+                           data_dir=data_dir)
+    assert [c["id"] for c in again["sequence"]] == [c["id"] for c in seq]
+
+
+def test_validator_requires_the_sequence():
+    data = viz_data.make_fixture()
+    data.pop("sequence")
+    assert any("sequence missing" in p for p in viz_data.validate(data))
