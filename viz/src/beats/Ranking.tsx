@@ -25,13 +25,14 @@ export const Ranking: React.FC<FilmProps> = ({data, layout}) => {
   const pool: System[] = wide
     ? (data.systems as System[])
     : (blocksSystems(data) as System[]);
-  const rows = [...pool].sort((a, b) => b.accuracy.point - a.accuracy.point);
+  // fastest first: the list is ordered by what the film is about
+  const rows = [...pool].sort((a, b) => (a.latency_ms.p50 ?? 0) - (b.latency_ms.p50 ?? 0));
 
   const pad = (wide ? 90 : 60) * u;
   const contentW = width - pad * 2;
   const top = (wide ? 150 : 196) * u;
   const bottom = height - (wide ? 210 : 230) * u;
-  const rowH = Math.min((wide ? 52 : 92) * u, (bottom - top) / rows.length);
+  const rowH = Math.min((wide ? 52 : 74) * u, (bottom - top) / rows.length);
 
   const v = verdict(data);
   const enter = ramp(frame, 0, 8, EASE_OUT);
@@ -52,7 +53,7 @@ export const Ranking: React.FC<FilmProps> = ({data, layout}) => {
           {T.scoreboardTitle}
         </div>
         <div style={{...upper(0.16), fontSize: 16 * u, color: C.ink3, marginTop: 10 * u}}>
-          {data.meta.task_label} · {data.meta.split} split · n={jev.n} per system · best first
+          {data.meta.task_label} · {data.meta.split} split · n={jev.n} per system · fastest first
         </div>
       </div>
 
@@ -89,12 +90,12 @@ export const Ranking: React.FC<FilmProps> = ({data, layout}) => {
                 {i + 1}
               </span>
 
-              <div style={{minWidth: 0, flex: 1}}>
+              <div style={{minWidth: 0, width: (wide ? 210 : 250) * u}}>
                 <div
                   style={{
                     fontFamily: SANS,
                     fontWeight: 700,
-                    fontSize: (wide ? 26 : 34) * u,
+                    fontSize: (wide ? 24 : 30) * u,
                     color: isJev ? C.accent : C.ink,
                     whiteSpace: 'nowrap',
                     letterSpacing: '-0.02em',
@@ -107,25 +108,41 @@ export const Ranking: React.FC<FilmProps> = ({data, layout}) => {
                     </span>
                   ) : null}
                 </div>
-                <div style={{...tabular, fontSize: (wide ? 16 : 20) * u, color: C.ink3, marginTop: 2 * u}}>
+                {isJev ? (
+                  <div style={{...tabular, fontSize: (wide ? 14 : 17) * u, color: C.ink3, marginTop: 2 * u}}>
+                    via OpenRouter
+                  </div>
+                ) : null}
+              </div>
+
+              {/* what this list is sorted by, in the biggest type on the row */}
+              <div style={{flex: 1}}>
+                <span
+                  style={{
+                    ...tabular,
+                    fontWeight: 800,
+                    fontSize: (wide ? 34 : 48) * u,
+                    lineHeight: 1,
+                    color: isJev ? C.accent : C.ink,
+                  }}
+                >
                   {shortLatency(s.latency_ms.p50)}
-                  {isJev ? ' · via OpenRouter' : ''}
-                </div>
+                </span>
               </div>
 
               <div style={{textAlign: 'right'}}>
                 <div
                   style={{
                     ...tabular,
-                    fontWeight: 800,
-                    fontSize: (wide ? 34 : 52) * u,
+                    fontWeight: 700,
+                    fontSize: (wide ? 24 : 32) * u,
                     lineHeight: 1,
-                    color: isJev ? C.accent : C.ink,
+                    color: isJev ? C.accent : C.ink2,
                   }}
                 >
                   {pct(s.accuracy.point)}
                 </div>
-                <div style={{...tabular, fontSize: (wide ? 14 : 18) * u, color: C.ink3, marginTop: 3 * u}}>
+                <div style={{...tabular, fontSize: (wide ? 13 : 17) * u, color: C.ink3, marginTop: 3 * u}}>
                   {pct(s.accuracy.ci_low, 0)}–{pct(s.accuracy.ci_high, 0)}
                 </div>
               </div>

@@ -7,7 +7,6 @@ export const TIER: string[];
 export function byId(data: VizData, id: string): System | null;
 export function panels(data: VizData, layout: Layout): {sys: System; ghost: System | null; tier: number}[];
 export function jevOf(data: VizData): System | null;
-export const BLOCKS_ORDER: string[];
 export function blocksSystems(data: VizData): System[];
 export function wallSeconds(data: VizData, layout: Layout): number;
 export type Beat = {id: string; seconds: number; caption: string; srt?: string; from: number; fromSeconds: number; durationInFrames: number};

@@ -39,41 +39,17 @@ export const jevOf = (data) => byId(data, 'jev');
  * sits next to Jev. The older Opus versions are near-duplicates of Opus 5 and are
  * left out of this scene.
  */
-export const BLOCKS_ORDER = [
-  'jev',
-  'haiku45-nothink',
-  'sonnet46-nothink',
-  'sonnet5-nothink',
-  'opus5-nothink',
-  'fable51-nothink',
-];
-
-export function blocksSystems(data) {
-  return BLOCKS_ORDER.map((id) => byId(data, id)).filter(Boolean);
-}
-
-const heroMs = (s) => (s && s.hero && s.hero.duration_api_ms) || (s && s.latency_ms.p50) || 0;
-
-/** How long the wall of panels has to run: the slowest measured call, capped at 12 s. */
-export function wallSeconds(data, layout) {
-  const ps = panels(data, layout);
-  let slowest = 0;
-  for (const p of ps) {
-    slowest = Math.max(slowest, heroMs(p.sys));
-    if (p.ghost) slowest = Math.max(slowest, heroMs(p.ghost));
-  }
-  const jev = heroMs(jevOf(data));
-  return Math.min(12, Math.max(0.8, (slowest - jev) / 1000));
-}
-
 /**
- * Beat durations in seconds. Beat 3 is the only one the data stretches; everything else
- * is fixed, so the square cut stays inside its LinkedIn budget (§5b).
+ * The blocks scene and the square cut's ranked list: Jev and the eight
+ * no-thinking Claude models, ordered fastest to slowest by median response time,
+ * so Jev comes first and the order is the story rather than a choice.
  */
-/** The race beat is stretched to a fixed screen window and the playback rate is
- * stated on screen; the beat never shrinks below what the row needs to read. */
-export function raceWindowSeconds(layout) {
-  return layout === 'wide' ? 9.2 : 8.0;
+export function blocksSystems(data) {
+  const jev = jevOf(data);
+  const claude = TIER.map((t) => byId(data, t + '-nothink')).filter(Boolean);
+  return [jev, ...claude]
+    .filter(Boolean)
+    .sort((a, b) => (a.latency_ms.p50 ?? 0) - (b.latency_ms.p50 ?? 0));
 }
 
 export function beats(data, layout) {
