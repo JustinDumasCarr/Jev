@@ -42,3 +42,43 @@
 {"task": "task2", "system": "sonnet5", "counts": {"ok": 197, "truncated": 0, "refusal": 3, "error": 0}, "elapsed_s": 350.6, "pauses": []}
   10/200 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
   20/200 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/200 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/200 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/200 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/200 {'ok': 60, 'truncated': 0, 'refusal': 0, 'error': 0}
+  70/200 {'ok': 70, 'truncated': 0, 'refusal': 0, 'error': 0}
+  80/200 {'ok': 80, 'truncated': 0, 'refusal': 0, 'error': 0}
+  90/200 {'ok': 90, 'truncated': 0, 'refusal': 0, 'error': 0}
+  100/200 {'ok': 100, 'truncated': 0, 'refusal': 0, 'error': 0}
+  110/200 {'ok': 110, 'truncated': 0, 'refusal': 0, 'error': 0}
+  120/200 {'ok': 120, 'truncated': 0, 'refusal': 0, 'error': 0}
+  130/200 {'ok': 130, 'truncated': 0, 'refusal': 0, 'error': 0}
+  140/200 {'ok': 140, 'truncated': 0, 'refusal': 0, 'error': 0}
+  150/200 {'ok': 150, 'truncated': 0, 'refusal': 0, 'error': 0}
+  160/200 {'ok': 160, 'truncated': 0, 'refusal': 0, 'error': 0}
+  170/200 {'ok': 170, 'truncated': 0, 'refusal': 0, 'error': 0}
+  180/200 {'ok': 180, 'truncated': 0, 'refusal': 0, 'error': 0}
+  190/200 {'ok': 190, 'truncated': 0, 'refusal': 0, 'error': 0}
+  200/200 {'ok': 200, 'truncated': 0, 'refusal': 0, 'error': 0}
+{"task": "task1", "system": "sonnet46", "counts": {"ok": 200, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 331.0, "pauses": []}
+  10/200 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/200 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/200 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/200 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/200 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/200 {'ok': 59, 'truncated': 0, 'refusal': 1, 'error': 0}
+  70/200 {'ok': 69, 'truncated': 0, 'refusal': 1, 'error': 0}
+  80/200 {'ok': 78, 'truncated': 0, 'refusal': 2, 'error': 0}
+  90/200 {'ok': 88, 'truncated': 0, 'refusal': 2, 'error': 0}
+  100/200 {'ok': 98, 'truncated': 0, 'refusal': 2, 'error': 0}
+  110/200 {'ok': 108, 'truncated': 0, 'refusal': 2, 'error': 0}
+  120/200 {'ok': 118, 'truncated': 0, 'refusal': 2, 'error': 0}
+  130/200 {'ok': 128, 'truncated': 0, 'refusal': 2, 'error': 0}
+  140/200 {'ok': 137, 'truncated': 0, 'refusal': 3, 'error': 0}
+  150/200 {'ok': 147, 'truncated': 0, 'refusal': 3, 'error': 0}
+  160/200 {'ok': 157, 'truncated': 0, 'refusal': 3, 'error': 0}
+  170/200 {'ok': 167, 'truncated': 0, 'refusal': 3, 'error': 0}
+  180/200 {'ok': 177, 'truncated': 0, 'refusal': 3, 'error': 0}
+  190/200 {'ok': 187, 'truncated': 0, 'refusal': 3, 'error': 0}
+  200/200 {'ok': 197, 'truncated': 0, 'refusal': 3, 'error': 0}
+{"task": "task2", "system": "sonnet46", "counts": {"ok": 197, "truncated": 0, "refusal": 3, "error": 0}, "elapsed_s": 295.5, "pauses": []}
