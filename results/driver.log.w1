@@ -176,3 +176,5 @@
   40/59 {'ok': 39, 'truncated': 0, 'refusal': 1, 'error': 0}
   50/59 {'ok': 48, 'truncated': 0, 'refusal': 2, 'error': 0}
 {"task": "task2", "system": "opus48-nothink", "counts": {"ok": 57, "truncated": 0, "refusal": 2, "error": 0}, "elapsed_s": 122.6, "pauses": []}
+  10/200 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/200 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
