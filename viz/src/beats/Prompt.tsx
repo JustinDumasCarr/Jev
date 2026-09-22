@@ -22,12 +22,16 @@ export const Prompt: React.FC<FilmProps & {caption: string}> = ({data, layout, c
     extrapolateRight: 'clamp',
   });
 
-  const bubbleIn = spring({frame, fps, config: SNAP, durationInFrames: 22});
+  const bubbleIn = spring({frame, fps, config: {damping: 15, stiffness: 150, mass: 0.9}});
   const qIn = spring({
     frame: frame - (Math.round(0.35 * fps) + typeFrames + 4),
     fps,
     config: {damping: 11, stiffness: 190, mass: 0.75},
   });
+  const qAt = Math.round(0.35 * fps) + typeFrames + 4;
+  const qSquash = 1 + (frame - qAt >= 0 ? Math.exp(-(frame - qAt) / 6) * Math.sin(((frame - qAt) / 5) * Math.PI * 2) * 0.18 : 0);
+  const qLand = Math.max(0, 1 - Math.max(0, frame - qAt) / 12);
+  const enter = ramp(frame, 0, 8, EASE_OUT);
   const exit = ramp(frame, durationInFrames - 9, durationInFrames, EASE_OUT);
   const cam = useCamera([
     {at: 0, zoom: 1.06, x: width / 2, y: height / 2},
@@ -37,7 +41,7 @@ export const Prompt: React.FC<FilmProps & {caption: string}> = ({data, layout, c
   const bubbleW = layout === 'wide' ? 1180 * u : 880 * u;
 
   return (
-    <AbsoluteFill style={{backgroundColor: C.bg, opacity: 1 - exit, transform: `scale(${1 - exit * 0.06})`}}>
+    <AbsoluteFill style={{backgroundColor: C.bg, opacity: enter, transform: `scale(${1 - exit * 0.05})`}}>
       <Ambient glow="rgba(64,104,180,0.16)" cam={cam} />
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', transform: cam.transform, transformOrigin: '0 0'}}>
       <div
@@ -71,8 +75,14 @@ export const Prompt: React.FC<FilmProps & {caption: string}> = ({data, layout, c
             borderBottomLeftRadius: 8 * u,
             padding: `${38 * u}px ${44 * u}px`,
             opacity: bubbleIn,
-            transform: `scale(${interpolate(bubbleIn, [0, 1], [0.96, 1])})`,
-            boxShadow: `0 ${40 * u}px ${90 * u}px rgba(0,0,0,0.55)`,
+            transform: `translateY(${interpolate(bubbleIn, [0, 1], [46, 0])}px) scale(${interpolate(
+              bubbleIn,
+              [0, 1],
+              [0.93, 1],
+            )})`,
+            boxShadow: `0 ${interpolate(bubbleIn, [0, 1], [90, 40]) * u}px ${
+              interpolate(bubbleIn, [0, 1], [130, 90]) * u
+            }px rgba(0,0,0,${interpolate(bubbleIn, [0, 1], [0.2, 0.62])})`,
           }}
         >
           <div style={{...upper(0.2), fontSize: 17 * u, color: C.ink3, marginBottom: 20 * u}}>
@@ -81,6 +91,7 @@ export const Prompt: React.FC<FilmProps & {caption: string}> = ({data, layout, c
           <Typed
             text={text}
             progress={typed}
+            pop
             caretColor={C.ink2}
             style={{
               fontFamily: SANS,
@@ -100,8 +111,11 @@ export const Prompt: React.FC<FilmProps & {caption: string}> = ({data, layout, c
             fontSize: 108 * u,
             letterSpacing: '-0.035em',
             color: C.ink,
-            opacity: qIn,
-            transform: `scale(${interpolate(qIn, [0, 1], [0.72, 1])})`,
+            opacity: Math.min(1, qIn * 2.2),
+            transform: `translateY(${interpolate(Math.min(qIn, 1), [0, 1], [-64, 0])}px) scale(${
+              interpolate(qIn, [0, 1], [1.28, 1]) / qSquash
+            }, ${interpolate(qIn, [0, 1], [1.28, 1]) * qSquash})`,
+            textShadow: qLand > 0 ? `0 0 ${54 * u * qLand}px rgba(255,255,255,${0.42 * qLand})` : 'none',
           }}
         >
           {data.meta.hero_case.question}
@@ -110,7 +124,7 @@ export const Prompt: React.FC<FilmProps & {caption: string}> = ({data, layout, c
 
       </AbsoluteFill>
 
-      <Timer ms={0} progress={0} u={u} label="stopwatch · standing by" />
+      <Timer ms={0} progress={0} u={u} wake={ramp(frame, 10, 34, EASE_OUT)} label="stopwatch · standing by" />
       <div
         style={{
           position: 'absolute',

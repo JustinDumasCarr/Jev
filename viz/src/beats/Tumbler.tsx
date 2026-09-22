@@ -95,6 +95,11 @@ export const Tumbler: React.FC<TumblerProps> = ({
   const lidS = done ? spring({frame: since, fps, config: {damping: 13, stiffness: 140, mass: 1.0}}) : 0;
   const lidY = done ? interpolate(lidS, [0, 1], [-130 * u, 0]) : 0;
   const lidSquash = done ? 1 + wobble(since - 9, 6, 8) * 0.24 : 1;
+  // Perspective: while the lid is still up in the air it is nearer the eye, so it
+  // reads a little wider and a lot flatter, and settles into the rim's own ellipse.
+  const lift = done ? clamp01(-lidY / (130 * u)) : 0;
+  const lidRx = (topW / 2 + 5 * u) * (1 + lift * 0.2);
+  const lidRy = rimRy * (1 - lift * 0.62);
   const flash = done ? Math.max(0, 1 - since / 10) : 0;
   const splash = clamp01(1 - sincePour / 10);
 
@@ -335,31 +340,61 @@ export const Tumbler: React.FC<TumblerProps> = ({
           >
             {/* the side of the lid, so it has thickness */}
             <path
-              d={`M ${cx - topW / 2 - 5 * u} ${topY} L ${cx - topW / 2 - 5 * u} ${topY + 13 * u}
-                  A ${topW / 2 + 5 * u} ${rimRy} 0 0 0 ${cx + topW / 2 + 5 * u} ${topY + 13 * u}
-                  L ${cx + topW / 2 + 5 * u} ${topY} Z`}
+              d={`M ${cx - lidRx} ${topY} L ${cx - lidRx} ${topY + 13 * u}
+                  A ${lidRx} ${lidRy} 0 0 0 ${cx + lidRx} ${topY + 13 * u}
+                  L ${cx + lidRx} ${topY} Z`}
               fill={color}
               opacity={0.85}
             />
-            <ellipse cx={cx} cy={topY} rx={topW / 2 + 5 * u} ry={rimRy} fill={color} />
+            <ellipse cx={cx} cy={topY} rx={lidRx} ry={lidRy} fill={color} />
             <ellipse
               cx={cx}
               cy={topY}
-              rx={topW / 2 + 5 * u}
-              ry={rimRy}
+              rx={lidRx}
+              ry={lidRy}
               fill="none"
               stroke="rgba(255,255,255,0.6)"
               strokeWidth={3 * u}
             />
-            <ellipse cx={cx} cy={topY - 9 * u} rx={topW * 0.17} ry={rimRy * 0.36} fill={color} />
-            <rect
-              x={cx - topW * 0.17}
-              y={topY - 9 * u}
-              width={topW * 0.34}
-              height={10 * u}
-              fill={color}
-            />
+            <ellipse cx={cx} cy={topY - 9 * u} rx={lidRx * 0.33} ry={lidRy * 0.36} fill={color} />
+            <rect x={cx - lidRx * 0.33} y={topY - 9 * u} width={lidRx * 0.66} height={10 * u} fill={color} />
           </g>
+        ) : null}
+
+        {/* the last drop: the pour cuts, but what was already falling still lands */}
+        {done && since >= 0 && since < 22 ? (
+          (() => {
+            const t = since / 14; // linear fall, it is just gravity
+            const fallTop = topY - 120 * u;
+            const dy = t < 1 ? t * t * (surfaceY - fallTop) : surfaceY - fallTop;
+            const landed = since - 14;
+            return (
+              <g>
+                {t < 1 ? (
+                  <ellipse
+                    cx={cx}
+                    cy={fallTop + dy}
+                    rx={7 * u * (1 - t * 0.25)}
+                    ry={7 * u * (1 + t * 0.85)}
+                    fill={LIQUID}
+                    opacity={0.95}
+                  />
+                ) : null}
+                {landed >= 0 && landed < 8 ? (
+                  <ellipse
+                    cx={cx}
+                    cy={surfaceY}
+                    rx={interpolate(landed / 8, [0, 1], [surfRx * 0.12, surfRx * 0.8])}
+                    ry={interpolate(landed / 8, [0, 1], [surfRy * 0.12, surfRy * 0.8])}
+                    fill="none"
+                    stroke="rgba(214,234,255,0.9)"
+                    strokeWidth={2.6 * u * (1 - landed / 8)}
+                    opacity={1 - landed / 8}
+                  />
+                ) : null}
+              </g>
+            );
+          })()
         ) : null}
 
         {/* the ring the impact throws off */}

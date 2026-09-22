@@ -46,6 +46,7 @@ export const JevStamp: React.FC<FilmProps & {caption: string}> = ({data, caption
   // the pulse: out and back across the frame, an object, so it may ease
   const pulseX = interpolate(travel, [0, 0.5, 1], [-0.1, 1.1, -0.1]);
   const stampW = 640 * u;
+  const enter = ramp(frame, 0, 8, EASE_OUT);
   const exit = ramp(frame, durationInFrames - 8, durationInFrames, EASE_OUT);
   const cam = useCamera([
     {at: 0, zoom: 1, x: width / 2, y: height / 2},
@@ -55,7 +56,7 @@ export const JevStamp: React.FC<FilmProps & {caption: string}> = ({data, caption
   ]);
 
   return (
-    <AbsoluteFill style={{backgroundColor: C.bg, opacity: 1 - exit}}>
+    <AbsoluteFill style={{backgroundColor: C.bg, opacity: enter, transform: `scale(${1 + exit * 0.04})`}}>
       <Ambient glow="rgba(255,106,43,0.22)" cam={cam} />
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', transform: cam.transform, transformOrigin: '0 0'}}>
       {/* the hop: a visible path, and a light that travels out along it and back */}

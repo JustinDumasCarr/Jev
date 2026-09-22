@@ -201,13 +201,31 @@ export const Typed: React.FC<{
   style?: React.CSSProperties;
   caret?: boolean;
   caretColor?: string;
-}> = ({text, progress, style, caret = true, caretColor = C.accent}) => {
+  /** the newest character lands with a little weight */
+  pop?: boolean;
+}> = ({text, progress, style, caret = true, caretColor = C.accent, pop}) => {
   const frame = useCurrentFrame();
-  const shown = text.slice(0, Math.max(0, Math.round(progress * text.length)));
+  const n = Math.max(0, Math.round(progress * text.length));
+  const shown = text.slice(0, n);
   const blink = Math.floor(frame / 8) % 2 === 0;
+  // String slicing, never per-character opacity: only the character that just
+  // arrived is its own element, and only while it is landing.
+  const head = pop && n > 0 && progress < 1 ? shown.slice(-1) : '';
+  const body = head ? shown.slice(0, -1) : shown;
   return (
     <span style={{fontFamily: MONO, ...style}}>
-      {shown}
+      {body}
+      {head ? (
+        <span
+          style={{
+            display: 'inline-block',
+            transform: `translateY(${-2 - (frame % 2) * 0.5}px) scale(1.06)`,
+            opacity: 0.92,
+          }}
+        >
+          {head}
+        </span>
+      ) : null}
       {caret && progress < 1 ? (
         <span
           style={{

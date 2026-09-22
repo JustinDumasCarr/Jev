@@ -167,7 +167,9 @@ export const Timer: React.FC<{
   label: string;
   text?: string;
   accent?: boolean;
-}> = ({ms, progress, u, label, text, accent}) => {
+  /** 0..1 — the instrument powering up: lit edge, digits, live dot */
+  wake?: number;
+}> = ({ms, progress, u, label, text, accent, wake = 1}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const intro = spring({frame: frame - 2, fps, config: SNAP, durationInFrames: 22});
@@ -175,7 +177,7 @@ export const Timer: React.FC<{
   const secs = ms / 1000;
   const sinceTick = (secs % 1) * 1000;
   const tick = Math.max(0, 1 - sinceTick / 180);
-  const live = 0.55 + 0.45 * Math.sin((frame / fps) * Math.PI * 2);
+  const live = (0.55 + 0.45 * Math.sin((frame / fps) * Math.PI * 2)) * wake;
 
   return (
     <div
@@ -186,7 +188,7 @@ export const Timer: React.FC<{
         padding: `${16 * u}px ${22 * u}px ${14 * u}px ${26 * u}px`,
         borderRadius: 18 * u,
         background: 'linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.02))',
-        boxShadow: `inset 0 ${1 * u}px 0 rgba(255,255,255,0.22), 0 ${18 * u}px ${44 * u}px rgba(0,0,0,0.55)`,
+        boxShadow: `inset 0 ${1 * u}px 0 rgba(255,255,255,${0.22 * wake}), 0 ${18 * u}px ${44 * u}px rgba(0,0,0,0.55)`,
         opacity: intro,
         transform: `translateY(${interpolate(intro, [0, 1], [-26, 0])}px) scale(${interpolate(
           intro,
@@ -225,8 +227,9 @@ export const Timer: React.FC<{
           fontSize: 96 * u,
           lineHeight: 0.92,
           color: C.ink,
+          opacity: 0.25 + 0.75 * wake,
           letterSpacing: '-0.035em',
-          textShadow: `0 0 ${(10 + tick * 34) * u}px rgba(255,255,255,${0.08 + tick * 0.3})`,
+          textShadow: `0 0 ${(10 + tick * 34) * u}px rgba(255,255,255,${(0.08 + tick * 0.3) * wake})`,
         }}
       >
         {text ?? (ms / 1000).toFixed(2)}

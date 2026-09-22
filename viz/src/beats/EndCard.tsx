@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {Tag} from '../chrome';
 import {C, SANS, claudeColor, money, pct, shortLatency, tabular, upper} from '../theme';
-import {Ambient, EASE_OUT, StageWatermark, ramp, useCamera} from '../stage';
+import {Ambient, EASE_OUT, SNAP, StageWatermark, ramp, useCamera} from '../stage';
 import {jevOf, panels, verdict} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 
@@ -62,11 +62,12 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
     {at: 40, zoom: 1, x: width / 2, y: height / 2},
     {at: 400, zoom: 1.015, x: width / 2, y: height / 2},
   ]);
-  const titleIn = spring({frame, fps, config: {damping: 200}, durationInFrames: 14});
-  const chipsIn = spring({frame: frame - 8, fps, config: {damping: 200}, durationInFrames: 18});
+  const titleIn = spring({frame, fps, config: SNAP, durationInFrames: 12});
+  const chipsIn = spring({frame: frame - 3, fps, config: SNAP, durationInFrames: 14});
 
+  const enter = ramp(frame, 0, 10, EASE_OUT);
   return (
-    <AbsoluteFill style={{backgroundColor: C.bg}}>
+    <AbsoluteFill style={{backgroundColor: C.bg, opacity: enter}}>
       <Ambient glow="rgba(255,106,43,0.2)" cam={camE} />
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', transform: camE.transform, transformOrigin: '0 0'}}>
       {/* the models that answered, behind everything */}
@@ -133,20 +134,20 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
         </div>
 
         <div style={{display: 'flex', gap: layout === 'wide' ? 130 * u : 46 * u}}>
-          <Big value={shortLatency(jev.latency_ms.p50)} label="per decision" sub="p50" u={u} delay={6} />
+          <Big value={shortLatency(jev.latency_ms.p50)} label="per decision" sub="p50" u={u} delay={4} />
           <Big
             value={money(jev.cost_per_1000_usd)}
             label="per 1,000"
             sub="real charge"
             u={u}
-            delay={12}
+            delay={9}
           />
           <Big
             value={pct(jev.accuracy.point)}
             label="accuracy"
             sub={`${pct(jev.accuracy.ci_low, 0)}–${pct(jev.accuracy.ci_high, 0)}`}
             u={u}
-            delay={18}
+            delay={14}
           />
         </div>
 
@@ -154,7 +155,7 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
           style={{
             marginTop: 12 * u,
             textAlign: 'center',
-            opacity: spring({frame: frame - 26, fps, config: {damping: 200}, durationInFrames: 16}),
+            opacity: spring({frame: frame - 18, fps, config: {damping: 200}, durationInFrames: 14}),
           }}
         >
           {v.lines.map((l: {head: string; tail: string}, i: number) => (

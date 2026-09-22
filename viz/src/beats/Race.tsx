@@ -92,19 +92,28 @@ export const Race: React.FC<FilmProps & {caption: string; windowSeconds: number}
     {at: 0, zoom: 0.8, x: focus(0), y: camY},
     {at: RACE_LEAD - 2, zoom: 1.0, x: focus(0), y: camY},
   ];
+  const MOVE = 9; // frames the camera spends travelling between two glasses
   rows.forEach((r, i) => {
     const cf = capFrameOf(r.ms);
-    keys.push({at: Math.max(RACE_LEAD, cf - 9), zoom: 1.0, x: focus(i), y: camY});
-    keys.push({at: cf + 13, zoom: 1.0, x: focus(i), y: camY});
+    const next = i + 1 < rows.length ? capFrameOf(rows[i + 1].ms) : Infinity;
+    // Arrive at least 9 frames before this glass answers...
+    const arrive = Math.max(RACE_LEAD, cf - 9);
+    // ...and leave early enough to be standing at the next one before IT answers.
+    // When two answers are close together the camera gives up the tail of this
+    // hold rather than sprinting: it arrives early and waits.
+    const leave = Math.min(cf + 13, next - 9 - MOVE);
+    keys.push({at: arrive, zoom: 1.0, x: focus(i), y: camY});
+    keys.push({at: Math.max(arrive + 2, leave), zoom: 1.0, x: focus(i), y: camY});
   });
   keys.push({at: durationInFrames - 30, zoom: 0.72, x: focus(rows.length - 1) - pitch * 0.5, y: camY});
   keys.push({at: durationInFrames, zoom: 0.76, x: focus(rows.length - 1) - pitch * 0.5, y: camY - 18 * u});
   const cam = useCamera(keys.filter((kf, i, a) => i === 0 || kf.at > a[i - 1].at));
 
+  const enter = ramp(frame, 0, 9, EASE_OUT);
   const exit = ramp(frame, durationInFrames - 10, durationInFrames, EASE_OUT);
 
   return (
-    <AbsoluteFill style={{backgroundColor: C.bg, opacity: 1 - exit}}>
+    <AbsoluteFill style={{backgroundColor: C.bg, opacity: enter, transform: `scale(${1 + exit * 0.03})`}}>
       <Ambient glow="rgba(64,104,180,0.2)" cam={cam} />
 
       <Camera cam={cam}>

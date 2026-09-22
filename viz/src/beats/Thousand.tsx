@@ -25,13 +25,14 @@ import type {FilmProps, System} from '../types';
  * thousandth; the count row freezes; and the beat exits on a whip rather than
  * a hold. */
 
-const COLS = 40;
-const ROWS = 25;
+/** 1,000 cells either way; the wide cut uses flatter blocks so nine of them fill
+ *  a 16:9 frame in a 3x3 instead of stranding a quarter of it. */
+const GRID = {square: {cols: 40, rows: 25}, wide: {cols: 50, rows: 20}} as const;
 const RUN_AT = 26;
 
 /** Diagonal bands, with each call's position jittered inside its band, so a
  *  block in progress looks like work rather than a drawn triangle. */
-const ORDER = (() => {
+const makeOrder = (COLS: number, ROWS: number) => {
   // Sort every cell by its diagonal band plus a deterministic per-call jitter of a
   // few bands, so the advancing front is ragged — a block in progress looks like
   // work being done, not a triangle being drawn.
@@ -44,7 +45,8 @@ const ORDER = (() => {
   }
   all.sort((a, b) => a.k - b.k);
   return all.map((c) => c.i);
-})();
+};
+const ORDERS = {square: makeOrder(40, 25), wide: makeOrder(50, 20)};
 
 const Block: React.FC<{
   sys: System;
@@ -55,7 +57,10 @@ const Block: React.FC<{
   frozenAt: number | null;
   w: number;
   u: number;
-}> = ({sys, color, isJev, i, wallMs, frozenAt, w, u}) => {
+  wide: boolean;
+}> = ({sys, color, isJev, i, wallMs, frozenAt, w, u, wide}) => {
+  const {cols: COLS, rows: ROWS} = wide ? GRID.wide : GRID.square;
+  const ORDER = wide ? ORDERS.wide : ORDERS.square;
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const p50 = sys.latency_ms.p50 ?? 1;
@@ -63,7 +68,8 @@ const Block: React.FC<{
   const lit = Math.min(1000, Math.floor(effective / p50)); // strictly linear
   const full = lit >= 1000;
 
-  const enter = spring({frame: frame - i * STAGGER, fps, config: SNAP, durationInFrames: 26});
+  // the blocks arrive quickly: this is the darkest cut in the film otherwise
+  const enter = spring({frame: frame - i * 1.4, fps, config: SNAP, durationInFrames: 16});
   const cell = w / COLS;
   const size = cell - Math.max(0.9, cell * 0.17);
   const gridH = ROWS * cell;
@@ -111,7 +117,7 @@ const Block: React.FC<{
           style={{
             fontFamily: SANS,
             fontWeight: 700,
-            fontSize: 26 * u,
+            fontSize: (wide ? 31 : 26) * u,
             color: isJev ? C.accent : C.ink,
             whiteSpace: 'nowrap',
           }}
@@ -122,7 +128,7 @@ const Block: React.FC<{
           style={{
             ...tabular,
             fontWeight: 800,
-            fontSize: 31 * u,
+            fontSize: (wide ? 40 : 31) * u,
             color: full ? color : C.ink2,
             marginLeft: 'auto',
             transform: `scale(${full ? interpolate(Math.min(doneS, 1), [0, 1], [1.5, 1]) : 1})`,
@@ -195,12 +201,13 @@ export const Thousand: React.FC<FilmProps & {caption: string}> = ({data, layout,
   // the resolution: the counts freeze the moment Jev finishes
   const frozen = frame > jevDone + 26 ? spanMs : null;
 
-  const cols = layout === 'wide' ? 5 : 3;
-  const gapX = (layout === 'wide' ? 26 : 33) * u;
-  const blockW = (width - 130 * u - gapX * (cols - 1)) / cols;
-  const gridTop = (layout === 'wide' ? 286 : 262) * u;
-  const rowH = ROWS * (blockW / COLS) + 52 * u;
-  const jevX = 65 * u + blockW / 2;
+  const wide = layout === 'wide';
+  const cols = 3;
+  const gapX = (wide ? 40 : 33) * u;
+  const blockW = (width - (wide ? 150 : 130) * u - gapX * (cols - 1)) / cols;
+  const gridTop = (wide ? 206 : 262) * u;
+  const rowH = (wide ? GRID.wide.rows / GRID.wide.cols : GRID.square.rows / GRID.square.cols) * blockW + 58 * u;
+  const jevX = (wide ? 75 : 65) * u + blockW / 2;
   const jevY = gridTop + rowH * 0.42;
 
   const cam = useCamera([
@@ -221,9 +228,9 @@ export const Thousand: React.FC<FilmProps & {caption: string}> = ({data, layout,
     <AbsoluteFill
       style={{
         backgroundColor: C.bg,
+        opacity: ramp(frame, 0, 9, EASE_OUT) * (1 - whip * 0.85),
         transform: `translateX(${-whip * width * 0.55}px)`,
         filter: whip > 0 ? `blur(${whip * 14}px)` : 'none',
-        opacity: 1 - whip * 0.7,
       }}
     >
       <Ambient glow="rgba(64,104,180,0.18)" cam={cam} />
@@ -250,12 +257,12 @@ export const Thousand: React.FC<FilmProps & {caption: string}> = ({data, layout,
           style={{
             position: 'absolute',
             top: gridTop,
-            left: 65 * u,
-            right: 65 * u,
+            left: (wide ? 75 : 65) * u,
+            right: (wide ? 75 : 65) * u,
             display: 'grid',
             gridTemplateColumns: `repeat(${cols}, 1fr)`,
             columnGap: gapX,
-            rowGap: (layout === 'wide' ? 42 : 30) * u,
+            rowGap: (wide ? 22 : 30) * u,
           }}
         >
           {rows.map((r, i) => (
@@ -269,6 +276,7 @@ export const Thousand: React.FC<FilmProps & {caption: string}> = ({data, layout,
               frozenAt={frozen}
               w={blockW}
               u={u}
+              wide={wide}
             />
           ))}
         </div>
@@ -279,7 +287,7 @@ export const Thousand: React.FC<FilmProps & {caption: string}> = ({data, layout,
           position: 'absolute',
           top: 52 * u,
           left: 52 * u,
-          opacity: ramp(frame, 2, 18, EASE_OUT),
+          opacity: ramp(frame, 0, 10, EASE_OUT),
           transform: `translateY(${interpolate(ramp(frame, 2, 18, EASE_OUT), [0, 1], [-22, 0])}px)`,
         }}
       >
@@ -315,10 +323,11 @@ export const Thousand: React.FC<FilmProps & {caption: string}> = ({data, layout,
             position: 'absolute',
             left: 0,
             right: 0,
-            bottom: 0,
-            paddingBottom: 46 * u,
-            paddingTop: 46 * u,
-            background: 'linear-gradient(180deg, rgba(7,7,10,0) 0%, rgba(7,7,10,0.93) 44%)',
+            ...(wide
+              ? {top: 0, paddingTop: 150 * u, paddingBottom: 26 * u,
+                 background: 'linear-gradient(0deg, rgba(7,7,10,0) 0%, rgba(7,7,10,0.94) 42%)'}
+              : {bottom: 0, paddingBottom: 46 * u, paddingTop: 46 * u,
+                 background: 'linear-gradient(180deg, rgba(7,7,10,0) 0%, rgba(7,7,10,0.93) 44%)'}),
             textAlign: 'center',
             opacity: ramp(frame, jevDone + 4, jevDone + 16, EASE_OUT),
             transform: `translateY(${interpolate(Math.min(burst, 1), [0, 1], [26, 0])}px)`,

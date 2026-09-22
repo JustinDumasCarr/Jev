@@ -19,6 +19,9 @@ viz/out/*
 !viz/out/contact-film-v2.png
 !viz/out/strip-lid-rim.png
 !viz/out/contact-wide.png
+!viz/out/strip-transitions-sq.png
+!viz/out/proxy-1080p.FIXTURE.mp4
+!viz/out/proxy-1080sq.FIXTURE.mp4
 !viz/out/proto/
 viz/out/proto/*
 !viz/out/proto/P1.FIXTURE.mp4

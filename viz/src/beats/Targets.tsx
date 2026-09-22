@@ -150,6 +150,7 @@ export const Targets: React.FC<FilmProps & {caption: string}> = ({data, layout, 
   const {fps, width, height, durationInFrames} = useVideoConfig();
   const u = height / 1080;
   const jev = jevOf(data) as System;
+  const enter = ramp(frame, 0, 9, EASE_OUT);
   const exit = ramp(frame, durationInFrames - 9, durationInFrames, EASE_OUT);
   const ps = panels(data, layout) as {sys: System; tier: number}[];
   const shots: Shot[] = [
@@ -181,7 +182,7 @@ export const Targets: React.FC<FilmProps & {caption: string}> = ({data, layout, 
     {at: durationInFrames, zoom: 1.03, x: width / 2, y: height / 2 + 30 * u},
   ]);
   return (
-    <AbsoluteFill style={{backgroundColor: C.bg, opacity: 1 - exit}}>
+    <AbsoluteFill style={{backgroundColor: C.bg, opacity: enter, transform: `scale(${1 + exit * 0.03})`}}>
       <Ambient glow="rgba(120,120,160,0.13)" cam={camT} />
       <AbsoluteFill style={{transform: camT.transform, transformOrigin: '0 0'}}>
       <div
