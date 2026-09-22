@@ -54,6 +54,19 @@ Task 2, prompt-injection validation: the guardrail that would sit on every chat 
 
 **Declutter (Justin, after the first blocks render):** the speed tag and the stamp result are not front and centre. They live in one small asterisk footnote at the bottom of the frame. The blocks fill the frame; the only text near them is model names and counts.
 
+## 5e. Justin's quadrant design (2026-09-22, replaces the opening of §5d)
+
+Four quadrants, no intro, no jargon on screen:
+
+| | left | right |
+|---|---|---|
+| **top** | the input text Jev is judging | Jev's decision (typed label + probability bar) |
+| **bottom** | the input text Claude is judging | the Claude model's decision streaming in, token by token, at its real rate |
+
+Rules: when the top-right decision lands, the top-left text advances to the next case. When the bottom-right finishes typing, the bottom-left advances. Both rows start on the same first case. The bottom row cycles through the eight Claude models, one case each, the model's name shown beside its panel, so every Claude model appears and Jev has judged many texts by the time Claude has judged eight. Every text is a real test case; every decision is the verbatim structured output; every duration is the measured one (Jev's latency, Claude's `duration_api_ms` with output tokens setting the typing rate; thinking shown as a shimmer with a token count). A single small counter per row ("decisions: 37" / "decisions: 3") is the only number on screen besides the stopwatch. Then the blocks (§5d) for the thousand, then accuracy, then the end card.
+
+**No "wall clock".** Any time label reads "elapsed" or nothing. Any disclosure (time-lapse factor, thresholds) is one asterisk line at the bottom.
+
 ## 5. Storyboard (square cut, ≤ 40 s; wide cut ≤ 55 s)
 
 Justin, 2026-09-22: **it has to be Jev against the different Claude models, not one hero model.** The wall is the main event. The stopwatch is the protagonist: enormous tabular numerals, present from the first frame to the last, always real elapsed time for the current call.
