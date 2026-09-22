@@ -198,5 +198,5 @@ Consequences, recorded so REPORT.md can state what the models saw:
 2. **Model identity.** Each model is told its own name and id before answering. The task prompt is identical across systems; the CLI block is not. This is the same condition a Claude Code user's model runs under, so it is representative of the "via Claude Code" route and is disclosed as such.
 3. **Email.** The account email is in every call's context, as in ordinary Claude Code use. Justin has been told.
 
-`--bare` would strip this block but cannot authenticate when launched from inside a session (above). Whether it authenticates from a plain terminal is recorded below when tested.
+`--bare` would strip this block but cannot authenticate when launched from inside a session (above). Tested from Justin's own login shell in the desktop app's terminal tab (not nested in a session): `--bare` still returns "Not logged in". Bare mode does not read the claude.ai credential on this machine at all, so the environment block cannot be removed on the subscription route. Accepted and disclosed.
 
