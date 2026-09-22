@@ -33,3 +33,8 @@ task1 jev: rows=700  scored=700  errors=0 refusals=0 acc=0.939 [0.921, 0.956] p5
 | task2 | 2026-09-22 15:48:41 | task2 jev: rows=1000 scored=1000 errors=0 refusals=0 acc=0.915 [0.898, 0.933] p50=501ms cost/1k=$0.032
 | task1 | 2026-09-22 16:30:44 | task1 haiku45-nothink: rows=1000 scored=1000 errors=0 refusals=0 acc=0.885 [0.865, 0.903] p50=2430ms cost/1k=$2.630
 | task2 | 2026-09-22 17:02:59 | task2 haiku45-nothink: rows=1000 scored=1000 errors=0 refusals=0 acc=0.934 [0.918, 0.949] p50=5681ms cost/1k=$3.468
+| task1 | 2026-09-22 17:48:01 | task1 haiku45: rows=1000 scored=1000 errors=0 refusals=0 acc=0.929 [0.914, 0.944] p50=7264ms cost/1k=$5.926
+| task1 | 2026-09-22 18:13:26 | task1 haiku45: rows=1000 scored=1000 errors=0 refusals=0 acc=0.929 [0.914, 0.944] p50=7264ms cost/1k=$5.926
+| task1 | 2026-09-22 18:46:26 | task1 sonnet5: rows=1000 scored=1000 errors=0 refusals=0 acc=0.954 [0.941, 0.966] p50=2604ms cost/1k=$4.828
+| task1 | 2026-09-22 18:47:12 | task1 sonnet5-nothink: rows=1000 scored=1000 errors=0 refusals=0 acc=0.943 [0.930, 0.957] p50=2607ms cost/1k=$4.956
+| task2 | 2026-09-22 18:47:48 | task2 haiku45: rows=1000 scored=1000 errors=0 refusals=0 acc=0.936 [0.920, 0.951] p50=10956ms cost/1k=$6.409

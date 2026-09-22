@@ -39,24 +39,24 @@
     "model": "claude-haiku-4-5",
     "strict_served_model": false
   },
-  "cases_path": "/Users/justin/projects/Jev/data/task2_cases.jsonl",
-  "cases_run": 480,
-  "cases_skipped_resume": 520,
+  "cases_path": "/Users/justin/projects/Jev/data/task1_cases.jsonl",
+  "cases_run": 0,
+  "cases_skipped_resume": 1000,
   "cases_total": 1000,
   "counts": {
     "error": 0,
-    "ok": 480,
+    "ok": 0,
     "refusal": 0,
     "truncated": 0
   },
   "data_sha256": {
     "data/catalogue.json": "9c85e07da3554044a3260639e8bf36eb8558c6db5be12f742340683b09521650",
     "data/splits.json": "717b67ec8209f3e36d0e520696914b6ba7732dcda541bb2997425615e9948607",
-    "data/task2_cases.jsonl": "a068f51f3f250c1dacf478f03dca1c305155af163cb6c69095cf50345a9c04a4"
+    "data/task1_cases.jsonl": "712bf31b7f12c2f4a016c42ffb71bbd4c23f2c89228a419f1817e75f54fb6630"
   },
-  "elapsed_s": 2053.6,
-  "ended": "2026-09-22T16:47:48Z",
-  "git_sha": "9ba0a91be0c7ac05b2d8a46f860807ee198c04e4",
+  "elapsed_s": 0.0,
+  "ended": "2026-09-22T16:13:26Z",
+  "git_sha": "9beae0bc6d818fb25a5af4a80113e3f2d6275b38",
   "history": [
     {
       "adapter": {
@@ -99,25 +99,25 @@
         "model": "claude-haiku-4-5",
         "strict_served_model": false
       },
-      "cases_path": "/Users/justin/projects/Jev/data/task2_cases.jsonl",
-      "cases_run": 50,
+      "cases_path": "/Users/justin/projects/Jev/data/task1_cases.jsonl",
+      "cases_run": 1000,
       "cases_skipped_resume": 0,
-      "cases_total": 50,
+      "cases_total": 1000,
       "counts": {
         "error": 0,
-        "ok": 50,
+        "ok": 1000,
         "refusal": 0,
         "truncated": 0
       },
       "data_sha256": {
         "data/catalogue.json": "9c85e07da3554044a3260639e8bf36eb8558c6db5be12f742340683b09521650",
         "data/splits.json": "717b67ec8209f3e36d0e520696914b6ba7732dcda541bb2997425615e9948607",
-        "data/task2_cases.jsonl": "ec962cf8013e1ae18ad8862840fb6f2c81795d46345d5bb3918d9185ac170736"
+        "data/task1_cases.jsonl": "712bf31b7f12c2f4a016c42ffb71bbd4c23f2c89228a419f1817e75f54fb6630"
       },
-      "elapsed_s": 162.7,
-      "ended": "2026-09-22T13:52:56Z",
-      "git_sha": "244b8b73cc146d3e55b1da347aa052a931647de8",
-      "limit": 50,
+      "elapsed_s": 2698.0,
+      "ended": "2026-09-22T15:48:01Z",
+      "git_sha": "465a30523ab3a3bb65b6d4128eaefcc5fe12f285",
+      "limit": null,
       "packages": {
         "httpx": "0.28.1",
         "numpy": "2.4.6",
@@ -137,10 +137,10 @@
       "rep": 1,
       "seed": 20260922,
       "split": "all",
-      "started": "2026-09-22T13:50:13Z",
+      "started": "2026-09-22T15:03:03Z",
       "strict_served_model": false,
       "system": "haiku45",
-      "task": "task2"
+      "task": "task1"
     }
   ],
   "limit": null,
@@ -163,8 +163,8 @@
   "rep": 1,
   "seed": 20260922,
   "split": "all",
-  "started": "2026-09-22T16:13:34Z",
+  "started": "2026-09-22T16:13:26Z",
   "strict_served_model": false,
   "system": "haiku45",
-  "task": "task2"
+  "task": "task1"
 }

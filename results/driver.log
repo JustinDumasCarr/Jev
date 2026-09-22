@@ -636,3 +636,167 @@
   950/950 {'ok': 950, 'truncated': 0, 'refusal': 0, 'error': 0}
 {"task": "task2", "system": "haiku45-nothink", "counts": {"ok": 950, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 1808.7, "pauses": []}
 2026-09-22 17:02:59 full task2 haiku45-nothink: error rate 0%
+2026-09-22 17:03:02 committed: full run haiku45-nothink, both tasks
+2026-09-22 17:03:02 run --task task1 --system haiku45 --rep 1 --split all
+  10/1000 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/1000 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/1000 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/1000 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/1000 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/1000 {'ok': 60, 'truncated': 0, 'refusal': 0, 'error': 0}
+  70/1000 {'ok': 70, 'truncated': 0, 'refusal': 0, 'error': 0}
+  80/1000 {'ok': 80, 'truncated': 0, 'refusal': 0, 'error': 0}
+  90/1000 {'ok': 90, 'truncated': 0, 'refusal': 0, 'error': 0}
+  100/1000 {'ok': 100, 'truncated': 0, 'refusal': 0, 'error': 0}
+  110/1000 {'ok': 110, 'truncated': 0, 'refusal': 0, 'error': 0}
+  120/1000 {'ok': 120, 'truncated': 0, 'refusal': 0, 'error': 0}
+  130/1000 {'ok': 130, 'truncated': 0, 'refusal': 0, 'error': 0}
+  140/1000 {'ok': 140, 'truncated': 0, 'refusal': 0, 'error': 0}
+  150/1000 {'ok': 150, 'truncated': 0, 'refusal': 0, 'error': 0}
+  160/1000 {'ok': 160, 'truncated': 0, 'refusal': 0, 'error': 0}
+  170/1000 {'ok': 170, 'truncated': 0, 'refusal': 0, 'error': 0}
+  180/1000 {'ok': 180, 'truncated': 0, 'refusal': 0, 'error': 0}
+  190/1000 {'ok': 190, 'truncated': 0, 'refusal': 0, 'error': 0}
+  200/1000 {'ok': 200, 'truncated': 0, 'refusal': 0, 'error': 0}
+  210/1000 {'ok': 210, 'truncated': 0, 'refusal': 0, 'error': 0}
+  220/1000 {'ok': 220, 'truncated': 0, 'refusal': 0, 'error': 0}
+  230/1000 {'ok': 230, 'truncated': 0, 'refusal': 0, 'error': 0}
+  240/1000 {'ok': 240, 'truncated': 0, 'refusal': 0, 'error': 0}
+  250/1000 {'ok': 250, 'truncated': 0, 'refusal': 0, 'error': 0}
+  260/1000 {'ok': 260, 'truncated': 0, 'refusal': 0, 'error': 0}
+  270/1000 {'ok': 270, 'truncated': 0, 'refusal': 0, 'error': 0}
+  280/1000 {'ok': 280, 'truncated': 0, 'refusal': 0, 'error': 0}
+  290/1000 {'ok': 290, 'truncated': 0, 'refusal': 0, 'error': 0}
+  300/1000 {'ok': 300, 'truncated': 0, 'refusal': 0, 'error': 0}
+  310/1000 {'ok': 310, 'truncated': 0, 'refusal': 0, 'error': 0}
+  320/1000 {'ok': 320, 'truncated': 0, 'refusal': 0, 'error': 0}
+  330/1000 {'ok': 330, 'truncated': 0, 'refusal': 0, 'error': 0}
+  340/1000 {'ok': 340, 'truncated': 0, 'refusal': 0, 'error': 0}
+  350/1000 {'ok': 350, 'truncated': 0, 'refusal': 0, 'error': 0}
+  360/1000 {'ok': 360, 'truncated': 0, 'refusal': 0, 'error': 0}
+  370/1000 {'ok': 370, 'truncated': 0, 'refusal': 0, 'error': 0}
+  380/1000 {'ok': 380, 'truncated': 0, 'refusal': 0, 'error': 0}
+  390/1000 {'ok': 390, 'truncated': 0, 'refusal': 0, 'error': 0}
+  400/1000 {'ok': 400, 'truncated': 0, 'refusal': 0, 'error': 0}
+  410/1000 {'ok': 410, 'truncated': 0, 'refusal': 0, 'error': 0}
+  420/1000 {'ok': 420, 'truncated': 0, 'refusal': 0, 'error': 0}
+  430/1000 {'ok': 430, 'truncated': 0, 'refusal': 0, 'error': 0}
+  440/1000 {'ok': 440, 'truncated': 0, 'refusal': 0, 'error': 0}
+  450/1000 {'ok': 450, 'truncated': 0, 'refusal': 0, 'error': 0}
+  460/1000 {'ok': 460, 'truncated': 0, 'refusal': 0, 'error': 0}
+  470/1000 {'ok': 470, 'truncated': 0, 'refusal': 0, 'error': 0}
+  480/1000 {'ok': 480, 'truncated': 0, 'refusal': 0, 'error': 0}
+  490/1000 {'ok': 490, 'truncated': 0, 'refusal': 0, 'error': 0}
+  500/1000 {'ok': 500, 'truncated': 0, 'refusal': 0, 'error': 0}
+  510/1000 {'ok': 510, 'truncated': 0, 'refusal': 0, 'error': 0}
+  520/1000 {'ok': 520, 'truncated': 0, 'refusal': 0, 'error': 0}
+  530/1000 {'ok': 530, 'truncated': 0, 'refusal': 0, 'error': 0}
+  540/1000 {'ok': 540, 'truncated': 0, 'refusal': 0, 'error': 0}
+  550/1000 {'ok': 550, 'truncated': 0, 'refusal': 0, 'error': 0}
+  560/1000 {'ok': 560, 'truncated': 0, 'refusal': 0, 'error': 0}
+  570/1000 {'ok': 570, 'truncated': 0, 'refusal': 0, 'error': 0}
+  580/1000 {'ok': 580, 'truncated': 0, 'refusal': 0, 'error': 0}
+  590/1000 {'ok': 590, 'truncated': 0, 'refusal': 0, 'error': 0}
+  600/1000 {'ok': 600, 'truncated': 0, 'refusal': 0, 'error': 0}
+  610/1000 {'ok': 610, 'truncated': 0, 'refusal': 0, 'error': 0}
+  620/1000 {'ok': 620, 'truncated': 0, 'refusal': 0, 'error': 0}
+  630/1000 {'ok': 630, 'truncated': 0, 'refusal': 0, 'error': 0}
+  640/1000 {'ok': 640, 'truncated': 0, 'refusal': 0, 'error': 0}
+  650/1000 {'ok': 650, 'truncated': 0, 'refusal': 0, 'error': 0}
+  660/1000 {'ok': 660, 'truncated': 0, 'refusal': 0, 'error': 0}
+  670/1000 {'ok': 670, 'truncated': 0, 'refusal': 0, 'error': 0}
+  680/1000 {'ok': 680, 'truncated': 0, 'refusal': 0, 'error': 0}
+  690/1000 {'ok': 690, 'truncated': 0, 'refusal': 0, 'error': 0}
+  700/1000 {'ok': 700, 'truncated': 0, 'refusal': 0, 'error': 0}
+  710/1000 {'ok': 710, 'truncated': 0, 'refusal': 0, 'error': 0}
+  720/1000 {'ok': 720, 'truncated': 0, 'refusal': 0, 'error': 0}
+  730/1000 {'ok': 730, 'truncated': 0, 'refusal': 0, 'error': 0}
+  740/1000 {'ok': 740, 'truncated': 0, 'refusal': 0, 'error': 0}
+  750/1000 {'ok': 750, 'truncated': 0, 'refusal': 0, 'error': 0}
+  760/1000 {'ok': 760, 'truncated': 0, 'refusal': 0, 'error': 0}
+  770/1000 {'ok': 770, 'truncated': 0, 'refusal': 0, 'error': 0}
+  780/1000 {'ok': 780, 'truncated': 0, 'refusal': 0, 'error': 0}
+  790/1000 {'ok': 790, 'truncated': 0, 'refusal': 0, 'error': 0}
+  800/1000 {'ok': 800, 'truncated': 0, 'refusal': 0, 'error': 0}
+  810/1000 {'ok': 810, 'truncated': 0, 'refusal': 0, 'error': 0}
+  820/1000 {'ok': 820, 'truncated': 0, 'refusal': 0, 'error': 0}
+  830/1000 {'ok': 830, 'truncated': 0, 'refusal': 0, 'error': 0}
+  840/1000 {'ok': 840, 'truncated': 0, 'refusal': 0, 'error': 0}
+  850/1000 {'ok': 850, 'truncated': 0, 'refusal': 0, 'error': 0}
+  860/1000 {'ok': 860, 'truncated': 0, 'refusal': 0, 'error': 0}
+  870/1000 {'ok': 870, 'truncated': 0, 'refusal': 0, 'error': 0}
+  880/1000 {'ok': 880, 'truncated': 0, 'refusal': 0, 'error': 0}
+  890/1000 {'ok': 890, 'truncated': 0, 'refusal': 0, 'error': 0}
+  900/1000 {'ok': 900, 'truncated': 0, 'refusal': 0, 'error': 0}
+  910/1000 {'ok': 910, 'truncated': 0, 'refusal': 0, 'error': 0}
+  920/1000 {'ok': 920, 'truncated': 0, 'refusal': 0, 'error': 0}
+  930/1000 {'ok': 930, 'truncated': 0, 'refusal': 0, 'error': 0}
+  940/1000 {'ok': 940, 'truncated': 0, 'refusal': 0, 'error': 0}
+  950/1000 {'ok': 950, 'truncated': 0, 'refusal': 0, 'error': 0}
+  960/1000 {'ok': 960, 'truncated': 0, 'refusal': 0, 'error': 0}
+  970/1000 {'ok': 970, 'truncated': 0, 'refusal': 0, 'error': 0}
+  980/1000 {'ok': 980, 'truncated': 0, 'refusal': 0, 'error': 0}
+  990/1000 {'ok': 990, 'truncated': 0, 'refusal': 0, 'error': 0}
+  1000/1000 {'ok': 1000, 'truncated': 0, 'refusal': 0, 'error': 0}
+{"task": "task1", "system": "haiku45", "counts": {"ok": 1000, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 2698.0, "pauses": []}
+2026-09-22 17:48:01 full task1 haiku45: error rate 0%
+2026-09-22 17:48:06 run --task task2 --system haiku45 --rep 1 --split all
+  10/953 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/953 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/953 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/953 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/953 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/953 {'ok': 60, 'truncated': 0, 'refusal': 0, 'error': 0}
+  70/953 {'ok': 70, 'truncated': 0, 'refusal': 0, 'error': 0}
+  80/953 {'ok': 80, 'truncated': 0, 'refusal': 0, 'error': 0}
+  90/953 {'ok': 90, 'truncated': 0, 'refusal': 0, 'error': 0}
+  100/953 {'ok': 100, 'truncated': 0, 'refusal': 0, 'error': 0}
+  110/953 {'ok': 110, 'truncated': 0, 'refusal': 0, 'error': 0}
+  120/953 {'ok': 120, 'truncated': 0, 'refusal': 0, 'error': 0}
+  130/953 {'ok': 130, 'truncated': 0, 'refusal': 0, 'error': 0}
+  140/953 {'ok': 140, 'truncated': 0, 'refusal': 0, 'error': 0}
+  150/953 {'ok': 150, 'truncated': 0, 'refusal': 0, 'error': 0}
+  160/953 {'ok': 160, 'truncated': 0, 'refusal': 0, 'error': 0}
+  170/953 {'ok': 170, 'truncated': 0, 'refusal': 0, 'error': 0}
+  180/953 {'ok': 180, 'truncated': 0, 'refusal': 0, 'error': 0}
+  190/953 {'ok': 190, 'truncated': 0, 'refusal': 0, 'error': 0}
+  200/953 {'ok': 200, 'truncated': 0, 'refusal': 0, 'error': 0}
+  210/953 {'ok': 210, 'truncated': 0, 'refusal': 0, 'error': 0}
+  220/953 {'ok': 220, 'truncated': 0, 'refusal': 0, 'error': 0}
+  230/953 {'ok': 230, 'truncated': 0, 'refusal': 0, 'error': 0}
+  240/953 {'ok': 240, 'truncated': 0, 'refusal': 0, 'error': 0}
+  250/953 {'ok': 250, 'truncated': 0, 'refusal': 0, 'error': 0}
+  260/953 {'ok': 260, 'truncated': 0, 'refusal': 0, 'error': 0}
+  270/953 {'ok': 270, 'truncated': 0, 'refusal': 0, 'error': 0}
+  280/953 {'ok': 280, 'truncated': 0, 'refusal': 0, 'error': 0}
+  290/953 {'ok': 290, 'truncated': 0, 'refusal': 0, 'error': 0}
+  300/953 {'ok': 300, 'truncated': 0, 'refusal': 0, 'error': 0}
+  310/953 {'ok': 310, 'truncated': 0, 'refusal': 0, 'error': 0}
+  320/953 {'ok': 320, 'truncated': 0, 'refusal': 0, 'error': 0}
+  330/953 {'ok': 330, 'truncated': 0, 'refusal': 0, 'error': 0}
+  340/953 {'ok': 340, 'truncated': 0, 'refusal': 0, 'error': 0}
+  350/953 {'ok': 350, 'truncated': 0, 'refusal': 0, 'error': 0}
+  360/953 {'ok': 360, 'truncated': 0, 'refusal': 0, 'error': 0}
+  370/953 {'ok': 370, 'truncated': 0, 'refusal': 0, 'error': 0}
+  380/953 {'ok': 380, 'truncated': 0, 'refusal': 0, 'error': 0}
+  390/953 {'ok': 390, 'truncated': 0, 'refusal': 0, 'error': 0}
+  400/953 {'ok': 400, 'truncated': 0, 'refusal': 0, 'error': 0}
+  410/953 {'ok': 410, 'truncated': 0, 'refusal': 0, 'error': 0}
+  420/953 {'ok': 420, 'truncated': 0, 'refusal': 0, 'error': 0}
+  430/953 {'ok': 430, 'truncated': 0, 'refusal': 0, 'error': 0}
+  440/953 {'ok': 440, 'truncated': 0, 'refusal': 0, 'error': 0}
+  450/953 {'ok': 450, 'truncated': 0, 'refusal': 0, 'error': 0}
+  460/953 {'ok': 460, 'truncated': 0, 'refusal': 0, 'error': 0}
+  470/953 {'ok': 470, 'truncated': 0, 'refusal': 0, 'error': 0}
+2026-09-22 18:13:25 [main] === parallel driver start: 4 workers, 4 CLI processes each ===
+2026-09-22 18:13:25 [w1] run task1 haiku45 full
+2026-09-22 18:13:25 [w2] run task1 sonnet5-nothink full
+2026-09-22 18:13:25 [w3] run task1 sonnet5 full
+2026-09-22 18:13:25 [w4] run task1 sonnet46-nothink full
+2026-09-22 18:13:26 [w1] full task1 haiku45: error rate 0%
+2026-09-22 18:13:32 [w1] run task2 haiku45 full
+2026-09-22 18:46:26 [w3] full task1 sonnet5: error rate 0%
+2026-09-22 18:46:36 [w3] run task2 sonnet5 full
+2026-09-22 18:47:12 [w2] full task1 sonnet5-nothink: error rate 0%
+2026-09-22 18:47:18 [w2] run task2 sonnet5-nothink full
+2026-09-22 18:47:48 [w1] full task2 haiku45: error rate 0%
