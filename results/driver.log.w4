@@ -177,3 +177,8 @@
   180/191 {'ok': 177, 'truncated': 0, 'refusal': 3, 'error': 0}
   190/191 {'ok': 186, 'truncated': 0, 'refusal': 4, 'error': 0}
 {"task": "task2", "system": "opus47-nothink", "counts": {"ok": 187, "truncated": 0, "refusal": 4, "error": 0}, "elapsed_s": 367.2, "pauses": []}
+  10/200 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/200 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/200 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/200 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/200 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
