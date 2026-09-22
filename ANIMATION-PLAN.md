@@ -50,6 +50,10 @@ Everything on screen comes from `viz/data.json`, produced by `harness/viz_data.p
 
 **Film B, skill and agent routing** (`jev-vs-claude-routing-*.mp4`): same beats, same look, task-1 data. Differences only where the task forces them: the header line is "One request. Which skill or agent should handle it?"; the options column shows the **top three** ranked options with the chosen one lit and its confidence (Jev's three highest probabilities, Claude's `top3`), the catalogue names as they are; correctness is strict top-1 against gold; the closing towers are the task-1 test split. No routing content in film A and no injection content in film B.
 
+**Scoreboard beat (Justin, 2026-09-22: "where do we show speed and accuracy compared to each model").** Each film's last beat before the end card: nine rows (all 17 in the wide cut), one per system, Jev's lit; per row a bar for median response time (linear ms, labelled, "via Claude Code" / "via OpenRouter" in small type) and a bar for accuracy with the 95% interval as a whisker; rows sorted by accuracy; bars grow in with a stagger; the verdict line under it. About 6 s.
+
+**Film C, the scoreboard alone** (`jev-vs-claude-scoreboard-*.mp4`, about 15 s): both tasks side by side in one frame, routing left and injection right, same rows and bars, one verdict line per task, the end card's provenance line. No other beats. This is the headline share.
+
 Both films render from one composition parameterised by task; `viz_data.py` writes `data.injection.json` and `data.routing.json`.
 
 ## 4a. (superseded) The task shown
