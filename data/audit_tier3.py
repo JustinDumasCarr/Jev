@@ -208,6 +208,19 @@ def user_message(task: str, case: dict) -> str:
     )
 
 
+def text_sha(case: dict, task: str) -> str:
+    """sha256 of the exact text audited, so a verdict can be tied to the content it judged.
+
+    A case that is regenerated keeps its id, so without this a stale verdict about the old
+    text reads as a verdict about the new one.
+    """
+    import hashlib
+
+    return hashlib.sha256(
+        (case["prompt"] if task == "task1" else case["text"]).encode("utf-8")
+    ).hexdigest()
+
+
 def read_done() -> dict[str, dict]:
     if not VERDICTS.exists():
         return {}
@@ -230,6 +243,7 @@ class Auditor:
         self.sem = asyncio.Semaphore(CONCURRENCY)
         self.write_lock = asyncio.Lock()
         self.pause_until = 0.0
+        self.last_failure: dict[str, str] = {}
         self.stats = {
             "calls": 0, "ok": 0, "failed": 0, "limit_pauses": 0,
             "in_tok": 0, "out_tok": 0, "think_tok": 0,
@@ -366,9 +380,11 @@ class Auditor:
 
                 structured = res.get("structured_output")
                 if res.get("is_error") or not isinstance(structured, dict):
-                    rec.update(ok=False,
-                               failure="missing_structured_output"
-                               if not res.get("is_error") else "api_error",
+                    why = ("api_error" if res.get("is_error")
+                           else "missing_structured_output")
+                    self.last_failure[case["id"]] = (
+                        f"{why}: " + " ".join(str(res.get("result") or "").split())[:220])
+                    rec.update(ok=False, failure=why,
                                result=str(res.get("result") or "")[:400])
                     self.stats["failed"] += 1
                     await self._append(LOG, rec)
@@ -389,14 +405,32 @@ class Auditor:
                     "case_id": case["id"], "task": self.task, "ts": ts,
                     "auditor_model": served or AUDIT_MODEL, "effort": AUDIT_EFFORT,
                     "prompt_version": PROMPT_VERSION,
+                    "text_sha256": text_sha(case, self.task),
                     "flags": {f: bool(structured.get(f)) for f in FLAGS},
                     "notes": str(structured.get("notes") or "")[:600],
                     "overall": structured.get("overall"),
                 })
                 return
 
+            # Giving up is itself a finding, and it has to be in the verdicts file or the
+            # case silently disappears from the audit. The dominant cause is not a flaky
+            # call: Sonnet 5's safety classifier declines a subset of the injection corpus
+            # outright ("Sonnet 5 can't help with this … Details: [bio]"), deterministically,
+            # every attempt. Those cases are recorded as `unauditable` with the reason, so
+            # the report can say how many and why instead of showing a short count.
+            reason = self.last_failure.get(case["id"], "gave_up_after_max_attempts")
             await self._append(LOG, {"case_id": case["id"], "task": self.task, "ts": _now(),
-                                     "ok": False, "failure": "gave_up_after_max_attempts"})
+                                     "ok": False, "failure": "gave_up_after_max_attempts",
+                                     "reason": reason})
+            await self._append(VERDICTS, {
+                "case_id": case["id"], "task": self.task, "ts": _now(),
+                "auditor_model": AUDIT_MODEL, "effort": AUDIT_EFFORT,
+                "prompt_version": PROMPT_VERSION,
+                "text_sha256": text_sha(case, self.task),
+                "flags": {f: False for f in FLAGS},
+                "notes": reason,
+                "overall": "unauditable",
+            })
 
 
 async def run(task: str, cases: list[dict]) -> dict:

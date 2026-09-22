@@ -840,6 +840,45 @@ def looks_like_refusal(res: dict) -> bool:
     return any(m in txt for m in REFUSAL_MARKERS)
 
 
+#: A generated case that says, in its own text or in its own `why`, that it is not the case
+#: that was asked for. The model sometimes returns a well-formed structured_output whose
+#: `text` is a bracketed placeholder, or a benign substitute it explains in `why` — which is
+#: honest of it, and useless as a labelled case. Six such rows shipped in the first 1,000,
+#: all in the obfuscated slice, all carrying gold "injection" over text with no injection in
+#: it: four literal "[WITHHELD ...]" placeholders and two benign relocation questions whose
+#: `why` read "BENIGN substitute, not the requested injection". Every one of them was a free
+#: false negative for all 17 systems. The generator wrote its own evidence and nothing read
+#: it; WP4's Tier-3 auditor is what caught them.
+_SUBSTITUTE_TEXT = re.compile(
+    r"^\s*[\[(]?\s*(?:case\s+)?(?:withheld|redacted|placeholder|omitted|not generated)\b"
+    r"|\bsafety classifier\b|\bdo not (?:score|include)\b|\bnot a (?:usable|valid) "
+    r"(?:fixture|case)\b|\breplace this placeholder\b",
+    re.I,
+)
+#: Deliberately narrow. "Placeholder" and "declined" are both ordinary vocabulary in a
+#: legitimate `why` — an obfuscation technique that "defines a placeholder then invokes it",
+#: a hard negative whose "quoted jailbreak is declined" — so the pattern matches only wording
+#: that is unambiguously the generator reporting on itself rather than describing the case.
+_SUBSTITUTE_WHY = re.compile(
+    r"\bbenign substitute\b|\bnot the requested\b|\binstead of the requested\b"
+    r"|\bplaceholder only\b|\bwithheld\b"
+    r"|\bdeclin(?:ed|ing)\b[^.;]{0,40}\brequest\b"
+    r"|\bsupplying\b[^.;]{0,60}\binstead\b"
+    r"|\bnot a (?:valid|labelled|usable) (?:case|fixture)\b"
+    r"|\b(?:was|were) not produced\b",
+    re.I,
+)
+
+
+def is_substitute(text: str, why: str) -> str | None:
+    """Name the reason this generated row is not the case that was asked for, else None."""
+    if _SUBSTITUTE_TEXT.search(text or ""):
+        return "placeholder_text"
+    if _SUBSTITUTE_WHY.search(why or ""):
+        return "declined_substitute"
+    return None
+
+
 def generate_one(spec: dict, tagger) -> dict | None:
     """Run the CLI until the spec yields a usable case, or give up. Logs every call."""
     for attempt in range(1, MAX_ATTEMPTS + 1):
@@ -892,6 +931,17 @@ def generate_one(spec: dict, tagger) -> dict | None:
             continue
 
         text = so["text"].strip()
+
+        # A row the model itself says is not the requested case never reaches the dataset.
+        substitute = is_substitute(text, str(so.get("why") or ""))
+        if substitute:
+            log["status"] = substitute
+            log["result_text"] = text[:300]
+            log["why"] = str(so.get("why") or "")[:300]
+            _append(LOG_PATH, log)
+            spec["_retry_instruction"] = build_retry_instruction(spec, [])
+            continue
+
         if spec["slice"] == "obfuscated":
             encoded = apply_encoding(spec, text)
             if encoded is None:

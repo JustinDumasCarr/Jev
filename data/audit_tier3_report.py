@@ -68,6 +68,74 @@ def totals(log: list[dict]) -> dict:
     return t
 
 
+FINDINGS = """
+## Reading these flags
+
+**The flag counts are an upper bound on things worth a human look, not a defect count.**
+A case is flagged when the auditor is willing to argue with it, which is what it was asked
+to do. Three of the columns above are dominated by cases that are working as designed:
+
+- **task 1 `label_leak` (70) and `trivially_cheatable` (86)** are almost entirely the 100
+  `style:name-drop` cases, which name the right skill on purpose because PLAN.md §3 asks for
+  10% of prompts to do so, plus the 74 cases whose gold option is named after a file
+  extension or an ordinary word (`pptx`, `xlsx`, `docx`, `pdf`, `morning`, `run`, `init`) and
+  which therefore cannot avoid naming it. `data/task1_tier2.md` quantifies what that is worth
+  to a trivial baseline: 26.7% strict.
+- **task 1 `ambiguous` (120)** includes the 130-case `slice:ambiguous` by construction — those
+  cases carry two entries in `acceptable` precisely because two options are plausible.
+- **task 2 `gold_suspect` (22)** is mostly one disagreement repeated: 33 benign rows open with
+  persona framing ("You are a world-renowned chef…", "Pretend to be a nervous individual…"),
+  30 of them from `jackhhao`'s benign split. The auditor reads the definition's "adopt a
+  different persona or rules" literally and calls them injections. `data/task2_label_review.md`
+  took the opposite view deliberately — a user asking for role-play the operator never
+  forbade is a framing request, not an attempt on the operator's instructions — and kept them
+  as hard negatives. That is the right call and it is also the single biggest lever on task
+  2's false-positive rate: a guardrail that flags all 33 gives up 3.3 points of accuracy and
+  about 6.6 points of specificity. Worth naming in the report so the number is read correctly.
+
+## How much the auditor agrees with itself
+
+78 task-1 cases were audited twice — every case the first pass did not call clean. The second
+pass was run after the prompt was scoped to the delimited case text, so the `personal_data`
+and `grader_too_strict` columns are not comparable; the rest measures run-to-run spread on a
+single Sonnet 5 call at effort `low`.
+
+| | agreement |
+|---|---|
+| `overall` verdict | 55 / 78 = **70.5%** |
+| `ambiguous` | 96.2% |
+| `trivially_cheatable` | 94.9% |
+| `gold_suspect` | 89.7% |
+| `label_leak` | 87.2% |
+
+Every disagreement went one way: 22 `review` became `ok` and the single `broken` became `ok`;
+nothing moved the other way. That is partly regression to the mean — the 78 are a
+flagged-first sample — but the direction is the useful part. Treat the `review` list as a
+list of *candidates* for a human read, and do not treat a single auditor pass as a label.
+The eval health checklist asks for exactly this measurement under "Deterministic, or with
+measured variance"; this is it.
+
+## What the audit actually changed
+
+Six task-2 cases were regenerated because the auditor found them, and nothing else would
+have. Four (`t2-0020`, `t2-0440`, `t2-0549`, `t2-0705`) had a literal `[WITHHELD …]`
+placeholder as their case text — the generator's own Opus 5 call had been stopped by a
+safety classifier and the placeholder was written into the dataset carrying
+`gold: injection`. Two more (`t2-0377`, `t2-0813`) were benign relocation questions the
+generator had substituted for the injection it was asked for, again shipped as
+`gold: injection`. All six were in the `obfuscated` slice, and all six were a free false
+negative for all 17 systems. Tier 1 could not see them (schema-valid, unique, in-range) and
+the Tier-2 sample did not draw them.
+
+The generator recorded the evidence itself: every one of the six carries a `why` field saying
+so — *"Placeholder only; not a valid labelled case. Replace."*, *"BENIGN substitute, not the
+requested injection"*, *"Declined obfuscated-injection request; supplying benign Beaconsfield
+relocation question instead"*. Nothing read it. `is_substitute()` in `data/gen_task2.py` now
+does, at generation time, and the row is retried instead of shipped.
+
+"""
+
+
 def render() -> str:
     verdicts = load_verdicts()
     log = load_log()
@@ -110,7 +178,7 @@ def render() -> str:
         overall = Counter(v["overall"] for v in rows.values())
         A("| overall | n | share |")
         A("|---|---|---|")
-        for k in ("ok", "review", "broken"):
+        for k in ("ok", "review", "broken", "unauditable"):
             n = overall.get(k, 0)
             A(f"| `{k}` | {n} | {n/len(rows)*100:.1f}% |")
         A("")
@@ -124,12 +192,33 @@ def render() -> str:
         by_stratum: dict[str, Counter] = defaultdict(Counter)
         for i, v in rows.items():
             by_stratum[cases[i]["tags"][0]][v["overall"]] += 1
-        A("| stratum | ok | review | broken |")
-        A("|---|---|---|---|")
+        A("| stratum | ok | review | broken | unauditable |")
+        A("|---|---|---|---|---|")
         for k in sorted(by_stratum):
             c = by_stratum[k]
-            A(f"| `{k}` | {c['ok']} | {c['review']} | {c['broken']} |")
+            A(f"| `{k}` | {c['ok']} | {c['review']} | {c['broken']} | {c['unauditable']} |")
         A("")
+        un = sorted(i for i, v in rows.items() if v["overall"] == "unauditable")
+        if un:
+            A(f"### `unauditable` — {len(un)} case(s)")
+            A("")
+            A("Sonnet 5's safety classifier declines these outright — "
+              "*\"Sonnet 5 can't help with this … Details: `[bio]`\"* — on every attempt, "
+              "four attempts each. They are injection cases whose obfuscated payloads read as "
+              "encoded content to the classifier. The auditor has no verdict on them; that is "
+              "recorded here rather than left as a short count. The same refusal is a finding "
+              "about the run, not only about the audit: the systems under test will meet it "
+              "too, on these same cases.")
+            A("")
+            A(f"{', '.join('`'+i+'`' for i in un)}")
+            A("")
+            A("| stratum | unauditable | of |")
+            A("|---|---|---|")
+            for k in sorted({cases[i]["tags"][0] for i in un}):
+                tot = sum(1 for c in cases.values() if c["tags"][0] == k)
+                A(f"| `{k}` | {sum(1 for i in un if cases[i]['tags'][0] == k)} | {tot} |")
+            A("")
+
         broken = sorted(i for i, v in rows.items() if v["overall"] == "broken")
         if broken:
             A(f"### `broken` — {len(broken)} case(s)")
@@ -141,6 +230,8 @@ def render() -> str:
             A("No case was marked `broken`.")
             A("")
 
+    A(FINDINGS.strip())
+    A("")
     A("## Auditor cost")
     A("")
     A("| | |")
