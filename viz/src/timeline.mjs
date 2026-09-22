@@ -183,3 +183,75 @@ export function captionLines(data, layout) {
     return {...b, srt: b.caption};
   });
 }
+
+/* ------------------------------------------------------------------ *
+ * The verdict as two plain lines, for the block under the ranked list.
+ * Everything here is templated from data.json; nothing is written by hand.
+ * ------------------------------------------------------------------ */
+
+/** The Claude Jev is closest to on the shared cases — the smallest gap, sign included. */
+function nearestClaude(data) {
+  const paired = ((data.meta && data.meta.verdict) || {}).paired || null;
+  const jev = jevOf(data);
+  let best = null;
+  if (paired) {
+    for (const id of Object.keys(paired)) {
+      const sys = byId(data, id);
+      if (!sys || sys.family === 'jev') continue;
+      const p = paired[id];
+      if (!best || p.diff_pts > best.p.diff_pts) best = {id, p, sys};
+    }
+    return best;
+  }
+  // No paired bootstrap in this file (the fixtures): fall back to the plain
+  // accuracy gap against the models the film actually shows, and take the
+  // half-width from Jev's own interval.
+  if (!jev) return null;
+  const half = ((jev.accuracy.ci_high - jev.accuracy.ci_low) / 2) * 100;
+  for (const sys of blocksSystems(data)) {
+    if (!sys || sys.family === 'jev') continue;
+    const diff = (jev.accuracy.point - sys.accuracy.point) * 100;
+    if (!best || diff > best.p.diff_pts) {
+      best = {id: sys.system, sys, p: {diff_pts: diff, lo_pts: diff - half, hi_pts: diff + half}};
+    }
+  }
+  return best;
+}
+
+export function verdictBlock(data) {
+  const v = (data.meta && data.meta.verdict) || {};
+  const preliminary = Boolean(data.meta && data.meta.preliminary);
+  const margin = v.margin_pts || 2;
+  const jev = jevOf(data);
+  const n = jev ? jev.n : null;
+  const near = nearestClaude(data);
+  const half = near ? Math.max(1, Math.round((near.p.hi_pts - near.p.lo_pts) / 2)) : null;
+  const labels = v.equivalent_tier_label || {};
+  const tierLabel = labels['claude-nothink'] || labels['claude-think'] || null;
+
+  let headline;
+  if (tierLabel) {
+    // the non-inferiority test passed against a tier: say so and stop
+    headline = 'Jev is as good as ' + tierLabel + '.';
+  } else if (!preliminary && near && near.p.hi_pts < -margin) {
+    // even the closest Claude's interval clears the margin, so every Claude does
+    headline = 'Jev is behind every Claude by more than ' + margin + ' points.';
+  } else if (near) {
+    const d = Math.round(Math.abs(near.p.diff_pts));
+    const tail = ' Too close to call on ' + n + ' cases.';
+    headline =
+      d === 0
+        ? 'Jev ties ' + near.sys.label + '.' + tail
+        : 'Jev is ' + d + ' point' + (d === 1 ? '' : 's') + ' behind ' + near.sys.label + '.' + tail;
+  } else {
+    headline = '';
+  }
+
+  const parts = [];
+  if (preliminary) parts.push('Preliminary');
+  if (n) parts.push(n + ' cases');
+  parts.push('the same cases for every model');
+  if (half) parts.push('margin of error about ±' + half + ' points');
+
+  return {headline, smallPrint: parts.join(' · '), nearest: near, marginPts: margin, preliminary};
+}

@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {C, SANS, claudeColor, pct, shortLatency, tabular, upper} from '../theme';
 import {Ambient, EASE_OUT, SNAP, StageWatermark, ramp, useCamera} from '../stage';
-import {blocksSystems, jevOf, verdict, verdictSentence} from '../timeline.mjs';
+import {blocksSystems, jevOf, verdictBlock} from '../timeline.mjs';
 import {stringsFor} from '../strings';
 import type {FilmProps, System} from '../types';
 
@@ -34,7 +34,11 @@ export const Ranking: React.FC<FilmProps> = ({data, layout}) => {
   const bottom = height - (wide ? 210 : 230) * u;
   const rowH = Math.min((wide ? 52 : 74) * u, (bottom - top) / rows.length);
 
-  const v = verdict(data);
+  const v = verdictBlock(data);
+  // one line, never wrapped: bold sans at this tracking runs about 0.52em per
+  // character, so shrink the type until the sentence fits between the margins
+  const headlineSize = Math.min((wide ? 42 : 40) * u, contentW / Math.max(1, v.headline.length * 0.52));
+  const smallPrintSize = Math.min(19 * u, contentW / Math.max(1, v.smallPrint.length * 0.48));
   const enter = ramp(frame, 0, 8, EASE_OUT);
   const exit = ramp(frame, durationInFrames - 9, durationInFrames, EASE_OUT);
   const cam = useCamera([
@@ -156,24 +160,19 @@ export const Ranking: React.FC<FilmProps> = ({data, layout}) => {
           position: 'absolute',
           left: pad,
           right: pad,
-          bottom: 104 * u,
+          bottom: 86 * u,
           textAlign: 'center',
           opacity: vIn,
           transform: `translateY(${interpolate(vIn, [0, 1], [18, 0])}px)`,
           fontFamily: SANS,
           fontWeight: 700,
-          fontSize: (wide ? 42 : 40) * u,
+          fontSize: headlineSize,
           letterSpacing: '-0.03em',
+          whiteSpace: 'nowrap',
           color: C.ink,
         }}
       >
-        {verdictSentence(v.lines[0])}{' '}
-        <span style={{...upper(0.14), fontSize: 20 * u, color: C.ink3}}>{v.lines[0].tail}</span>
-        {v.nearestNote ? (
-          <div style={{...tabular, fontWeight: 500, fontSize: 21 * u, color: C.ink3, marginTop: 10 * u}}>
-            {v.nearestNote}
-          </div>
-        ) : null}
+        {v.headline}
       </div>
 
       <div
@@ -181,16 +180,17 @@ export const Ranking: React.FC<FilmProps> = ({data, layout}) => {
           position: 'absolute',
           left: pad,
           right: pad,
-          bottom: 40 * u,
+          bottom: 44 * u,
           textAlign: 'center',
-          ...upper(0.14),
-          fontSize: 16 * u,
+          opacity: vIn,
+          fontFamily: SANS,
+          fontWeight: 500,
+          fontSize: smallPrintSize,
           color: C.ink3,
-          lineHeight: 1.6,
+          whiteSpace: 'nowrap',
         }}
       >
-        {data.meta.n_note ? data.meta.n_note + ' · ' : ''}
-        non-inferiority margin {v.marginPts} points, fixed before any data
+        {v.smallPrint}
       </div>
 
       <StageWatermark data={data} />

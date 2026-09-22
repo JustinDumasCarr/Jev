@@ -23,3 +23,12 @@ export type Verdict = {
 export function verdictSentence(line: VerdictLine): string;
 export function verdict(data: VizData): Verdict;
 export function captionLines(data: VizData, layout: Layout): Beat[];
+
+export interface VerdictBlock {
+  headline: string;
+  smallPrint: string;
+  nearest: {id: string; p: Record<string, number>; sys: System} | null;
+  marginPts: number;
+  preliminary: boolean;
+}
+export function verdictBlock(data: VizData): VerdictBlock;
