@@ -223,3 +223,4 @@
 {"task": "task2", "system": "sonnet46-nothink", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
 {"task": "task1", "system": "sonnet46", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
 {"task": "task2", "system": "sonnet46", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
+{"task": "task1", "system": "opus48", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}

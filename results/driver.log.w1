@@ -169,3 +169,4 @@
 {"task": "task2", "system": "haiku45", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
 {"task": "task1", "system": "opus46", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
 {"task": "task2", "system": "opus46", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
+{"task": "task1", "system": "opus48-nothink", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
