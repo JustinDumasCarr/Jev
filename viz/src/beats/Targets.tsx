@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {C, SANS, claudeColor, pct, tabular, upper} from '../theme';
+import {Ambient, EASE_OUT, StageWatermark, ramp, useCamera, Camera} from '../stage';
 import {jevOf, panels, verdict} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 
@@ -149,6 +150,7 @@ export const Targets: React.FC<FilmProps & {caption: string}> = ({data, layout, 
   const {fps, width, height, durationInFrames} = useVideoConfig();
   const u = height / 1080;
   const jev = jevOf(data) as System;
+  const exit = ramp(frame, durationInFrames - 9, durationInFrames, EASE_OUT);
   const ps = panels(data, layout) as {sys: System; tier: number}[];
   const shots: Shot[] = [
     ...ps.map((p) => ({sys: p.sys, color: claudeColor(p.tier), isJev: false})),
@@ -164,7 +166,7 @@ export const Targets: React.FC<FilmProps & {caption: string}> = ({data, layout, 
   lo = Math.max(0, lo - 0.03);
   hi = Math.min(1, hi + 0.02);
 
-  const size = layout === 'wide' ? 186 * u : 130 * u;
+  const size = layout === 'wide' ? 176 * u : 124 * u;
   const v = verdict(data);
   const headlineOut = interpolate(frame, [0, 6, 999999, 1000000], [0, 1, 1, 1]);
 
@@ -173,8 +175,15 @@ export const Targets: React.FC<FilmProps & {caption: string}> = ({data, layout, 
   const verdictStart = durationInFrames - Math.round((layout === 'wide' ? 3.6 : 3.2) * fps);
   const words = v.lines.map((l: {head: string; tail: string; good: boolean}) => l);
 
+  const camT = useCamera([
+    {at: 0, zoom: 1.05, x: width / 2, y: height / 2 - 40 * u},
+    {at: durationInFrames - 60, zoom: 1, x: width / 2, y: height / 2},
+    {at: durationInFrames, zoom: 1.03, x: width / 2, y: height / 2 + 30 * u},
+  ]);
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={{backgroundColor: C.bg, opacity: 1 - exit}}>
+      <Ambient glow="rgba(120,120,160,0.13)" cam={camT} />
+      <AbsoluteFill style={{transform: camT.transform, transformOrigin: '0 0'}}>
       <div
         style={{
           position: 'absolute',
@@ -216,7 +225,7 @@ export const Targets: React.FC<FilmProps & {caption: string}> = ({data, layout, 
       <div
         style={{
           position: 'absolute',
-          top: 210 * u,
+          top: 188 * u,
           left: 0,
           right: 0,
           display: 'grid',
@@ -242,6 +251,8 @@ export const Targets: React.FC<FilmProps & {caption: string}> = ({data, layout, 
       </div>
 
       <VerdictBlock verdict={v} startFrame={verdictStart} u={u} width={width} />
+      </AbsoluteFill>
+      <StageWatermark data={data} />
     </AbsoluteFill>
   );
 };
@@ -275,7 +286,7 @@ const VerdictBlock: React.FC<{
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: 78 * u,
+        bottom: 54 * u,
         textAlign: 'center',
         padding: `0 ${60 * u}px`,
       }}
@@ -302,7 +313,7 @@ const VerdictBlock: React.FC<{
               style={{
                 fontFamily: SANS,
                 fontWeight: 700,
-                fontSize: 52 * u,
+                fontSize: 46 * u,
                 letterSpacing: '-0.03em',
                 color: C.ink,
               }}

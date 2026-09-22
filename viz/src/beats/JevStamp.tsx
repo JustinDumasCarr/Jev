@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {Caption, Tag} from '../chrome';
+import {Tag} from '../chrome';
+import {Ambient, EASE_OUT, StageWatermark, Timer, ramp, useCamera, Camera} from '../stage';
 import {C, MONO, SANS, tabular, upper} from '../theme';
 import {jevOf} from '../timeline.mjs';
 import type {FilmProps} from '../types';
@@ -14,7 +15,7 @@ import type {FilmProps} from '../types';
 
 export const JevStamp: React.FC<FilmProps & {caption: string}> = ({data, caption}) => {
   const frame = useCurrentFrame();
-  const {fps, width, height} = useVideoConfig();
+  const {fps, width, height, durationInFrames} = useVideoConfig();
   const u = height / 1080;
   const jev = jevOf(data);
   const hero = jev?.hero;
@@ -41,9 +42,18 @@ export const JevStamp: React.FC<FilmProps & {caption: string}> = ({data, caption
   // the pulse: out and back across the frame, an object, so it may ease
   const pulseX = interpolate(travel, [0, 0.5, 1], [-0.1, 1.1, -0.1]);
   const stampW = 640 * u;
+  const exit = ramp(frame, durationInFrames - 8, durationInFrames, EASE_OUT);
+  const cam = useCamera([
+    {at: 0, zoom: 1, x: width / 2, y: height / 2},
+    {at: travelFrames, zoom: 1, x: width / 2, y: height / 2},
+    {at: travelFrames + 14, zoom: 1.12, x: width / 2, y: height / 2 - 10 * u},
+    {at: durationInFrames, zoom: 1.16, x: width / 2, y: height / 2 - 14 * u},
+  ]);
 
   return (
-    <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
+    <AbsoluteFill style={{backgroundColor: C.bg, opacity: 1 - exit}}>
+      <Ambient glow="rgba(255,106,43,0.22)" cam={cam} />
+      <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', transform: cam.transform, transformOrigin: '0 0'}}>
       {/* the hop */}
       <div style={{position: 'absolute', top: 210 * u, left: 0, right: 0, height: 3 * u}}>
         <div style={{position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.06)'}} />
@@ -154,7 +164,27 @@ export const JevStamp: React.FC<FilmProps & {caption: string}> = ({data, caption
         {travel < 1 ? 'slow motion · real value' : 'measured, one call'}
       </div>
 
-      <Caption text={caption} width={width} accent />
+      </AbsoluteFill>
+
+      <Timer ms={elapsed} progress={1} u={u} accent label="jev · measured, one call" />
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 56 * u,
+          textAlign: 'center',
+          fontFamily: SANS,
+          fontWeight: 700,
+          fontSize: 38 * u,
+          letterSpacing: '-0.02em',
+          color: C.accent,
+          opacity: ramp(frame, travelFrames, travelFrames + 10, EASE_OUT),
+        }}
+      >
+        {caption}
+      </div>
+      <StageWatermark data={data} />
     </AbsoluteFill>
   );
 };

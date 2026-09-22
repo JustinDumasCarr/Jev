@@ -19,7 +19,7 @@ import {
   ramp,
   wobble,
   useCamera,
-} from './stage';
+} from '../../stage';
 
 /* P3 v2 — glasses filling.
  *

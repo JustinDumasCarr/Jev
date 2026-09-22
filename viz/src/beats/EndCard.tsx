@@ -2,6 +2,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {Tag} from '../chrome';
 import {C, SANS, claudeColor, money, pct, shortLatency, tabular, upper} from '../theme';
+import {Ambient, EASE_OUT, StageWatermark, ramp, useCamera} from '../stage';
 import {jevOf, panels, verdict} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 
@@ -56,11 +57,18 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
   const v = verdict(data);
   const m = data.meta;
 
+  const camE = useCamera([
+    {at: 0, zoom: 1.08, x: width / 2, y: height / 2},
+    {at: 40, zoom: 1, x: width / 2, y: height / 2},
+    {at: 400, zoom: 1.015, x: width / 2, y: height / 2},
+  ]);
   const titleIn = spring({frame, fps, config: {damping: 200}, durationInFrames: 14});
   const chipsIn = spring({frame: frame - 8, fps, config: {damping: 200}, durationInFrames: 18});
 
   return (
-    <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
+    <AbsoluteFill style={{backgroundColor: C.bg}}>
+      <Ambient glow="rgba(255,106,43,0.2)" cam={camE} />
+      <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', transform: camE.transform, transformOrigin: '0 0'}}>
       {/* the models that answered, behind everything */}
       <div
         style={{
@@ -190,6 +198,8 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
         Claude cost is notional list price; Jev's is the real charge. Non-inferiority margin{' '}
         {v.marginPts} points, fixed before any data.
       </div>
+      </AbsoluteFill>
+      <StageWatermark data={data} />
     </AbsoluteFill>
   );
 };

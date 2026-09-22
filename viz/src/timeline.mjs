@@ -51,15 +51,21 @@ export function wallSeconds(data, layout) {
  * Beat durations in seconds. Beat 3 is the only one the data stretches; everything else
  * is fixed, so the square cut stays inside its LinkedIn budget (§5b).
  */
+/** The race beat is stretched to a fixed screen window and the playback rate is
+ * stated on screen; the beat never shrinks below what the row needs to read. */
+export function raceWindowSeconds(layout) {
+  return layout === 'wide' ? 8.8 : 7.6;
+}
+
 export function beats(data, layout) {
   const wide = layout === 'wide';
-  const wall = wallSeconds(data, layout);
+  const raceWindow = raceWindowSeconds(layout);
   const verdictLead = wide ? 3.6 : 3.2;
 
   const list = [
     {
       id: 'prompt',
-      seconds: wide ? 3.4 : 3.0,
+      seconds: wide ? 3.2 : 2.8,
       caption: 'One real case. One question: is this a prompt injection?',
     },
     {
@@ -68,18 +74,18 @@ export function beats(data, layout) {
       caption: 'Jev answers.',
     },
     {
-      id: 'wall',
-      seconds: 0.7 + wall + (wide ? 2.4 : 2.1),
+      id: 'race',
+      seconds: 0.6 + raceWindow + (wide ? 2.4 : 1.9),
       caption: 'Jev has categorized before Claude has finished thinking.',
     },
     {
       id: 'thousand',
-      seconds: wide ? 10 : 9,
+      seconds: wide ? 10.5 : 9.6,
       caption: 'Now do it a thousand times.',
     },
     {
       id: 'accuracy',
-      seconds: (wide ? 7 : 6.5) + verdictLead,
+      seconds: (wide ? 6.4 : 5.9) + verdictLead,
       caption: 'And this is what the speed costs.',
     },
     {

@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {Caption, Stopwatch, Typed} from '../chrome';
+import {Typed} from '../chrome';
+import {Ambient, EASE_OUT, SNAP, StageWatermark, Timer, ramp, useCamera, Camera} from '../stage';
 import {C, SANS, upper} from '../theme';
 import type {FilmProps} from '../types';
 
@@ -10,7 +11,7 @@ import type {FilmProps} from '../types';
 
 export const Prompt: React.FC<FilmProps & {caption: string}> = ({data, layout, caption}) => {
   const frame = useCurrentFrame();
-  const {fps, width, height} = useVideoConfig();
+  const {fps, width, height, durationInFrames} = useVideoConfig();
   const u = height / 1080;
   const hero = data.meta.hero_case;
   const text = hero.text || '(no case text available)';
@@ -21,23 +22,31 @@ export const Prompt: React.FC<FilmProps & {caption: string}> = ({data, layout, c
     extrapolateRight: 'clamp',
   });
 
-  const bubbleIn = spring({frame, fps, config: {damping: 200}, durationInFrames: 14});
+  const bubbleIn = spring({frame, fps, config: SNAP, durationInFrames: 22});
   const qIn = spring({
     frame: frame - (Math.round(0.35 * fps) + typeFrames + 4),
     fps,
-    config: {damping: 12, stiffness: 140},
+    config: {damping: 11, stiffness: 190, mass: 0.75},
   });
+  const exit = ramp(frame, durationInFrames - 9, durationInFrames, EASE_OUT);
+  const cam = useCamera([
+    {at: 0, zoom: 1.06, x: width / 2, y: height / 2},
+    {at: durationInFrames, zoom: 1.0, x: width / 2, y: height / 2},
+  ]);
 
   const bubbleW = layout === 'wide' ? 1180 * u : 880 * u;
 
   return (
-    <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
+    <AbsoluteFill style={{backgroundColor: C.bg, opacity: 1 - exit, transform: `scale(${1 - exit * 0.06})`}}>
+      <Ambient glow="rgba(64,104,180,0.16)" cam={cam} />
+      <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', transform: cam.transform, transformOrigin: '0 0'}}>
       <div
         style={{
           position: 'absolute',
-          top: 64 * u,
+          top: 62 * u,
+          left: 52 * u,
           ...upper(0.26),
-          fontSize: 20 * u,
+          fontSize: 19 * u,
           color: C.ink3,
         }}
       >
@@ -99,11 +108,28 @@ export const Prompt: React.FC<FilmProps & {caption: string}> = ({data, layout, c
         </div>
       </div>
 
-      <div style={{position: 'absolute', bottom: 210 * u, opacity: interpolate(frame, [fps, fps * 1.6], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}}>
-        <Stopwatch ms={0} width={width} size={64 * u} label="stopwatch" />
-      </div>
+      </AbsoluteFill>
 
-      <Caption text={caption} width={width} />
+      <Timer ms={0} progress={0} u={u} label="stopwatch · standing by" />
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 56 * u,
+          textAlign: 'center',
+          padding: `0 ${80 * u}px`,
+          fontFamily: SANS,
+          fontWeight: 600,
+          fontSize: 33 * u,
+          color: C.ink,
+          opacity: ramp(frame, 6, 22, EASE_OUT),
+          transform: `translateY(${interpolate(ramp(frame, 6, 22, EASE_OUT), [0, 1], [18, 0])}px)`,
+        }}
+      >
+        {caption}
+      </div>
+      <StageWatermark data={data} />
     </AbsoluteFill>
   );
 };

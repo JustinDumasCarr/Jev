@@ -10,6 +10,7 @@ export function jevOf(data: VizData): System | null;
 export function wallSeconds(data: VizData, layout: Layout): number;
 export type Beat = {id: string; seconds: number; caption: string; srt?: string; from: number; fromSeconds: number; durationInFrames: number};
 export function beats(data: VizData, layout: Layout): Beat[];
+export function raceWindowSeconds(layout: Layout): number;
 export function totalFrames(data: VizData, layout: Layout): number;
 export type Verdict = {
   lines: {head: string; tail: string; good: boolean}[];

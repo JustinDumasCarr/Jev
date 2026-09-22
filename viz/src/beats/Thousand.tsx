@@ -1,113 +1,173 @@
 import React from 'react';
-import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {Caption, Tag} from '../chrome';
-import {C, SANS, claudeColor, clock, money, tabular, upper} from '../theme';
+import {AbsoluteFill, interpolate, random, spring, useCurrentFrame, useVideoConfig} from 'remotion';
+import {C, SANS, claudeColor, clock, tabular, upper} from '../theme';
+import {
+  Ambient,
+  Camera,
+  EASE_OUT,
+  POP,
+  SNAP,
+  STAGGER,
+  StageWatermark,
+  Timer,
+  clamp01,
+  ramp,
+  useCamera,
+} from '../stage';
 import {jevOf, panels} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 
-/* Beat 4 — a thousand in a row. A leaderboard of odometers in time-lapse.
+/* Beat 4 — a thousand decisions.
+ *
+ * Linear, always: how many cells are lit (wall clock ÷ that system's p50).
+ * Craft: cells ignite in a diagonal ripple with per-call jitter, a glow trail
+ * and a pop; the camera punches into Jev's block the moment it completes its
+ * thousandth; the count row freezes; and the beat exits on a whip rather than
+ * a hold. */
 
-   Each row counts at that system's own p50: count = floor(wall clock / p50), capped at
-   1,000. The clocks read the real wall time a single stream would take, and the cost
-   counters are the real cost of the calls made so far. The time-lapse factor is stated
-   on screen, because it is the one thing on this frame that is not real time. */
+const COLS = 40;
+const ROWS = 25;
+const RUN_AT = 26;
 
-const TARGET = 1000;
+/** Diagonal bands, with each call's position jittered inside its band, so a
+ *  block in progress looks like work rather than a drawn triangle. */
+const ORDER = (() => {
+  // Sort every cell by its diagonal band plus a deterministic per-call jitter of a
+  // few bands, so the advancing front is ragged — a block in progress looks like
+  // work being done, not a triangle being drawn.
+  const all: {i: number; k: number}[] = [];
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const i = row * COLS + col;
+      all.push({i, k: col + row + (random(`cell-${i}`) - 0.5) * 7});
+    }
+  }
+  all.sort((a, b) => a.k - b.k);
+  return all.map((c) => c.i);
+})();
 
-const Row: React.FC<{
+const Block: React.FC<{
   sys: System;
   color: string;
-  wallMs: number;
-  u: number;
-  width: number;
-  index: number;
   isJev: boolean;
-}> = ({sys, color, wallMs, u, width, index, isJev}) => {
+  i: number;
+  wallMs: number;
+  frozenAt: number | null;
+  w: number;
+  u: number;
+}> = ({sys, color, isJev, i, wallMs, frozenAt, w, u}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const p50 = sys.latency_ms.p50 ?? 1;
-  const done = Math.min(TARGET, Math.floor(wallMs / p50));
-  const finished = done >= TARGET;
-  const ownMs = Math.min(wallMs, TARGET * p50);
-  const costSoFar = ((sys.cost_per_1000_usd ?? 0) / TARGET) * done;
-  const enter = spring({frame: frame - index * 2, fps, config: {damping: 200}, durationInFrames: 14});
+  const effective = frozenAt != null ? Math.min(wallMs, frozenAt) : wallMs;
+  const lit = Math.min(1000, Math.floor(effective / p50)); // strictly linear
+  const full = lit >= 1000;
 
-  const h = 66 * u;
+  const enter = spring({frame: frame - i * STAGGER, fps, config: SNAP, durationInFrames: 26});
+  const cell = w / COLS;
+  const size = cell - Math.max(0.9, cell * 0.17);
+  const gridH = ROWS * cell;
+  const doneS = full ? spring({frame: frame - (frozenAt != null ? 0 : 0), fps, config: POP}) : 0;
+  const breathe = 1 + 0.01 * Math.sin((frame / fps) * 1.1 + i);
+  const sheen = ((frame / fps) * 0.24 + i * 0.09) % 1.7;
+
+  const cells = [];
+  for (let k = 0; k < lit; k++) {
+    const flat = ORDER[k];
+    const col = flat % COLS;
+    const row = (flat - col) / COLS;
+    const age = lit - k;
+    const glow = age < 34 ? interpolate(age, [0, 34], [1, 0], {easing: EASE_OUT}) : 0;
+    const pop = age < 7 ? interpolate(age, [0, 7], [1.6, 1]) : 1;
+    const s = size * pop;
+    cells.push(
+      <rect
+        key={k}
+        x={col * cell + (size - s) / 2}
+        y={row * cell + (size - s) / 2}
+        width={s}
+        height={s}
+        rx={s * 0.3}
+        fill={color}
+        opacity={0.48 + glow * 0.52}
+      />,
+    );
+  }
+
   return (
     <div
       style={{
-        position: 'relative',
-        height: h,
-        borderRadius: 14 * u,
-        overflow: 'hidden',
-        background: 'rgba(255,255,255,0.03)',
-        border: `1px solid ${finished ? color : C.hair}`,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 9 * u,
         opacity: enter,
-        transform: `translateX(${interpolate(enter, [0, 1], [-40, 0])}px)`,
+        transform: `translateY(${interpolate(enter, [0, 1], [36, 0])}px) scale(${
+          interpolate(enter, [0, 1], [0.94, 1]) * breathe
+        })`,
       }}
     >
-      {/* the progress fill is linear in the count: it IS the count */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: `${(done / TARGET) * 100}%`,
-          background: isJev ? 'rgba(255,106,43,0.22)' : `${color}1f`,
-          borderRight: `${2 * u}px solid ${color}`,
-        }}
-      />
-      <div
-        style={{
-          position: 'relative',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          padding: `0 ${22 * u}px`,
-          gap: 16 * u,
-        }}
-      >
+      <div style={{display: 'flex', alignItems: 'baseline', gap: 10 * u}}>
         <span
           style={{
             fontFamily: SANS,
             fontWeight: 700,
-            fontSize: 28 * u,
+            fontSize: 26 * u,
             color: isJev ? C.accent : C.ink,
-            width: 196 * u,
             whiteSpace: 'nowrap',
           }}
         >
           {sys.label}
         </span>
-        {isJev ? <Tag size={12 * u} color={C.accent}>via OpenRouter</Tag> : <Tag size={12 * u}>thinking off</Tag>}
-        <span style={{flex: 1}} />
         <span
           style={{
             ...tabular,
             fontWeight: 800,
-            fontSize: 40 * u,
-            color: finished ? color : C.ink,
-            width: 150 * u,
-            textAlign: 'right',
+            fontSize: 31 * u,
+            color: full ? color : C.ink2,
+            marginLeft: 'auto',
+            transform: `scale(${full ? interpolate(Math.min(doneS, 1), [0, 1], [1.5, 1]) : 1})`,
+            textShadow: full ? `0 0 ${22 * u}px ${color}` : 'none',
           }}
         >
-          {done}
+          {lit.toLocaleString()}
         </span>
-        <span style={{...tabular, fontSize: 30 * u, color: C.ink2, width: 150 * u, textAlign: 'right'}}>
-          {clock(ownMs)}
-        </span>
-        <span
+      </div>
+      <div style={{position: 'relative'}}>
+        <svg width={w} height={gridH} style={{display: 'block', overflow: 'visible'}}>
+          <rect width={w} height={gridH} fill="rgba(255,255,255,0.03)" rx={7 * u} />
+          <rect
+            width={w}
+            height={gridH}
+            fill="none"
+            rx={7 * u}
+            stroke={full ? `${color}80` : 'rgba(255,255,255,0.07)'}
+            strokeWidth={full ? 2 * u : 1}
+          />
+          {cells}
+        </svg>
+        <div
           style={{
-            ...tabular,
-            fontSize: 30 * u,
-            color: isJev ? C.accent : C.ink2,
-            width: 130 * u,
-            textAlign: 'right',
+            position: 'absolute',
+            inset: 0,
+            borderRadius: 7 * u,
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            opacity: 0.5,
           }}
         >
-          {money(costSoFar)}
-        </span>
+          <div
+            style={{
+              position: 'absolute',
+              top: -gridH,
+              bottom: -gridH,
+              width: w * 0.35,
+              left: `${(sheen - 0.3) * 120}%`,
+              transform: 'rotate(16deg)',
+              background:
+                'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0) 100%)',
+            }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -119,97 +179,159 @@ export const Thousand: React.FC<FilmProps & {caption: string}> = ({data, layout,
   const u = height / 1080;
   const jev = jevOf(data) as System;
   const ps = panels(data, layout) as {sys: System; tier: number}[];
-  const rows: {sys: System; color: string; isJev: boolean}[] = [
+  const rows = [
     {sys: jev, color: C.accent, isJev: true},
     ...ps.map((p) => ({sys: p.sys, color: claudeColor(p.tier), isJev: false})),
   ];
 
-  const slowest = Math.max(...rows.map((r) => r.sys.latency_ms.p50 ?? 0));
-  const spanMs = slowest * TARGET;
-  const runFrames = durationInFrames - Math.round(1.0 * fps);
-  const wallMs = interpolate(frame, [Math.round(0.35 * fps), runFrames], [0, spanMs], {
+  const spanMs = (jev.latency_ms.p50 ?? 1) * 1000;
+  const runFrames = durationInFrames - RUN_AT - Math.round(3.1 * fps);
+  const wallMs = interpolate(frame, [RUN_AT, RUN_AT + runFrames], [0, spanMs], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
   const speed = Math.round(spanMs / 1000 / (runFrames / fps));
+  const jevDone = RUN_AT + runFrames;
+  // the resolution: the counts freeze the moment Jev finishes
+  const frozen = frame > jevDone + 26 ? spanMs : null;
 
-  const titleIn = spring({frame, fps, config: {damping: 200}, durationInFrames: 12});
+  const cols = 3;
+  const gapX = 33 * u;
+  const blockW = (width - 130 * u - gapX * 2) / cols;
+  const gridTop = 262 * u;
+  const rowH = ROWS * (blockW / COLS) + 52 * u;
+  const jevX = 65 * u + blockW / 2;
+  const jevY = gridTop + rowH * 0.42;
+
+  const cam = useCamera([
+    {at: 0, zoom: 1, x: width / 2, y: height / 2},
+    {at: jevDone - 6, zoom: 1, x: width / 2, y: height / 2},
+    {at: jevDone + 12, zoom: 1.8, x: jevX, y: jevY},
+    {at: jevDone + 36, zoom: 1.8, x: jevX, y: jevY},
+    {at: jevDone + 56, zoom: 1, x: width / 2, y: height / 2},
+    {at: durationInFrames - 8, zoom: 1, x: width / 2, y: height / 2},
+    {at: durationInFrames, zoom: 1.1, x: width / 2, y: height / 2},
+  ]);
+
+  const burst = spring({frame: frame - jevDone, fps, config: POP});
+  // the exit: a whip to the left, never a hold
+  const whip = ramp(frame, durationInFrames - 8, durationInFrames, EASE_OUT);
 
   return (
-    <AbsoluteFill>
+    <AbsoluteFill
+      style={{
+        backgroundColor: C.bg,
+        transform: `translateX(${-whip * width * 0.55}px)`,
+        filter: whip > 0 ? `blur(${whip * 14}px)` : 'none',
+        opacity: 1 - whip * 0.7,
+      }}
+    >
+      <Ambient glow="rgba(64,104,180,0.18)" cam={cam} />
+
+      <Camera cam={cam}>
+        {frame >= jevDone ? (
+          <div
+            style={{
+              position: 'absolute',
+              left: jevX,
+              top: jevY,
+              width: 2,
+              height: 2,
+              borderRadius: 999,
+              transform: `translate(-50%, -50%) scale(${interpolate(Math.min(burst, 1), [0, 1], [40, 760])})`,
+              background: `radial-gradient(circle, rgba(255,106,43,${
+                0.6 * (1 - Math.min(burst, 1))
+              }) 0%, rgba(255,106,43,0) 70%)`,
+            }}
+          />
+        ) : null}
+
+        <div
+          style={{
+            position: 'absolute',
+            top: gridTop,
+            left: 65 * u,
+            right: 65 * u,
+            display: 'grid',
+            gridTemplateColumns: `repeat(${cols}, 1fr)`,
+            columnGap: gapX,
+            rowGap: 30 * u,
+          }}
+        >
+          {rows.map((r, i) => (
+            <Block
+              key={r.sys.system}
+              sys={r.sys}
+              color={r.color}
+              isJev={r.isJev}
+              i={i}
+              wallMs={wallMs}
+              frozenAt={frozen}
+              w={blockW}
+              u={u}
+            />
+          ))}
+        </div>
+      </Camera>
+
       <div
         style={{
           position: 'absolute',
-          top: 60 * u,
-          left: 0,
-          right: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 14 * u,
-          opacity: titleIn,
+          top: 52 * u,
+          left: 52 * u,
+          opacity: ramp(frame, 2, 18, EASE_OUT),
+          transform: `translateY(${interpolate(ramp(frame, 2, 18, EASE_OUT), [0, 1], [-22, 0])}px)`,
         }}
       >
         <div
           style={{
             fontFamily: SANS,
             fontWeight: 700,
-            fontSize: 74 * u,
+            fontSize: 52 * u,
+            color: C.ink,
             letterSpacing: '-0.035em',
+          }}
+        >
+          {caption}
+        </div>
+        <div style={{...upper(0.18), fontSize: 16 * u, color: C.ink3, marginTop: 10 * u}}>
+          ×{speed.toLocaleString()} speed · one cell = one decision · one stream
+        </div>
+      </div>
+
+      <Timer
+        ms={wallMs}
+        progress={clamp01(wallMs / spanMs)}
+        text={clock(wallMs)}
+        u={u}
+        accent
+        label="wall clock"
+      />
+      <StageWatermark data={data} />
+
+      {frame >= jevDone ? (
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            paddingBottom: 46 * u,
+            paddingTop: 46 * u,
+            background: 'linear-gradient(180deg, rgba(7,7,10,0) 0%, rgba(7,7,10,0.93) 44%)',
+            textAlign: 'center',
+            opacity: ramp(frame, jevDone + 4, jevDone + 16, EASE_OUT),
+            transform: `translateY(${interpolate(Math.min(burst, 1), [0, 1], [26, 0])}px)`,
+            fontFamily: SANS,
+            fontWeight: 700,
+            fontSize: 46 * u,
+            letterSpacing: '-0.03em',
             color: C.ink,
           }}
         >
-          Now do it 1,000 times.
+          Jev: 1,000 done. <span style={{color: C.ink3}}>Claude: still counting.</span>
         </div>
-        <div style={{display: 'flex', gap: 12 * u, alignItems: 'center'}}>
-          <Tag size={15 * u} color={C.accent} solid>
-            ×{speed.toLocaleString()} speed
-          </Tag>
-          <Tag size={15 * u}>one stream · p50 × 1,000</Tag>
-        </div>
-      </div>
-
-      <div
-        style={{
-          position: 'absolute',
-          top: 246 * u,
-          left: layout === 'wide' ? 300 * u : 54 * u,
-          right: layout === 'wide' ? 300 * u : 54 * u,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8 * u,
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            gap: 16 * u,
-            padding: `0 ${22 * u}px`,
-            ...upper(0.2),
-            fontSize: 15 * u,
-            color: C.ink3,
-          }}
-        >
-          <span style={{flex: 1}} />
-          <span style={{width: 150 * u, textAlign: 'right'}}>decisions</span>
-          <span style={{width: 150 * u, textAlign: 'right'}}>wall clock</span>
-          <span style={{width: 130 * u, textAlign: 'right'}}>cost</span>
-        </div>
-        {rows.map((r, i) => (
-          <Row
-            key={r.sys.system}
-            sys={r.sys}
-            color={r.color}
-            wallMs={wallMs}
-            u={u}
-            width={width}
-            index={i}
-            isJev={r.isJev}
-          />
-        ))}
-      </div>
-
-      <Caption text={caption} width={width} />
+      ) : null}
     </AbsoluteFill>
   );
 };

@@ -17,7 +17,7 @@ import {
   clamp01,
   ramp,
   useCamera,
-} from './stage';
+} from '../../stage';
 
 /* P5 v2 — the thousand-square.
  *

@@ -1,7 +1,7 @@
 import {useVideoConfig} from 'remotion';
 import {racers, type Racer} from '../shared';
 import type {FilmProps} from '../../types';
-import {STAGGER} from './stage';
+import {STAGGER} from '../../stage';
 
 /* The shared schedule for the two race prototypes, in frames at 30 fps.
  *

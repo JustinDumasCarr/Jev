@@ -1,8 +1,8 @@
 import React from 'react';
 import {AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {Watermark} from '../../chrome';
-import {C, MONO, SANS, tabular, upper} from '../../theme';
-import type {FilmProps} from '../../types';
+import {Watermark} from './chrome';
+import {C, MONO, SANS, tabular, upper} from './theme';
+import type {FilmProps} from './types';
 
 /* ------------------------------------------------------------------ *
  * v2 stage kit — the motion vocabulary the three prototypes share.

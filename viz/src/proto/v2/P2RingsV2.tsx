@@ -18,7 +18,7 @@ import {
   ramp,
   wobble,
   useCamera,
-} from './stage';
+} from '../../stage';
 
 /* P2 v2 — rings closing.
  *
