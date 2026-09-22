@@ -1,20 +1,20 @@
-Which tool should the agent call? We asked a model that cannot write text, and it beat Claude Haiku.
+Which tool should the agent call? We asked a model that cannot write text.
 
-Jev (TypeSafe) picks from a menu with probabilities instead of generating an answer. We gave it 1,000 real-sounding user requests and a catalogue of 36 skills and agents, and ran every current Claude model on the same 1,000.
+Jev (TypeSafe) picks from a menu with probabilities instead of generating an answer. We gave it 1,000 user requests and a catalogue of 36 skills and agents, and ran every current Claude model on the same requests.
 
 Jev → 94% correct pick, 0.5 s, 17 cents per 1,000.
 
-Claude Haiku 4.5, thinking on → 93%, 7 s, $6 per 1,000.
+Claude Haiku 4.5, thinking off → 89%, 2.4 s, $2.65 per 1,000.
 
-Claude Haiku 4.5, thinking off → 88%, 2.4 s, $2.65 per 1,000.
+Claude Sonnet 5, thinking off → 95%, 2.6 s, $4.80 per 1,000.
 
-Turning thinking off costs Haiku 5 points. Jev needs no thinking to begin with.
+Claude Fable 5.1 → 98%, 3.0 s.
 
-Verdict against the full Claude line-up: Jev is as good as [VERDICT PENDING: Sonnet / Opus tier lands tonight].
+So on routing, Jev beats the cheapest Claude, sits in the Sonnet band, and trails the top models by a few points, at five times the speed of any of them.
 
-The video shows the router picking, one request after another, then a thousand.
+The video shows the router picking, one request after another, then a thousand, then the ranking.
 
-Measured, not quoted: our own run, Claude via Claude Code at low effort, Jev via OpenRouter, 700-case test split, 95% intervals in the report. Link in comments.
+Measured, not quoted: our own run, Claude via Claude Code at low effort with thinking off, Jev via OpenRouter, 200-case preliminary cut of a 1,000-case set, 95% intervals in the report. Full run and code on GitHub, link in comments.
 
 Would you put a 0.5 s router in front of your agent's tool calls?
 

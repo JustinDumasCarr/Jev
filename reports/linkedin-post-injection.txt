@@ -1,20 +1,20 @@
 We ran 1,000 prompt-injection attempts past a model that never writes a single token.
 
-Jev (TypeSafe) returns a typed decision with a probability. No text. So we raced it against every current Claude model on the same 1,000 labelled texts, half attacks, half harmless, 25% French.
+Jev (TypeSafe) returns a typed decision with a probability. No text. So we raced it against every current Claude model on the same labelled texts, half attacks, half harmless.
 
-Jev → 93% correct, 0.5 s per decision, 3 cents per 1,000.
+Jev → 92% correct, 0.5 s per decision, 3 cents per 1,000.
 
-Claude Haiku 4.5 → 94% correct, 11 s per decision, $6 per 1,000 at list price.
+Claude Haiku 4.5 → 94% correct, 5.8 s per decision, $3.50 per 1,000 at list price.
 
-Same accuracy. Twenty times faster. Two hundred times cheaper.
+Claude Sonnet 5 → 98% correct, 3.0 s, $5 per 1,000.
+
+So on the guardrail task Jev lands at Haiku level, a few points under the Sonnets and Opuses, at a tenth of the time and a hundredth of the cost.
 
 The interesting part is how they fail. Jev almost never flags a harmless message but misses about one attack in eight. Haiku catches nearly every attack but flags one harmless message in seven.
 
-Verdict against the full Claude line-up: Jev is as good as [VERDICT PENDING: Sonnet / Opus tier lands tonight].
+The video shows one decision as it happens, then a thousand, then the ranking.
 
-The video shows one decision as it happens, then a thousand.
-
-Measured, not quoted: every number comes from our own run, Claude via Claude Code at low effort, Jev via OpenRouter, 700-case test split, 95% intervals in the report. Link in comments.
+Measured, not quoted: our own run, Claude via Claude Code at low effort with thinking off, Jev via OpenRouter, 200-case preliminary cut of a 1,000-case set, 95% intervals in the report. Full run and code on GitHub, link in comments.
 
 Where would a 0.5 s guardrail change what you ship?
 
