@@ -1,0 +1,86 @@
+{
+  "adapter": {
+    "claude_code_version": "2.1.276",
+    "effort": "low",
+    "env_passthrough": [
+      "PATH",
+      "HOME",
+      "USER",
+      "TERM",
+      "LANG"
+    ],
+    "extra_env": {
+      "MAX_THINKING_TOKENS": "0"
+    },
+    "flag_set_sha256": "03d06a45df6f7460d017647120b83b998825d9f0132637bc2aa823e0a6396b5a",
+    "flag_template": [
+      "-p",
+      "{prompt}",
+      "--model",
+      "{model}",
+      "--effort",
+      "{effort}",
+      "--system-prompt",
+      "{system_prompt}",
+      "--json-schema",
+      "{json_schema}",
+      "--output-format",
+      "json",
+      "--tools",
+      "",
+      "--no-session-persistence",
+      "--setting-sources",
+      "",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "{\"mcpServers\":{}}",
+      "--disable-slash-commands",
+      "--no-chrome"
+    ],
+    "kind": "claude",
+    "model": "claude-sonnet-5",
+    "strict_served_model": false
+  },
+  "cases_path": "/Users/justin/projects/Jev/data/task1_cases.jsonl",
+  "cases_run": 200,
+  "cases_skipped_resume": 0,
+  "cases_total": 200,
+  "counts": {
+    "error": 0,
+    "ok": 200,
+    "refusal": 0,
+    "truncated": 0
+  },
+  "data_sha256": {
+    "data/catalogue.json": "b90226f24d016307f067b9e61a437aedb5d7a10eb0860202803cc8012da9aaa3",
+    "data/splits.json": "595ed1a7986b39ad4915b198771b7c73abefca10a32e11e9e4358bf25807fc19",
+    "data/task1_cases.jsonl": "87767d563a8c2372428a6c75d9e9fdf3277f9481d731a9d903225786382fe861"
+  },
+  "elapsed_s": 316.0,
+  "ended": "2026-09-22T20:49:00Z",
+  "git_sha": "844acb0ca0e068557a9d69d326eea6ca562fb328",
+  "limit": null,
+  "packages": {
+    "httpx": "0.28.1",
+    "numpy": "2.4.6",
+    "pydantic": "2.13.5",
+    "pytest": "9.1.1",
+    "python-dotenv": "1.2.3",
+    "scikit-learn": "1.9.1"
+  },
+  "pauses": [],
+  "prompt_sha256": {
+    "catalogue": "0fd6152c5a680df7d2cc24a714eb7bac00126dfbbdce7cca85cc30f931fb1816",
+    "task1_system": "3cb6a93b8bf1a55c551e587b4b2813fd5035a1658eaa5b43287ca08b359224de",
+    "task2_system": "8bdc3d85a66acc7600b2c48ff17583cb97305457e1c2e375b1967497b689603b",
+    "task2_user_template": "1f2dec1fea142d33c12b9808b667227eebcd48c0e8e96c3234e4209db1092e6d"
+  },
+  "python": "3.11.15",
+  "rep": 1,
+  "seed": 20260922,
+  "split": "variance",
+  "started": "2026-09-22T20:43:44Z",
+  "strict_served_model": false,
+  "system": "sonnet5-nothink",
+  "task": "task1"
+}

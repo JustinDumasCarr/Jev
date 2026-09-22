@@ -1,0 +1,9 @@
+2026-09-22 22:43:43 [main] === parallel driver start: 4 workers, 4 CLI processes each ===
+2026-09-22 22:43:43 [w1] run task1 haiku45 variance-first
+2026-09-22 22:43:43 [w2] run task1 sonnet5-nothink variance-first
+2026-09-22 22:43:43 [w4] run task1 sonnet5 variance-first
+2026-09-22 22:43:43 [w3] run task1 sonnet46-nothink variance-first
+2026-09-22 22:48:46 [w4] run task2 sonnet5 variance-first
+2026-09-22 22:49:00 [w2] run task2 sonnet5-nothink variance-first
+2026-09-22 22:49:08 [w3] run task2 sonnet46-nothink variance-first
+2026-09-22 22:54:32 [w1] run task2 haiku45 variance-first
