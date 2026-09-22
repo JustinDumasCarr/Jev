@@ -183,3 +183,5 @@
   160/191 {'ok': 157, 'truncated': 0, 'refusal': 3, 'error': 0}
   170/191 {'ok': 167, 'truncated': 0, 'refusal': 3, 'error': 0}
   180/191 {'ok': 177, 'truncated': 0, 'refusal': 3, 'error': 0}
+  190/191 {'ok': 186, 'truncated': 0, 'refusal': 4, 'error': 0}
+{"task": "task2", "system": "opus46", "counts": {"ok": 187, "truncated": 0, "refusal": 4, "error": 0}, "elapsed_s": 420.6, "pauses": []}
