@@ -46,6 +46,28 @@ Plus a `meta` block: task shown, split (`test`), filter (`prefilter:passed` for 
 
 The headline run uses **task 2, prompt-injection validation**, because it is the guardrail that would sit on every chat turn and the 1,000 texts are self-explanatory on screen. Task 1 (skill routing) is a second, optional chapter using the same scenes with `data.task1.json` (open decision D3).
 
+## 5a. Visual metaphor (decided 2026-09-22): glasses filling with time
+
+Justin asked for something more physical than bars. The animation uses one metaphor carried through every scene:
+
+**The race (Scene 2).** Ten glasses in a row, one per system, in PLAN.md tier order with Jev last in the accent colour. When the case is asked, every glass starts filling at the same steady rate: liquid is elapsed time, and the pour rate is identical for all, so nothing can be fudged. The moment a system answers, its pour stops, a lid caps the glass and the answer stamps on it (`injection`, p = 0.93). Jev's pour stops almost immediately: a thin film at the bottom. The others keep filling while the stopwatch runs. Final liquid level is the wait, to the pixel. Glass height equals the race cap (8 s) so no glass overflows; a system past the cap is shown still pouring and labelled "still waiting". A small magnifier inset on Jev's glass shows its sliver with the number, so it is never invisible in the square frame.
+
+**Slow motion (Scene 3)** replays the first 500 ms: Jev's film rises and caps; the others barely wet the bottom.
+
+**Distribution (Scene 4).** The glasses tip and pour onto one horizontal timeline (log axis, labelled 100 ms, 1 s, 10 s). Each system's 300 sampled latencies fall as drops and pool where they land. Jev's puddle sits tight at the left edge; the others spread. p50 and p95 markers are drawn over each puddle with their values. Puddles then re-sort by p50.
+
+**Throughput (Scene 5).** One large glass for the slowest system fills once; beside it, Jev's small glass fills and empties N times, a counter ticking up. N is shown with the two p50s it comes from.
+
+**Cost (Scene 6).** The liquid freezes into stacks of coins, one stack per system, stack height being notional cost per 1,000 decisions (log dollar axis, labelled). Jev's stack is a single thin coin with its price written beside it.
+
+**Accuracy (Scene 7).** Each stack gets a target ring: how close each system got, with the 95% CI as a band around the point, and the verdict line typed in from `data.json`. This scene deliberately drops the metaphor for a plain, honest chart form.
+
+**End frame (Scene 8).** The ten capped glasses again, now with three numbers under each (p50, cost per 1,000, accuracy with CI). This still is the LinkedIn thumbnail.
+
+**Honesty rules for the metaphor.** Liquid level is linear in time, same pour rate for every glass, glass height equals the shared cap, no glass is drawn taller or narrower than another, and every level is annotated with its number. The metaphor decorates the encoding; it never replaces it.
+
+**Alternative kept in reserve (not default): clock faces.** Ten dials, one hand sweeping on each at the same speed; when a system answers, the swept arc freezes and fills. Jev's is a hairline wedge, Fable's nearly a full turn (one revolution = the race cap). Same honesty rules. More abstract than glasses, so second choice; the builder implements glasses and leaves a layout switch for dials only if it costs nothing extra.
+
 ## 5. Scenes
 
 Timings assume a slowest p95 of about 6 s. The build reads the real value and stretches or trims Scene 2 accordingly; total length stays between 60 and 75 s.
@@ -54,7 +76,7 @@ Timings assume a slowest p95 of about 6 s. The build reads the real value and st
 |---|---|---|---|
 | 0 | Title | 3 s | "How long does one decision take?" Subtitle: task, n, date. |
 | 1 | The case | 3 s | One real test case fades in as a chat bubble (a benign or injection text from the test split, chosen for length under 200 chars, no personal data by construction). The question under it: "Is this a prompt injection?" |
-| 2 | The race, real time | ≈ p95 of the slowest lane, capped at 8 s | Nine horizontal lanes in PLAN.md tier order, Fable 5.1 at the top down to Haiku 4.5, Jev at the bottom in the accent colour. A large stopwatch starts at 0.000 s. Each lane is an empty track; a bar grows left to right at real speed and snaps to a filled state with its answer ("injection", p = 0.93) when its **p50** elapses. Jev fills almost immediately. Then nothing happens for a while, deliberately. The stopwatch keeps counting. As each Claude lane completes, its time stamps in tabular numerals. If a lane's p50 exceeds the 8 s cap, it is marked "still waiting" and the scene cuts. |
+| 2 | The race, real time | ≈ p95 of the slowest system, capped at 8 s | The glasses of §5a fill at real speed; each caps with its answer when its **p50** elapses. Jev caps almost immediately. Then nothing happens for a while, deliberately, while the stopwatch keeps counting. Each cap stamps its time in tabular numerals. A system past the 8 s cap is "still waiting" and the scene cuts. |
 | 3 | Replay, slow motion | 6 s | "That was real time. Here is the first half second at 1/20 speed." The stopwatch re-runs 0 to 500 ms over 6 s (~12× slower, tuned so Jev's bar visibly travels). Jev completes; the Claude bars barely move. Cuts back to real speed for one second to land the contrast. |
 | 4 | It is a distribution | 10 s | The tracks re-scale to a **log** time axis (100 ms, 1 s, 10 s gridlines, labelled). For each lane, 300 sampled latencies stream in as small dots in 4 s, jittered vertically inside the lane, so the viewer sees the spread. p50 and p95 markers draw in over the dots with their values. Lanes then re-sort by p50 (animated) so the order is now by measured speed. |
 | 5 | Throughput | 8 s | "In the time [slowest model] answers once, Jev answers N times." A counter in Jev's lane ticks up to N while a single bar fills in the slowest lane, both at real speed scaled to fit 6 s. N is computed from the p50 ratio and shown with its inputs. |
