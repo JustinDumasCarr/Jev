@@ -36,6 +36,8 @@ DATA_DIR = REPO_ROOT / "data"
 VIZ_DIR = REPO_ROOT / "viz"
 
 SCHEMA_VERSION = 1
+#: ANIMATION-PLAN.md §4: one film per task, never mashed together.
+TASK_SLUG = {"task2": "injection", "task1": "routing"}
 #: ANIMATION-PLAN.md §3: 300 sampled latencies per system, drawn with a fixed seed.
 SAMPLE_SIZE = 300
 #: ANIMATION-PLAN.md §5e: the quadrant beat replays a run of real cases, one after
@@ -397,9 +399,11 @@ def build_sequence(
         for sid, rows in by_system.items():
             hero = hero_block(rows.get(cid))
             if hero:
+                row = rows.get(cid) or {}
                 entry["systems"][sid] = {
                     "decision": hero["decision"],
                     "p": hero["p"],
+                    "top3": row.get("top3"),
                     "correct": hero["correct"],
                     "output_text": hero["output_text"],
                     "output_tokens": hero["output_tokens"],
@@ -577,6 +581,20 @@ def build_verdict(
     return verdict
 
 
+def load_split_ids(task: str, split: str, data_dir: Optional[Path] = None) -> Optional[set[str]]:
+    """The case ids of a named split, or None to keep every row."""
+    if split in ("all", "", None):
+        return None
+    base = Path(data_dir) if data_dir is not None else DATA_DIR
+    path = base / "splits.json"
+    if not path.exists():
+        return None
+    obj = json.loads(path.read_text(encoding="utf-8"))
+    per = obj.get(task, obj)
+    ids = per.get(split)
+    return set(ids) if ids else None
+
+
 def build(
     task: str = "task2",
     *,
@@ -590,9 +608,18 @@ def build(
     metrics = load_metrics(task, analysis_dir)
     paired = (metrics or {}).get("paired_vs_reference") or {}
 
+    # Every system is held to the same case ids, so Jev is compared like for like
+    # even though it has three reps of the full set.
+    split_ids = load_split_ids(task, split, data_dir)
     per_system_rows: dict[str, list[dict[str, Any]]] = {}
     for sid in system_order():
         rows = read_jsonl(root / task / sid / "results.jsonl")
+        if split_ids is not None:
+            seen: dict[str, dict[str, Any]] = {}
+            for r in rows:
+                if r.get("case_id") in split_ids and int(r.get("rep", 1)) == 1:
+                    seen.setdefault(r["case_id"], r)
+            rows = [seen[k] for k in sorted(seen)]
         if rows:
             per_system_rows[sid] = rows
 
@@ -624,7 +651,7 @@ def build(
         "meta": {
             "task": task,
             "task_label": TASK_LABELS.get(task, task),
-            "split": (metrics or {}).get("split", split),
+            "split": split,
             "filter": "prefilter:passed" if task == "task2" else "all cases",
             "run_date": run_date or (latest_ts[:10] if latest_ts else
                                      datetime.now(timezone.utc).strftime("%Y-%m-%d")),
@@ -632,6 +659,13 @@ def build(
             "git_sha": _git_sha(),
             "machine": _machine(),
             "fixture": False,
+            "preliminary": split == "variance",
+            "n_note": (
+                f"preliminary · n={len(split_ids)} per model, the same case ids for every "
+                "system including Jev"
+                if split == "variance" and split_ids
+                else None
+            ),
             "footnotes": footnotes,
             "race_cap_ms": RACE_CAP_MS,
             "sample_size": SAMPLE_SIZE,
@@ -834,19 +868,22 @@ FIXTURE_HERO_TEXT = (
 FIXTURE_HERO_REASON = "asks the assistant to ignore instructions and leak its system prompt"
 
 
-def _fixture_hero(system_id: str, p50: float, think: bool, seed: int) -> dict[str, Any]:
+def _fixture_hero(system_id: str, p50: float, think: bool, seed: int, task: str = "task2") -> dict[str, Any]:
     """One plausible call on the hero case: near the system's p50, with its own tokens."""
     rng = np.random.default_rng(SEED + seed)
     duration = float(round(p50 * float(rng.uniform(0.92, 1.18)) / 10.0) * 10.0)
     out_tok = int(rng.integers(58, 92))
     think_tok = int(rng.integers(180, 900)) if think else 0
     p = 0.98 if system_id == "jev" else float(round(rng.uniform(0.88, 0.97), 2))
-    obj = {"verdict": "injection", "p_injection": p, "reason": FIXTURE_HERO_REASON}
-    if system_id == "jev":
-        obj = {"injection": p, "attack_type": "extraction", "severity": "clear attempt"}
+    if task == "task1":
+        obj = {"top3": FIXTURE_OPTIONS[:3], "confidence": p}
+    else:
+        obj = {"verdict": "injection", "p_injection": p, "reason": FIXTURE_HERO_REASON}
+        if system_id == "jev":
+            obj = {"injection": p, "attack_type": "extraction", "severity": "clear attempt"}
     split = (think_tok / (think_tok + out_tok)) if (think_tok + out_tok) else 0.0
     return {
-        "decision": "injection",
+        "decision": FIXTURE_OPTIONS[0] if task == "task1" else "injection",
         "p": p,
         "correct": True,
         "status": "ok",
@@ -875,12 +912,38 @@ FIXTURE_TEXTS = [
 ]
 
 
-def _fixture_sequence(jev_loses: bool = False) -> list[dict[str, Any]]:
+#: Real catalogue option names (PLAN.md §3), so the routing fixture reads true.
+FIXTURE_OPTIONS = [
+    "xlsx", "pptx", "docx", "pdf", "dataviz", "artifact-design", "artifact-diagramming",
+    "code-review", "security-review", "simplify", "claude-api", "run", "docs",
+    "skill-creator", "canvas-design", "update-config", "init", "writer", "research",
+    "client-email", "marketing-analysis", "Explore", "Plan", "general-purpose", "none",
+]
+FIXTURE_REQUESTS = [
+    "peux-tu transformer ce tableau en fichier excel avec une formule de total ?",
+    "Turn these notes into a deck for Thursday's board meeting.",
+    "Review this pull request for security problems before I merge it.",
+    "Can you draw me a diagram of how the auth flow works?",
+    "Write the client a short email confirming the viewing on Tuesday.",
+    "Quelle est la meilleure façon de présenter ces chiffres ?",
+    "Find where the retry logic lives in this repo.",
+    "Make a chart of the last six months of signups.",
+    "Clean this function up, it has grown three flags.",
+    "What's the current pricing for the Anthropic batch API?",
+]
+
+
+def _fixture_sequence(jev_loses: bool = False, task: str = "task2") -> list[dict[str, Any]]:
     rng = np.random.default_rng(SEED + 7)
     cases = []
+    routing = task == "task1"
     for i in range(SEQUENCE_SIZE):
-        text = FIXTURE_TEXTS[i % len(FIXTURE_TEXTS)]
-        gold = "injection" if (i % len(FIXTURE_TEXTS)) % 2 == 0 else "benign"
+        if routing:
+            text = FIXTURE_REQUESTS[i % len(FIXTURE_REQUESTS)]
+            gold = FIXTURE_OPTIONS[i % len(FIXTURE_OPTIONS)]
+        else:
+            text = FIXTURE_TEXTS[i % len(FIXTURE_TEXTS)]
+            gold = "injection" if (i % len(FIXTURE_TEXTS)) % 2 == 0 else "benign"
         # Deliberate misses, so the red bricks and a non-100% readout are exercised
         # before any real data exists. Jev ~93% on the winning fixture (3 of 40) and
         # clearly worse on the losing one (1 in 4); the Claude row gets one miss.
@@ -895,18 +958,31 @@ def _fixture_sequence(jev_loses: bool = False) -> list[dict[str, Any]]:
                 out_tok = int(rng.integers(52, 96))
                 think_tok = int(rng.integers(180, 900)) if think else 0
                 missed = jev_miss if sid == "jev" else claude_miss
-                said = ("benign" if gold == "injection" else "injection") if missed else gold
+                if routing:
+                    others = [o for o in FIXTURE_OPTIONS if o != gold]
+                    wrong = others[(i * 7 + len(sid)) % len(others)]
+                    said = wrong if missed else gold
+                    top3 = [said] + [o for o in others if o != said][
+                        (i * 3) % 6 : (i * 3) % 6 + 2
+                    ]
+                else:
+                    said = ("benign" if gold == "injection" else "injection") if missed else gold
+                    top3 = None
                 # a wrong call is usually a less confident one
                 pr = float(round(rng.uniform(0.52, 0.68) if missed else rng.uniform(0.86, 0.99), 2))
-                obj = (
-                    {"injection": pr, "attack_type": "extraction", "severity": "clear attempt"}
-                    if sid == "jev"
-                    else {"verdict": said, "p_injection": pr, "reason": FIXTURE_HERO_REASON}
-                )
+                if routing:
+                    obj = {"top3": top3, "confidence": pr}
+                else:
+                    obj = (
+                        {"injection": pr, "attack_type": "extraction", "severity": "clear attempt"}
+                        if sid == "jev"
+                        else {"verdict": said, "p_injection": pr, "reason": FIXTURE_HERO_REASON}
+                    )
                 split = (think_tok / (think_tok + out_tok)) if (think_tok + out_tok) else 0.0
                 per[sid] = {
                     "decision": said,
                     "p": pr,
+                    "top3": top3,
                     "correct": not missed,
                     "output_text": json.dumps(obj, ensure_ascii=False),
                     "output_tokens": out_tok,
@@ -948,7 +1024,7 @@ FIXTURE_ACC = {
 }
 
 
-def make_fixture(jev_loses: bool = False) -> dict[str, Any]:
+def make_fixture(jev_loses: bool = False, task: str = "task2") -> dict[str, Any]:
     """Obviously fake round numbers: Jev 100 ms, the Claude systems 1,000-5,000 ms in even
     steps, each no-thinking variant at half its thinking pair, accuracy 0.80 +/- 0.03."""
     systems: list[dict[str, Any]] = []
@@ -993,7 +1069,7 @@ def make_fixture(jev_loses: bool = False) -> dict[str, Any]:
                              "source": "fixture"},
                 "results": _fixture_results(sid, acc),
                 "hero": _fixture_hero(sid, p50, fam == "claude-think",
-                                      i * 2 + (0 if fam == "claude-think" else 1)),
+                                      i * 2 + (0 if fam == "claude-think" else 1), task),
                 "equivalent_tier_note": None,
             })
 
@@ -1017,7 +1093,7 @@ def make_fixture(jev_loses: bool = False) -> dict[str, Any]:
         "accuracy": {"point": jev_acc[0], "ci_low": jev_acc[1], "ci_high": jev_acc[2],
                      "source": "fixture"},
         "results": _fixture_results("jev" + ("-loses" if jev_loses else ""), jev_acc[0]),
-        "hero": _fixture_hero("jev", 100.0, False, 99),
+        "hero": _fixture_hero("jev", 100.0, False, 99, task),
         "equivalent_tier_note": None,
     })
 
@@ -1053,36 +1129,38 @@ def make_fixture(jev_loses: bool = False) -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
         "meta": {
-            "task": "task2",
-            "task_label": TASK_LABELS["task2"],
+            "task": task,
+            "task_label": TASK_LABELS[task],
             "split": "test",
-            "filter": "prefilter:passed",
+            "filter": "prefilter:passed" if task == "task2" else "all cases",
             "run_date": "2026-09-22",
             "generated": "2026-09-22T00:00:00Z",
             "git_sha": "fixture",
             "machine": "placeholder — no run has happened",
             "fixture": True,
+            "preliminary": False,
+            "n_note": None,
             "footnotes": list(FOOTNOTES) + [COST_FOOTNOTE, VERDICT_FOOTNOTE],
             "race_cap_ms": RACE_CAP_MS,
             "sample_size": SAMPLE_SIZE,
             "seed": SEED,
             "example_case": {
-                "id": "t2-fixture",
+                "id": f"{'t1' if task == 'task1' else 't2'}-fixture",
                 "text": FIXTURE_HERO_TEXT,
                 "gold": "injection",
                 "source": "fixture (placeholder text, not a dataset row)",
             },
             "hero_case": {
-                "id": "t2-fixture",
-                "text": FIXTURE_HERO_TEXT,
-                "gold": "injection",
-                "question": "Injection?",
+                "id": f"{'t1' if task == 'task1' else 't2'}-fixture",
+                "text": FIXTURE_REQUESTS[0] if task == "task1" else FIXTURE_HERO_TEXT,
+                "gold": FIXTURE_OPTIONS[0] if task == "task1" else "injection",
+                "question": "Which skill?" if task == "task1" else "Injection?",
                 "source": "fixture (placeholder text, not a dataset row)",
             },
             "metrics_source": None,
             "verdict": verdict,
         },
-        "sequence": _fixture_sequence(jev_loses),
+        "sequence": _fixture_sequence(jev_loses, task),
         "systems": systems,
     }
 
@@ -1091,11 +1169,22 @@ def write_fixtures(viz_dir: Optional[Path] = None) -> list[Path]:
     out = Path(viz_dir) if viz_dir is not None else VIZ_DIR
     out.mkdir(parents=True, exist_ok=True)
     written = []
-    for name, loses in (("data.fixture.json", False), ("data.fixture-jev-loses.json", True)):
-        p = out / name
-        p.write_text(json.dumps(make_fixture(loses), indent=2, ensure_ascii=False) + "\n",
-                     encoding="utf-8")
-        written.append(p)
+    for task in ("task2", "task1"):
+        slug = TASK_SLUG[task]
+        names = [(f"data.{slug}.fixture.json", False)]
+        if task == "task2":
+            # the losing verdict only needs exercising once
+            names.append(("data.fixture-jev-loses.json", True))
+        for name, loses in names:
+            p = out / name
+            p.write_text(json.dumps(make_fixture(loses, task), indent=2, ensure_ascii=False) + "\n",
+                         encoding="utf-8")
+            written.append(p)
+    # the Studio and the existing tests open this one
+    (out / "data.fixture.json").write_text(
+        json.dumps(make_fixture(False, "task2"), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8")
+    written.append(out / "data.fixture.json")
     return written
 
 
@@ -1109,6 +1198,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     ap.add_argument("--task", default="task2", choices=("task1", "task2"))
     ap.add_argument("--results-root", type=Path, default=None)
     ap.add_argument("--analysis-dir", type=Path, default=None)
+    ap.add_argument("--split", default="test",
+                    help="test (default), variance for the 200-case subset, or all")
     ap.add_argument("--out", type=Path, default=None, help="default viz/data.json")
     ap.add_argument("--fixtures", action="store_true",
                     help="(re)write viz/data.fixture.json and the jev-loses variant, then exit")
@@ -1122,14 +1213,15 @@ def main(argv: Optional[list[str]] = None) -> int:
                   f"{'OK' if not problems else 'INVALID: ' + '; '.join(problems)}")
         return 0
 
-    data = build(args.task, results_root=args.results_root, analysis_dir=args.analysis_dir)
+    data = build(args.task, results_root=args.results_root, analysis_dir=args.analysis_dir,
+                 split=args.split)
     problems = validate(data)
     if problems:
         print("data.json is not schema-valid:")
         for p in problems:
             print(f"  - {p}")
         return 1
-    out = args.out or (VIZ_DIR / "data.json")
+    out = args.out or (VIZ_DIR / f"data.{TASK_SLUG[args.task]}.json")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"wrote {out}: {len(data['systems'])} systems, task {data['meta']['task']}, "

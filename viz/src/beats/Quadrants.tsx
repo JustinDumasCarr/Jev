@@ -3,7 +3,7 @@ import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from
 import {Typed} from '../chrome';
 import {C, CLASS_ORDER, MONO, SANS, claudeColor, classLabel, tabular, upper} from '../theme';
 import {Ambient, EASE_OUT, POP, SNAP, StageWatermark, Timer, clamp01, ramp, useCamera} from '../stage';
-import {panels} from '../timeline.mjs';
+import {jevOf, panels} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 
 /* ANIMATION-PLAN.md §5e — Justin's quadrant design, and the opening of the film.
@@ -27,6 +27,7 @@ type Seq = {
     {
       decision: string | null;
       p: number | null;
+      top3?: string[] | null;
       correct?: boolean | null;
       output_text: string;
       output_tokens: number;
@@ -184,10 +185,12 @@ const Choice: React.FC<{
   accent: string;
   u: number;
   big: number;
-}> = ({chosen, p, accent, u, big}) => (
-  <div style={{display: 'flex', flexDirection: 'column', gap: 12 * u}}>
-    {CLASS_ORDER.map((opt) => {
-      const on = chosen === opt;
+  /** routing shows the model's ranked top three instead of the two classes */
+  options?: string[] | null;
+}> = ({chosen, p, accent, u, big, options}) => (
+  <div style={{display: 'flex', flexDirection: 'column', gap: options ? 9 * u : 12 * u}}>
+    {(options ?? (CLASS_ORDER as unknown as string[])).map((opt, rank) => {
+      const on = options ? rank === 0 && chosen != null : chosen === opt;
       const prob = on ? p ?? 0 : null;
       return (
         <div
@@ -196,7 +199,7 @@ const Choice: React.FC<{
             borderRadius: 12 * u,
             border: `${on ? 2.5 * u : 1}px solid ${on ? accent : 'rgba(255,255,255,0.10)'}`,
             background: on ? `${accent}1f` : 'transparent',
-            padding: `${11 * u}px ${14 * u}px`,
+            padding: options ? `${8 * u}px ${12 * u}px` : `${11 * u}px ${14 * u}px`,
           }}
         >
           <div style={{display: 'flex', alignItems: 'baseline', gap: 10 * u}}>
@@ -204,12 +207,12 @@ const Choice: React.FC<{
               style={{
                 fontFamily: SANS,
                 fontWeight: 700,
-                fontSize: big,
+                fontSize: options ? big * 0.78 : big,
                 letterSpacing: '-0.02em',
                 color: on ? accent : C.ink3,
               }}
             >
-              {classLabel(opt)}
+              {options ? opt : classLabel(opt)}
             </span>
             <span
               style={{
@@ -243,13 +246,13 @@ const Choice: React.FC<{
   </div>
 );
 
-const Readout: React.FC<{bricks: Brick[]; color: string; u: number}> = ({bricks, color, u}) => {
+const Readout: React.FC<{bricks: Brick[]; color: string; u: number; correctLabel: string}> = ({bricks, color, u, correctLabel}) => {
   const n = scored(bricks).length;
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: 22 * u, whiteSpace: 'nowrap'}}>
       {[
         ['decisions', String(n), color],
-        ['correct', n ? Math.round(pctCorrect(bricks) * 100) + '%' : '—', C.ink],
+        [correctLabel, n ? Math.round(pctCorrect(bricks) * 100) + '%' : '—', C.ink],
       ].map(([k, v, col]) => (
         <div key={k}>
           <div style={{...upper(0.16), fontSize: 15 * u, color: C.ink3}}>{k}</div>
@@ -267,7 +270,8 @@ const Panel: React.FC<{
   u: number;
   h: number;
   flash?: number;
-}> = ({label, accent, children, u, h, flash = 0}) => (
+  sub?: string | null;
+}> = ({label, accent, children, u, h, flash = 0, sub}) => (
   <div
     style={{
       position: 'relative',
@@ -282,7 +286,14 @@ const Panel: React.FC<{
       overflow: 'hidden',
     }}
   >
-    <div style={{...upper(0.18), fontSize: 16 * u, color: C.ink3, marginBottom: 12 * u}}>{label}</div>
+    <div style={{marginBottom: 12 * u}}>
+      <span style={{...upper(0.18), fontSize: 16 * u, color: C.ink3}}>{label}</span>
+      {sub ? (
+        <span style={{fontFamily: SANS, fontWeight: 500, fontSize: 16 * u, color: C.ink3, marginLeft: 10 * u}}>
+          {sub}
+        </span>
+      ) : null}
+    </div>
     {children}
   </div>
 );
@@ -292,8 +303,11 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
   const {fps, width, height, durationInFrames} = useVideoConfig();
   const u = height / 1080;
   const wide = layout === 'wide';
+  const routing = data.meta.task === 'task1';
+  const correctLabel = routing ? 'correct pick' : 'correct';
   const seq = ((data as unknown as {sequence: Seq[]}).sequence || []).filter((c) => c.text);
   const ps = panels(data, layout) as {sys: System; tier: number}[];
+  const jevSys = jevOf(data) as System;
   const elapsed = (frame / fps) * 1000;
 
   const jev = walk(seq, 'jev', elapsed);
@@ -365,6 +379,16 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
     1,
   );
 
+  // the static line under each model name: its final test-split accuracy
+  const subFor = (sys?: System | null) => {
+    if (!sys) return null;
+    const a = sys.accuracy;
+    const verb = routing ? 'picks the right tool' : 'flags attacks correctly';
+    return `${verb} ${(a.point * 100).toFixed(1)}% of the time  [${(a.ci_low * 100).toFixed(0)}–${(
+      a.ci_high * 100
+    ).toFixed(0)}]`;
+  };
+
   const pad = (wide ? 76 : 52) * u;
   const contentW = width - pad * 2;
   const gap = 22 * u;
@@ -413,7 +437,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
 
       <div style={{position: 'absolute', top: 48 * u, left: pad}}>
         <div style={{fontFamily: SANS, fontWeight: 700, fontSize: 34 * u, color: C.ink, letterSpacing: '-0.02em'}}>
-          One decision. Is this a prompt injection?
+          {routing ? 'One request. Which skill or agent should handle it?' : 'One decision. Is this a prompt injection?'}
         </div>
       </div>
 
@@ -428,13 +452,14 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
             </Panel>
           </div>
           <div style={{width: colW}}>
-            <Panel label="Jev 1.13" accent={C.accent} u={u} h={rowH}>
+            <Panel label={jevSys.label} accent={C.accent} u={u} h={rowH} sub={subFor(jevSys)}>
               <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
               <div style={{display: 'flex', gap: gutter, height: towerH}}>
                 <div style={{width: optW, minWidth: 0, overflow: 'hidden'}}>
                   <Choice
                     chosen={jevDone ? jevEntry?.decision ?? null : null}
                     p={jevEntry?.p ?? null}
+                    options={routing ? jevEntry?.top3 ?? null : null}
                     accent={C.accent}
                     u={u}
                     big={(wide ? 28 : 25) * u}
@@ -442,7 +467,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                 </div>
                 <Tower bricks={jevBricks} accent={C.accent} brickH={brickH} h={towerH} w={towerW} u={u} />
                 <div style={{width: statW, minWidth: 0}}>
-                  <Readout bricks={jevBricks} color={C.accent} u={u} />
+                  <Readout bricks={jevBricks} color={C.accent} u={u} correctLabel={correctLabel} />
                 </div>
               </div>
               <div style={{...streamRow, borderColor: `${C.accent}33`}}>
@@ -465,7 +490,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
             </Panel>
           </div>
           <div style={{width: colW}}>
-            <Panel label={model?.sys.label ?? ''} accent={claudeColor(model?.tier ?? 0)} u={u} h={rowH}>
+            <Panel label={model?.sys.label ?? ''} accent={claudeColor(model?.tier ?? 0)} u={u} h={rowH} sub={subFor(model?.sys)}>
               <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
               <div style={{display: 'flex', gap: gutter, height: towerH}}>
                 <div style={{width: optW, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
@@ -499,6 +524,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                   ) : (
                     <Choice
                       chosen={verdictLanded ? botDecision : null}
+                      options={routing ? (verdictLanded ? botEntry?.top3 ?? null : []) : null}
                       p={botEntry?.p ?? null}
                       accent={claudeColor(model?.tier ?? 0)}
                       u={u}
@@ -515,7 +541,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                   u={u}
                 />
                 <div style={{width: statW, minWidth: 0}}>
-                  <Readout bricks={claudeBricks} color={claudeColor(model?.tier ?? 0)} u={u} />
+                  <Readout bricks={claudeBricks} color={claudeColor(model?.tier ?? 0)} u={u} correctLabel={correctLabel} />
                 </div>
               </div>
               {/* the answer streaming in is the main event of this panel */}
@@ -557,7 +583,9 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
           textOverflow: 'ellipsis',
         }}
       >
-        * real time · real test cases · attack = prompt injection
+        {routing
+          ? '* real time · real test cases · the model\u2019s own top three, best first'
+          : '* real time · real test cases · attack = prompt injection'}
       </div>
 
       <StageWatermark data={data} />

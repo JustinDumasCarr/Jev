@@ -194,6 +194,7 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
       >
         {m.task_label} · {m.filter} · {m.split} split · n={jev.n} per system · {m.run_date} · git{' '}
         {m.git_sha}
+        {m.n_note ? <><br />{m.n_note}</> : null}
         <br />
         Claude latency via Claude Code (duration_api_ms, effort low, thinking off); Jev via OpenRouter.
         Claude cost is notional list price; Jev's is the real charge. Non-inferiority margin{' '}

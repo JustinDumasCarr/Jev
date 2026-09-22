@@ -9,7 +9,9 @@ import {P5Thousand} from './proto/P5Thousand';
 import {P2RingsV2} from './proto/v2/P2RingsV2';
 import {P3GlassesV2} from './proto/v2/P3GlassesV2';
 import {P5ThousandV2, P5_FRAMES} from './proto/v2/P5ThousandV2';
-import fixture from '../data.fixture.json';
+import injection from '../data.injection.fixture.json';
+import routing from '../data.routing.fixture.json';
+import {Scoreboard} from './beats/Scoreboard';
 import {FPS, totalFrames} from './timeline.mjs';
 import type {FilmProps, VizData} from './types';
 
@@ -28,6 +30,20 @@ const PROTOS: [string, React.FC<FilmProps>][] = [
   ['P5-Thousand', P5Thousand],
 ];
 
+const FILMS: [string, 'square' | 'wide', number, number, unknown][] = [
+  ['JevVsClaude-Injection-Square', 'square', 1080, 1080, injection],
+  ['JevVsClaude-Injection-Wide', 'wide', 1920, 1080, injection],
+  ['JevVsClaude-Routing-Square', 'square', 1080, 1080, routing],
+  ['JevVsClaude-Routing-Wide', 'wide', 1920, 1080, routing],
+];
+
+const BOARDS: [string, 'square' | 'wide', number, number, unknown][] = [
+  ['Scoreboard-Injection-Square', 'square', 1080, 1080, injection],
+  ['Scoreboard-Injection-Wide', 'wide', 1920, 1080, injection],
+  ['Scoreboard-Routing-Square', 'square', 1080, 1080, routing],
+  ['Scoreboard-Routing-Wide', 'wide', 1920, 1080, routing],
+];
+
 const PROTOS_V2: [string, React.FC<FilmProps>, number][] = [
   ['v2-P3-Glasses', P3GlassesV2, 270],
   ['v2-P5-Thousand', P5ThousandV2, P5_FRAMES],
@@ -36,6 +52,33 @@ const PROTOS_V2: [string, React.FC<FilmProps>, number][] = [
 
 export const RemotionRoot: React.FC = () => (
   <>
+    {FILMS.map(([id, lay, w, h, d]) => (
+      <Composition
+        key={id}
+        id={id}
+        component={Film}
+        durationInFrames={900}
+        fps={FPS}
+        width={w}
+        height={h}
+        defaultProps={{layout: lay, data: d as VizData} satisfies FilmProps}
+        calculateMetadata={calc}
+      />
+    ))}
+    {BOARDS.map(([id, lay, w, h, d]) => (
+      <Composition
+        key={id}
+        id={id}
+        component={Scoreboard}
+        durationInFrames={12 * FPS}
+        fps={FPS}
+        width={w}
+        height={h}
+        defaultProps={
+          {layout: lay, data: d as VizData, standalone: true} as unknown as FilmProps
+        }
+      />
+    ))}
     <Composition
       id="JevVsClaude-Square"
       component={Film}
@@ -43,7 +86,7 @@ export const RemotionRoot: React.FC = () => (
       fps={FPS}
       width={1080}
       height={1080}
-      defaultProps={{layout: 'square', data: fixture as unknown as VizData} satisfies FilmProps}
+      defaultProps={{layout: 'square', data: injection as unknown as VizData} satisfies FilmProps}
       calculateMetadata={calc}
     />
     <Composition
@@ -53,7 +96,7 @@ export const RemotionRoot: React.FC = () => (
       fps={FPS}
       width={1920}
       height={1080}
-      defaultProps={{layout: 'wide', data: fixture as unknown as VizData} satisfies FilmProps}
+      defaultProps={{layout: 'wide', data: injection as unknown as VizData} satisfies FilmProps}
       calculateMetadata={calc}
     />
     {/* ANIMATION-PLAN.md §5c — the prototype round. Separate compositions; the film above
@@ -68,7 +111,7 @@ export const RemotionRoot: React.FC = () => (
           fps={FPS}
           width={1080}
           height={1080}
-          defaultProps={{layout: 'square', data: fixture as unknown as VizData} satisfies FilmProps}
+          defaultProps={{layout: 'square', data: injection as unknown as VizData} satisfies FilmProps}
         />
       ))}
     </Folder>
@@ -84,7 +127,7 @@ export const RemotionRoot: React.FC = () => (
           fps={FPS}
           width={1080}
           height={1080}
-          defaultProps={{layout: 'square', data: fixture as unknown as VizData} satisfies FilmProps}
+          defaultProps={{layout: 'square', data: injection as unknown as VizData} satisfies FilmProps}
         />
       ))}
     </Folder>

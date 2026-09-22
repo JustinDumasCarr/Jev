@@ -39,6 +39,8 @@ export type VizData = {
     git_sha: string;
     machine: string;
     fixture: boolean;
+    preliminary?: boolean;
+    n_note?: string | null;
     footnotes: string[];
     hero_case: {id: string | null; text: string | null; gold: string | null; question: string; source: string};
     verdict: {

@@ -7,6 +7,7 @@ import {Decision} from './beats/Decision';
 import {Quadrants} from './beats/Quadrants';
 import {EndCard} from './beats/EndCard';
 import {Results} from './beats/Results';
+import {Scoreboard} from './beats/Scoreboard';
 import type {FilmProps} from './types';
 
 export const Film: React.FC<FilmProps> = ({layout, data}) => {
@@ -22,6 +23,7 @@ export const Film: React.FC<FilmProps> = ({layout, data}) => {
     if (id === 'quadrants') return <Quadrants layout={layout} data={data} />;
     if (id === 'decision') return <Decision layout={layout} data={data} />;
     if (id === 'results') return <Results layout={layout} data={data} />;
+    if (id === 'scoreboard') return <Scoreboard layout={layout} data={data} />;
     return <EndCard layout={layout} data={data} />;
   };
 

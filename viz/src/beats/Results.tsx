@@ -286,7 +286,8 @@ export const Results: React.FC<FilmProps> = ({data, layout}) => {
           textAlign: 'center',
         }}
       >
-        * same height everywhere · the red band is the error rate
+        {data.meta.n_note ? '* ' + data.meta.n_note + ' · ' : '* '}
+        same height everywhere · the red band is the error rate
       </div>
 
       <StageWatermark data={data} />
