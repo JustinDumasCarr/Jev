@@ -305,3 +305,132 @@
   990/1000 {'ok': 990, 'truncated': 0, 'refusal': 0, 'error': 0}
   1000/1000 {'ok': 1000, 'truncated': 0, 'refusal': 0, 'error': 0}
 {"task": "task2", "system": "jev", "counts": {"ok": 1000, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 16.6, "pauses": []}
+2026-09-22 15:48:44 committed: jev task2 reps 1-3
+2026-09-22 15:48:44 run --task task2 --system haiku45-nothink --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+{"task": "task2", "system": "haiku45-nothink", "counts": {"ok": 50, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 87.4, "pauses": []}
+2026-09-22 15:50:12 pilot task2 haiku45-nothink: error rate 0%
+2026-09-22 15:50:12 run --task task2 --system haiku45 --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+{"task": "task2", "system": "haiku45", "counts": {"ok": 50, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 162.7, "pauses": []}
+2026-09-22 15:52:56 pilot task2 haiku45: error rate 0%
+2026-09-22 15:52:56 run --task task2 --system sonnet5-nothink --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 0, 'error': 1}
+{"task": "task2", "system": "sonnet5-nothink", "counts": {"ok": 49, "truncated": 0, "refusal": 0, "error": 1}, "elapsed_s": 78.4, "pauses": []}
+2026-09-22 15:54:15 pilot task2 sonnet5-nothink: error rate 2%
+2026-09-22 15:54:15 run --task task2 --system sonnet5 --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 0, 'error': 1}
+{"task": "task2", "system": "sonnet5", "counts": {"ok": 49, "truncated": 0, "refusal": 0, "error": 1}, "elapsed_s": 78.4, "pauses": []}
+2026-09-22 15:55:33 pilot task2 sonnet5: error rate 2%
+2026-09-22 15:55:33 run --task task2 --system sonnet46-nothink --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 0, 'error': 1}
+{"task": "task2", "system": "sonnet46-nothink", "counts": {"ok": 49, "truncated": 0, "refusal": 0, "error": 1}, "elapsed_s": 92.9, "pauses": []}
+2026-09-22 15:57:07 pilot task2 sonnet46-nothink: error rate 2%
+2026-09-22 15:57:07 run --task task2 --system sonnet46 --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 0, 'error': 1}
+{"task": "task2", "system": "sonnet46", "counts": {"ok": 49, "truncated": 0, "refusal": 0, "error": 1}, "elapsed_s": 95.6, "pauses": []}
+2026-09-22 15:58:43 pilot task2 sonnet46: error rate 2%
+2026-09-22 15:58:43 run --task task2 --system opus46-nothink --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+{"task": "task2", "system": "opus46-nothink", "counts": {"ok": 50, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 78.0, "pauses": []}
+2026-09-22 16:00:01 pilot task2 opus46-nothink: error rate 0%
+2026-09-22 16:00:01 run --task task2 --system opus46 --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+{"task": "task2", "system": "opus46", "counts": {"ok": 50, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 70.2, "pauses": []}
+2026-09-22 16:01:12 pilot task2 opus46: error rate 0%
+2026-09-22 16:01:12 run --task task2 --system opus47-nothink --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 0, 'error': 1}
+{"task": "task2", "system": "opus47-nothink", "counts": {"ok": 49, "truncated": 0, "refusal": 0, "error": 1}, "elapsed_s": 102.9, "pauses": []}
+2026-09-22 16:02:56 pilot task2 opus47-nothink: error rate 2%
+2026-09-22 16:02:56 run --task task2 --system opus47 --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 0, 'error': 1}
+{"task": "task2", "system": "opus47", "counts": {"ok": 49, "truncated": 0, "refusal": 0, "error": 1}, "elapsed_s": 94.0, "pauses": []}
+2026-09-22 16:04:30 pilot task2 opus47: error rate 2%
+2026-09-22 16:04:30 run --task task2 --system opus48-nothink --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 0, 'error': 1}
+{"task": "task2", "system": "opus48-nothink", "counts": {"ok": 49, "truncated": 0, "refusal": 0, "error": 1}, "elapsed_s": 83.0, "pauses": []}
+2026-09-22 16:05:54 pilot task2 opus48-nothink: error rate 2%
+2026-09-22 16:05:54 run --task task2 --system opus48 --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 0, 'error': 1}
+{"task": "task2", "system": "opus48", "counts": {"ok": 49, "truncated": 0, "refusal": 0, "error": 1}, "elapsed_s": 87.8, "pauses": []}
+2026-09-22 16:07:22 pilot task2 opus48: error rate 2%
+2026-09-22 16:07:22 run --task task2 --system opus5-nothink --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 29, 'truncated': 0, 'refusal': 1, 'error': 0}
+  40/50 {'ok': 39, 'truncated': 0, 'refusal': 1, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 1, 'error': 0}
+{"task": "task2", "system": "opus5-nothink", "counts": {"ok": 49, "truncated": 0, "refusal": 1, "error": 0}, "elapsed_s": 57.4, "pauses": []}
+2026-09-22 16:08:20 pilot task2 opus5-nothink: error rate 0%
+2026-09-22 16:08:20 run --task task2 --system opus5 --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/50 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/50 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+{"task": "task2", "system": "opus5", "counts": {"ok": 50, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 63.0, "pauses": []}
+2026-09-22 16:09:24 pilot task2 opus5: error rate 0%
+2026-09-22 16:09:24 run --task task2 --system fable51-nothink --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 29, 'truncated': 0, 'refusal': 1, 'error': 0}
+  40/50 {'ok': 39, 'truncated': 0, 'refusal': 1, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 1, 'error': 0}
+{"task": "task2", "system": "fable51-nothink", "counts": {"ok": 49, "truncated": 0, "refusal": 1, "error": 0}, "elapsed_s": 70.4, "pauses": []}
+2026-09-22 16:10:35 pilot task2 fable51-nothink: error rate 0%
+2026-09-22 16:10:35 run --task task2 --system fable51 --rep 1 --split all --limit 50
+  10/50 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/50 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/50 {'ok': 29, 'truncated': 0, 'refusal': 1, 'error': 0}
+  40/50 {'ok': 39, 'truncated': 0, 'refusal': 1, 'error': 0}
+  50/50 {'ok': 49, 'truncated': 0, 'refusal': 1, 'error': 0}
+{"task": "task2", "system": "fable51", "counts": {"ok": 49, "truncated": 0, "refusal": 1, "error": 0}, "elapsed_s": 61.5, "pauses": []}
+2026-09-22 16:11:37 pilot task2 fable51: error rate 0%
