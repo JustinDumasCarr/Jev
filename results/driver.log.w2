@@ -157,3 +157,12 @@
   100/200 {'ok': 99, 'truncated': 0, 'refusal': 1, 'error': 0}
   110/200 {'ok': 109, 'truncated': 0, 'refusal': 1, 'error': 0}
   120/200 {'ok': 119, 'truncated': 0, 'refusal': 1, 'error': 0}
+  130/200 {'ok': 129, 'truncated': 0, 'refusal': 1, 'error': 0}
+  140/200 {'ok': 138, 'truncated': 0, 'refusal': 2, 'error': 0}
+  150/200 {'ok': 148, 'truncated': 0, 'refusal': 2, 'error': 0}
+  160/200 {'ok': 158, 'truncated': 0, 'refusal': 2, 'error': 0}
+  170/200 {'ok': 168, 'truncated': 0, 'refusal': 2, 'error': 0}
+  180/200 {'ok': 178, 'truncated': 0, 'refusal': 2, 'error': 0}
+  190/200 {'ok': 188, 'truncated': 0, 'refusal': 2, 'error': 0}
+  200/200 {'ok': 198, 'truncated': 0, 'refusal': 2, 'error': 0}
+{"task": "task2", "system": "fable51-nothink", "counts": {"ok": 198, "truncated": 0, "refusal": 2, "error": 0}, "elapsed_s": 385.8, "pauses": []}
