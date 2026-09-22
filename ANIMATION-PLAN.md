@@ -66,7 +66,7 @@ Justin asked for something more physical than bars. The animation uses one metap
 
 **Honesty rules for the metaphor.** Liquid level is linear in time, same pour rate for every glass, glass height equals the shared cap, no glass is drawn taller or narrower than another, and every level is annotated with its number. The metaphor decorates the encoding; it never replaces it.
 
-**Alternative kept in reserve (not default): clock faces.** Ten dials, one hand sweeping on each at the same speed; when a system answers, the swept arc freezes and fills. Jev's is a hairline wedge, Fable's nearly a full turn (one revolution = the race cap). Same honesty rules. More abstract than glasses, so second choice; the builder implements glasses and leaves a layout switch for dials only if it costs nothing extra.
+**No clock faces.** Justin ruled them out (2026-09-22). Glasses are the metaphor; no dial or arc variant is built.
 
 ## 5. Scenes
 
