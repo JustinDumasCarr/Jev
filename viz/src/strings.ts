@@ -36,7 +36,7 @@ const ROUTING: TaskStrings = {
 };
 
 const INJECTION: TaskStrings = {
-  header: 'One decision. Is this a prompt injection?',
+  header: 'Someone is messaging a chatbot. Attack or safe?',
   quadFoot: 'real time · real test cases · attack = prompt injection',
   blocksFootA: 'real time · one cell = one decision · each lights when that model answered',
   blocksFootB: (speed) => `time-lapse ×${speed} · one cell = one decision · one stream per model`,

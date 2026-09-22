@@ -33,6 +33,25 @@ export function panels(data, layout) {
 
 export const jevOf = (data) => byId(data, 'jev');
 
+/**
+ * ANIMATION-PLAN.md §5f: the blocks scene and the square cut's ranked list use six
+ * systems only — Jev and five no-thinking Claude models, worst to best so Haiku
+ * sits next to Jev. The older Opus versions are near-duplicates of Opus 5 and are
+ * left out of this scene.
+ */
+export const BLOCKS_ORDER = [
+  'jev',
+  'haiku45-nothink',
+  'sonnet46-nothink',
+  'sonnet5-nothink',
+  'opus5-nothink',
+  'fable51-nothink',
+];
+
+export function blocksSystems(data) {
+  return BLOCKS_ORDER.map((id) => byId(data, id)).filter(Boolean);
+}
+
 const heroMs = (s) => (s && s.hero && s.hero.duration_api_ms) || (s && s.latency_ms.p50) || 0;
 
 /** How long the wall of panels has to run: the slowest measured call, capped at 12 s. */
@@ -74,13 +93,8 @@ export function beats(data, layout) {
       caption: 'One decision, then a thousand.',
     },
     {
-      id: 'results',
-      seconds: (wide ? 2.6 : 2.3) + verdictLead,
-      caption: 'And this is what the speed costs.',
-    },
-    {
-      id: 'scoreboard',
-      seconds: wide ? 5.5 : 5,
+      id: 'ranking',
+      seconds: wide ? 8 : 7.5,
       caption: 'Speed against accuracy.',
     },
     {
@@ -121,35 +135,56 @@ function weakestOf(data, family) {
 
 export function verdict(data) {
   const v = (data.meta && data.meta.verdict) || {};
-  const jev = jevOf(data);
+  const preliminary = Boolean(data.meta && data.meta.preliminary);
+  const n = (jevOf(data) && jevOf(data).n) || null;
+  const margin = v.margin_pts || 2;
   const lines = [];
+  let nearestNote = null;
+
   for (const fam of ['claude-nothink', 'claude-think']) {
     const tier = v.equivalent_tier && v.equivalent_tier[fam];
     const label = (v.equivalent_tier_label && v.equivalent_tier_label[fam]) || tier;
     const weak = weakestOf(data, fam);
+    const pd = weak && v.paired ? v.paired[weak.system] : null;
+
     if (tier) {
+      lines.push({head: 'as good as ' + label, full: null, tail: FAMILY_WORDS[fam], good: true});
+    } else if (!preliminary && pd && pd.hi_pts < -margin) {
+      // only claimable once the interval itself clears the margin
       lines.push({
-        head: 'as good as ' + label,
+        head: null,
+        full: 'Below every Claude by more than ' + margin + ' points',
         tail: FAMILY_WORDS[fam],
-        good: true,
+        good: false,
       });
-    } else if (weak && jev && jev.accuracy.point < weak.accuracy.point) {
-      lines.push({head: 'below ' + weak.label, tail: FAMILY_WORDS[fam], good: false});
     } else {
+      // the honest reading: the test did not pass, and at this n it could not
+      const half = pd ? Math.round((pd.hi_pts - pd.lo_pts) / 2) : null;
+      const qual = n && half ? ` (n=${n}, \u00b1${half} pts)` : '';
       lines.push({
-        head: 'clears no tier at ' + (v.margin_pts || 2) + ' points',
+        head: null,
+        full: 'Not yet shown within ' + margin + ' points of any Claude' + qual,
         tail: FAMILY_WORDS[fam],
         good: false,
       });
     }
+    if (!nearestNote && weak && pd) {
+      nearestNote =
+        'vs ' + weak.label + ': ' + pd.diff_pts.toFixed(1) + ' pts [' +
+        pd.lo_pts.toFixed(1) + ', ' + pd.hi_pts.toFixed(1) + ']';
+    }
   }
+
   const ws = v.weakest_stratum;
   const names = {fr: 'French', en: 'English'};
   const weakest = ws
     ? (names[ws.group] || ws.group) + ' ' + ws.delta_pts.toFixed(0) + ' points vs ' + (names[ws.vs] || ws.vs)
     : null;
-  return {lines, weakest, marginPts: v.margin_pts || 2};
+  return {lines, weakest, nearestNote, marginPts: margin, preliminary};
 }
+
+/** The verdict as one sentence, for a caption or a subtitle. */
+export const verdictSentence = (l) => (l.full ? l.full : 'Jev is ' + l.head);
 
 /**
  * One line per beat. `caption` is what is burned into the frame; `srt` is what the
@@ -158,15 +193,15 @@ export function verdict(data) {
 export function captionLines(data, layout) {
   const v = verdict(data);
   return beats(data, layout).map((b) => {
-    if (b.id === 'results') {
-      return {...b, srt: 'Jev is ' + v.lines[0].head + ' (' + v.lines[0].tail + ').'};
+    if (b.id === 'ranking') {
+      return {...b, srt: verdictSentence(v.lines[0]) + ' (' + v.lines[0].tail + ').'};
     }
     if (b.id === 'end') {
       return {
         ...b,
         srt:
-          'Jev is ' + v.lines[0].head + ' (' + v.lines[0].tail + '); ' +
-          v.lines[1].head + ' (' + v.lines[1].tail + ').',
+          verdictSentence(v.lines[0]) + ' (' + v.lines[0].tail + '); ' +
+          verdictSentence(v.lines[1]) + ' (' + v.lines[1].tail + ').',
       };
     }
     return {...b, srt: b.caption};

@@ -41,9 +41,14 @@ for lay in square wide; do
   one "Scoreboard-Routing-$cap"    "$RT"  "jev-vs-claude-routing-scoreboard-$sfx"   "$lay"
 done
 
-# the path Justin's VLC already has open stays valid
-if [ -f "$OUT/jev-vs-claude-injection-1080sq.FIXTURE.mp4" ]; then
-  cp "$OUT/jev-vs-claude-injection-1080sq.FIXTURE.mp4" "$OUT/jev-vs-claude-1080sq.FIXTURE.mp4"
-  echo "copied the injection square to the stable path"
-fi
+# a stable path per data kind, so an already-open player keeps working. A real
+# render never lands on a .FIXTURE name and a fixture never lands on a real one.
+for src in "$OUT/jev-vs-claude-injection-1080sq.mp4" "$OUT/jev-vs-claude-injection-1080sq.FIXTURE.mp4"; do
+  [ -f "$src" ] || continue
+  case "$src" in
+    *.FIXTURE.mp4) cp "$src" "$OUT/jev-vs-claude-1080sq.FIXTURE.mp4" ;;
+    *)             cp "$src" "$OUT/jev-vs-claude-1080sq.mp4" ;;
+  esac
+  echo "stable copy: $(basename "$src")"
+done
 ls -la "$OUT"/*.mp4

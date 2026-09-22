@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {C, SANS, claudeColor, pct, shortLatency, tabular, upper} from '../theme';
 import {Ambient, EASE_OUT, SNAP, StageWatermark, clamp01, ramp, useCamera} from '../stage';
-import {jevOf, panels, verdict} from '../timeline.mjs';
+import {jevOf, panels, verdict, verdictSentence} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 import {stringsFor} from '../strings';
 
@@ -208,7 +208,7 @@ export const Scoreboard: React.FC<FilmProps & {standalone?: boolean}> = ({
           color: C.ink,
         }}
       >
-        Jev is {v.lines[0].head}{' '}
+        {verdictSentence(v.lines[0])}{' '}
         <span style={{...upper(0.14), fontSize: 20 * u, color: C.ink3}}>{v.lines[0].tail}</span>
       </div>
 

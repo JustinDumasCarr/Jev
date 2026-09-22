@@ -43,6 +43,32 @@ SAMPLE_SIZE = 300
 #: ANIMATION-PLAN.md §5e: the quadrant beat replays a run of real cases, one after
 #: another, so it needs a sequence rather than a single hero call.
 SEQUENCE_SIZE = 40
+
+#: What the quadrant beat may show (Justin, 2026-09-22). English only, and nothing
+#: from the domain-specific slice: the film is about the decision, not about the
+#: product it came from. Explicit and reproducible rather than eyeballed.
+SEQUENCE_EXCLUDE_TAGS = ("lang:fr", "subtype:benign-domain", "source:arianne")
+SEQUENCE_EXCLUDE_TERMS = (
+    "montreal", "montréal", "relocation", "neighbourhood", "neighborhood", "quartier",
+    "school", "école", "ecole", "immigration", "titre de séjour", "visa", "arianne",
+    "notaire", "déménage", "demenage", "expat",
+    "apartment", "appartement", "landlord", "lease", "rental", "rent ", "loyer",
+    "moving to", "move to", "moving her", "moving his", "creche", "crèche", "daycare",
+    "québec", "quebec", "lyon", "bordeaux", "nantes", "rennes", "marseille", "toulouse",
+    "client", "prospect", "viewing", "family from", "arrondissement",
+    "villeray", "broker", "condo", "borough", "listing", "sq ft", "square feet",
+    "newsletter", "realtor", "mortgage", "district",
+)
+
+
+def sequence_allows(text: str, tags: Sequence[str]) -> bool:
+    """True when a case may appear in the quadrant beat."""
+    if any(t in SEQUENCE_EXCLUDE_TAGS for t in (tags or ())):
+        return False
+    if any(t.startswith("lang:") and t != "lang:en" for t in (tags or ())):
+        return False
+    low = (text or "").lower()
+    return not any(term in low for term in SEQUENCE_EXCLUDE_TERMS)
 #: ANIMATION-PLAN.md §5a: glass height equals the shared race cap, so nothing overflows.
 RACE_CAP_MS = 8000.0
 
@@ -372,9 +398,11 @@ def build_sequence(
     path = base / f"{task}_cases.jsonl"
     field = "prompt" if task == "task1" else "text"
     texts: dict[str, str] = {}
+    case_tags: dict[str, list[str]] = {}
     try:
         for r in read_jsonl(path):
             texts[r.get("id")] = (r.get(field) or "").strip()
+            case_tags[r.get("id")] = list(r.get("tags") or [])
     except (OSError, json.JSONDecodeError):
         texts = {}
 
@@ -383,7 +411,11 @@ def build_sequence(
     }
     any_rows = next(iter(by_system.values()))
 
-    # Short texts read on screen; sorted ids keep the choice deterministic.
+    # Short English texts that carry no domain baggage; sorted ids keep the choice
+    # deterministic, and the filter above is the only thing that excludes a case.
+    allowed = {c for c in shared if sequence_allows(texts.get(c, ""), case_tags.get(c, []))}
+    if allowed:
+        shared = allowed
     ordered = sorted(shared, key=lambda c: (len(texts.get(c, "")) or 999, c))
     picked = sorted(ordered[: size * 3], key=lambda c: c)[:size]
 
@@ -519,8 +551,47 @@ def system_block(
     }
 
 
+def paired_tier(
+    per_system_rows: dict[str, list[dict[str, Any]]], order: Sequence[str], margin: float = 0.02
+) -> tuple[Optional[str], dict[str, Any]]:
+    """PLAN.md §8, computed from the rows: the strongest model Jev is non-inferior to.
+
+    Jev "is as good as" M when the lower bound of the paired 95% bootstrap CI of
+    (acc_Jev - acc_M) over the shared cases is above -2 points. 1,000 resamples,
+    seed 20260922, paired on case id.
+    """
+    if "jev" not in per_system_rows:
+        return None, {}
+    ref = {r["case_id"]: bool(r.get("correct")) for r in _scorable(per_system_rows["jev"])}
+    rng = np.random.default_rng(SEED)
+    detail: dict[str, Any] = {}
+    winner = None
+    for sid in order:
+        rows = per_system_rows.get(sid)
+        if not rows:
+            continue
+        other = {r["case_id"]: bool(r.get("correct")) for r in _scorable(rows)}
+        ids = sorted(set(ref) & set(other))
+        if len(ids) < 20:
+            continue
+        a = np.array([ref[c] for c in ids], dtype=float)
+        b = np.array([other[c] for c in ids], dtype=float)
+        d = a - b
+        idx = rng.integers(0, d.size, size=(1000, d.size))
+        boot = d[idx].mean(axis=1)
+        lo, hi = (float(x) for x in np.percentile(boot, [2.5, 97.5]))
+        non_inferior = lo > -margin
+        detail[sid] = {"n_shared": len(ids), "diff_pts": float(d.mean()) * 100,
+                       "lo_pts": lo * 100, "hi_pts": hi * 100,
+                       "non_inferior": non_inferior}
+        if non_inferior and winner is None:
+            winner = sid
+    return winner, detail
+
+
 def build_verdict(
-    metrics: Optional[dict[str, Any]], systems: Sequence[dict[str, Any]]
+    metrics: Optional[dict[str, Any]], systems: Sequence[dict[str, Any]],
+    per_system_rows: Optional[dict[str, list[dict[str, Any]]]] = None,
 ) -> dict[str, Any]:
     """Everything Scene 7's templated copy needs. No sentence is written here."""
     verdict: dict[str, Any] = {
@@ -532,6 +603,22 @@ def build_verdict(
         "weakest_stratum": None,
         "source": "no metrics JSON yet",
     }
+    if not metrics and per_system_rows:
+        # WP7 has not run, but the rows are right here and paired, so compute the
+        # same test rather than falling back to a weaker statement.
+        think, td = paired_tier(per_system_rows, CLAUDE_TIER_ORDER)
+        nothink, nd = paired_tier(
+            per_system_rows, [f"{s}-nothink" for s in CLAUDE_TIER_ORDER]
+        )
+        verdict["equivalent_tier"] = {"claude-think": think, "claude-nothink": nothink}
+        verdict["equivalent_tier_label"] = {
+            "claude-think": label_of(think) if think else None,
+            "claude-nothink": label_of(nothink) if nothink else None,
+        }
+        verdict["source"] = "paired bootstrap over the shared cases (harness/viz_data.py)"
+        verdict["paired"] = {**td, **nd}
+        return verdict
+
     if not metrics:
         # No WP7 output: fall back to the weakest statement the data supports, which is
         # "below the weakest Claude on screen" vs "at or above it", judged on CI overlap.
@@ -623,6 +710,19 @@ def build(
         if rows:
             per_system_rows[sid] = rows
 
+    # Not every call comes back scorable (a refusal, a truncation, a dropped row),
+    # and a different one fails for each system. Hold every system to the ids that
+    # ALL of them answered: same cases, same n, a genuinely paired comparison.
+    shared_ids: Optional[set[str]] = None
+    for rows in per_system_rows.values():
+        ids = {r["case_id"] for r in _scorable(rows)}
+        shared_ids = ids if shared_ids is None else (shared_ids & ids)
+    if shared_ids:
+        per_system_rows = {
+            sid: [r for r in rows if r["case_id"] in shared_ids]
+            for sid, rows in per_system_rows.items()
+        }
+
     hero_case = pick_hero_case(task, per_system_rows, data_dir)
     hero_id = hero_case["id"] if hero_case else None
 
@@ -661,9 +761,9 @@ def build(
             "fixture": False,
             "preliminary": split == "variance",
             "n_note": (
-                f"preliminary · n={len(split_ids)} per model, the same case ids for every "
+                f"preliminary · n={len(shared_ids or [])} cases, the same ids for every "
                 "system including Jev"
-                if split == "variance" and split_ids
+                if split == "variance" and shared_ids
                 else None
             ),
             "footnotes": footnotes,
@@ -679,7 +779,7 @@ def build(
                 "source": "not available",
             },
             "metrics_source": (metrics or {}).get("_path"),
-            "verdict": build_verdict(metrics, systems),
+            "verdict": build_verdict(metrics, systems, per_system_rows),
         },
         "sequence": sequence,
         "systems": systems,

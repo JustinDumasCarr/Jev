@@ -3,7 +3,7 @@ import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from
 import {Tag} from '../chrome';
 import {C, SANS, claudeColor, money, pct, shortLatency, tabular, upper} from '../theme';
 import {Ambient, EASE_OUT, SNAP, StageWatermark, ramp, useCamera} from '../stage';
-import {jevOf, panels, verdict} from '../timeline.mjs';
+import {jevOf, panels, verdict, verdictSentence} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 
 /* Beat 6 — the end card, and the poster frame. Three enormous numbers for Jev, the
@@ -158,7 +158,7 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
             opacity: spring({frame: frame - 18, fps, config: {damping: 200}, durationInFrames: 14}),
           }}
         >
-          {v.lines.map((l: {head: string; tail: string}, i: number) => (
+          {v.lines.map((l: {head: string | null; full: string | null; tail: string}, i: number) => (
             <div
               key={i}
               style={{
@@ -170,7 +170,7 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
                 marginBottom: 2 * u,
               }}
             >
-              Jev is {l.head}{' '}
+              {verdictSentence(l)}{' '}
               <span style={{...upper(0.14), fontSize: 20 * u, color: C.ink3}}>{l.tail}</span>
             </div>
           ))}

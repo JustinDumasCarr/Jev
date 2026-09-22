@@ -13,7 +13,7 @@ import {
   ramp,
   useCamera,
 } from '../stage';
-import {jevOf, panels} from '../timeline.mjs';
+import {blocksSystems, jevOf} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 import {stringsFor} from '../strings';
 
@@ -46,20 +46,6 @@ const ORDER = (() => {
   all.sort((a, b) => a.k - b.k);
   return all.map((c) => c.i);
 })();
-
-export type Phase = {aFrames: number; bFrames: number; freezeFrames: number};
-
-export function phaseOf(data: FilmProps['data'], fps: number) {
-  const T = stringsFor(data.meta.task);
-  const jev = jevOf(data) as System;
-  const ps = panels(data, 'square') as {sys: System}[];
-  const heroMs = (s: System) => s.hero?.duration_api_ms ?? s.latency_ms.p50 ?? 0;
-  const slowest = Math.max(...ps.map((p) => heroMs(p.sys)), heroMs(jev));
-  // Phase A is real time: it lasts exactly as long as the slowest single call,
-  // plus a breath to let the last cell land.
-  const aFrames = Math.round((slowest / 1000) * fps) + Math.round(0.45 * fps);
-  return {aFrames, slowest, jevMs: heroMs(jev)};
-}
 
 const Block: React.FC<{
   sys: System;
@@ -205,13 +191,12 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
   const wide = layout === 'wide';
   const T = stringsFor(data.meta.task);
   const jev = jevOf(data) as System;
-  const ps = panels(data, layout) as {sys: System; tier: number}[];
-  const heroMs = (s: System) => s.hero?.duration_api_ms ?? s.latency_ms.p50 ?? 0;
-
-  const rows = [
-    {sys: jev, color: C.accent, isJev: true, ms: heroMs(jev)},
-    ...ps.map((p) => ({sys: p.sys, color: claudeColor(p.tier), isJev: false, ms: heroMs(p.sys)})),
-  ];
+  // §5f: six systems only, in a fixed order, all with thinking off
+  const rows = (blocksSystems(data) as System[]).map((sys) => ({
+    sys,
+    color: sys.family === 'jev' ? C.accent : claudeColor(sys.tier_rank ?? 0),
+    isJev: sys.family === 'jev',
+  }));
 
   /* The beat is one thing only: the blocks filling in time-lapse, each at its own
      measured rate, for exactly ten seconds. Jev's completes and freezes; the rest
@@ -224,11 +209,11 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
     extrapolateRight: 'clamp',
   });
   const speed = Math.max(1, Math.round(targetMs / 1000 / (runFrames / fps)));
-  const countOf = (_ms: number, p50: number) => Math.min(1000, Math.floor(wallMs / p50));
+  const countOf = (p50: number) => Math.min(1000, Math.floor(wallMs / p50));
 
   /* ---- layout ---------------------------------------------------- */
   const pad = (wide ? 70 : 56) * u;
-  const cols = wide ? 5 : 3;
+  const cols = 3; // §5f: two rows of three, worst to best in reading order
   const gap = (wide ? 24 : 34) * u;
   const contentW = width - pad * 2;
   const blockW = (contentW - gap * (cols - 1)) / cols;
@@ -244,7 +229,6 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
   const enter = ramp(frame, 0, 6, EASE_OUT);
   const hero = data.meta.hero_case;
   const heroLine = (hero.text || '').replace(/\s+/g, ' ').slice(0, wide ? 150 : 104);
-  const stamp = spring({frame: frame - Math.round((rows[0].ms / 1000) * fps), fps, config: POP});
 
   return (
     <AbsoluteFill style={{backgroundColor: C.bg, opacity: enter}}>
@@ -304,7 +288,7 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
               color={r.color}
               isJev={r.isJev}
               i={k}
-              count={countOf(r.ms, r.sys.latency_ms.p50 ?? 1)}
+              count={countOf(r.sys.latency_ms.p50 ?? 1)}
               wallMs={wallMs}
               w={blockW}
               u={u}
