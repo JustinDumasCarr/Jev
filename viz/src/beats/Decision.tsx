@@ -15,6 +15,7 @@ import {
 } from '../stage';
 import {jevOf, panels} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
+import {stringsFor} from '../strings';
 
 /* The film opens here. No title, no preamble: frame 0 is already the nine blocks,
  * the stopwatch already live at 0.00, and one line of context at the top.
@@ -49,6 +50,7 @@ const ORDER = (() => {
 export type Phase = {aFrames: number; bFrames: number; freezeFrames: number};
 
 export function phaseOf(data: FilmProps['data'], fps: number) {
+  const T = stringsFor(data.meta.task);
   const jev = jevOf(data) as System;
   const ps = panels(data, 'square') as {sys: System}[];
   const heroMs = (s: System) => s.hero?.duration_api_ms ?? s.latency_ms.p50 ?? 0;
@@ -68,11 +70,7 @@ const Block: React.FC<{
   wallMs: number;
   w: number;
   u: number;
-  /** frames since this model's single decision came back; negative before */
-  sinceAnswer: number;
-  answerMs: number;
-  inA: boolean;
-}> = ({sys, color, isJev, i, count, wallMs, w, u, sinceAnswer, answerMs, inA}) => {
+}> = ({sys, color, isJev, i, count, wallMs, w, u}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const p50 = sys.latency_ms.p50 ?? 1;
@@ -86,12 +84,6 @@ const Block: React.FC<{
   const doneS = full ? spring({frame: frame - 2, fps, config: POP}) : 0;
   const sheen = ((frame / fps) * 0.22 + i * 0.09) % 1.8;
 
-  // the arrival of the single decision, in real time: the block edge flashes and a
-  // ring goes out from the very first cell, or one 5 px square would go unseen
-  const arrive = sinceAnswer >= 0 && sinceAnswer < 18 ? 1 - sinceAnswer / 18 : 0;
-  const firstFlat = ORDER[0];
-  const fx = (firstFlat % COLS) * cell + size / 2;
-  const fy = Math.floor(firstFlat / COLS) * cell + size / 2;
 
   const cells = [];
   for (let k = 0; k < count; k++) {
@@ -159,22 +151,10 @@ const Block: React.FC<{
             height={gridH}
             fill="none"
             rx={6 * u}
-            stroke={arrive > 0 ? color : full ? `${color}88` : 'rgba(255,255,255,0.08)'}
-            strokeWidth={arrive > 0 ? 2.5 * u : full ? 2 * u : 1}
-            opacity={arrive > 0 ? 0.35 + arrive * 0.65 : 1}
+            stroke={full ? `${color}88` : 'rgba(255,255,255,0.08)'}
+            strokeWidth={full ? 2 * u : 1}
           />
           {cells}
-          {arrive > 0 ? (
-            <circle
-              cx={fx}
-              cy={fy}
-              r={interpolate(1 - arrive, [0, 1], [2 * u, 46 * u])}
-              fill="none"
-              stroke={color}
-              strokeWidth={3 * u * arrive}
-              opacity={arrive}
-            />
-          ) : null}
         </svg>
         <div
           style={{
@@ -211,21 +191,8 @@ const Block: React.FC<{
           color: isJev ? C.accent : C.ink3,
         }}
       >
-        {inA ? (
-          <>
-            <span style={{color: sinceAnswer >= 0 ? (isJev ? C.accent : C.ink) : C.ink3}}>
-              {sinceAnswer >= 0 ? (answerMs / 1000).toFixed(2) + 's' : '— — —'}
-            </span>
-            <span style={{...upper(0.14), fontSize: 15 * u}}>
-              {sinceAnswer >= 0 ? 'answered' : 'working'}
-            </span>
-          </>
-        ) : (
-          <>
-            <span>{clock(ownMs)}</span>
-            <span>{money(cost)}</span>
-          </>
-        )}
+        <span>{clock(ownMs)}</span>
+        <span>{money(cost)}</span>
       </div>
     </div>
   );
@@ -236,6 +203,7 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
   const {fps, width, height, durationInFrames} = useVideoConfig();
   const u = height / 1080;
   const wide = layout === 'wide';
+  const T = stringsFor(data.meta.task);
   const jev = jevOf(data) as System;
   const ps = panels(data, layout) as {sys: System; tier: number}[];
   const heroMs = (s: System) => s.hero?.duration_api_ms ?? s.latency_ms.p50 ?? 0;
@@ -245,28 +213,18 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
     ...ps.map((p) => ({sys: p.sys, color: claudeColor(p.tier), isJev: false, ms: heroMs(p.sys)})),
   ];
 
-  const {aFrames} = phaseOf(data, fps);
-  const freeze = Math.round(2.0 * fps);
-  const bFrames = durationInFrames - aFrames - freeze;
-
-  /* ---- the wall clock: 1:1 through phase A, then time-lapse ------- */
-  const aEndMs = (aFrames / fps) * 1000;
+  /* The beat is one thing only: the blocks filling in time-lapse, each at its own
+     measured rate, for exactly ten seconds. Jev's completes and freezes; the rest
+     are still filling when the beat cuts. */
+  const freeze = Math.round(1.6 * fps);
+  const runFrames = durationInFrames - freeze;
   const targetMs = (jev.latency_ms.p50 ?? 1) * 1000; // Jev's thousand calls
-  const wallMs =
-    frame <= aFrames
-      ? (frame / fps) * 1000
-      : Math.min(
-          targetMs,
-          aEndMs + ((frame - aFrames) / bFrames) * (targetMs - aEndMs),
-        );
-  const speed = Math.max(1, Math.round((targetMs - aEndMs) / 1000 / (bFrames / fps)));
-  const inA = frame <= aFrames;
-
-  /* In phase A a block shows exactly the decisions it has actually returned —
-     which is one, at its own measured time. In phase B it keeps counting at the
-     same rate. Same formula throughout; only the clock changes pace. */
-  const countOf = (ms: number, p50: number) =>
-    inA ? (wallMs >= ms ? 1 : 0) : Math.min(1000, Math.floor(wallMs / p50));
+  const wallMs = interpolate(frame, [0, runFrames], [0, targetMs], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const speed = Math.max(1, Math.round(targetMs / 1000 / (runFrames / fps)));
+  const countOf = (_ms: number, p50: number) => Math.min(1000, Math.floor(wallMs / p50));
 
   /* ---- layout ---------------------------------------------------- */
   const pad = (wide ? 70 : 56) * u;
@@ -277,18 +235,11 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
   const gridTop = (wide ? 250 : 200) * u;
   const rowH = ROWS * (blockW / COLS) + (wide ? 96 : 64) * u;
 
-  const jevFull = !inA && wallMs >= targetMs * 0.999;
-  const jevDoneFrame = aFrames + bFrames;
+  const jevFull = wallMs >= targetMs * 0.999;
+  const jevDoneFrame = runFrames;
   const burst = spring({frame: frame - jevDoneFrame, fps, config: POP});
-  const cam = useCamera([
-    {at: 0, zoom: 1, x: width / 2, y: height / 2},
-    {at: jevDoneFrame - 8, zoom: 1, x: width / 2, y: height / 2},
-    {at: jevDoneFrame + 12, zoom: wide ? 1.26 : 1.5, x: pad + blockW * (wide ? 1.1 : 0.5), y: gridTop + rowH * 0.42},
-    {at: jevDoneFrame + 34, zoom: wide ? 1.26 : 1.5, x: pad + blockW * (wide ? 1.1 : 0.5), y: gridTop + rowH * 0.42},
-    {at: jevDoneFrame + 52, zoom: 1, x: width / 2, y: height / 2},
-    {at: durationInFrames - 8, zoom: 1, x: width / 2, y: height / 2},
-    {at: durationInFrames, zoom: 1.06, x: width / 2, y: height / 2},
-  ]);
+  const cam = useCamera([{at: 0, zoom: 1, x: width / 2, y: height / 2}]); // static
+
 
   const enter = ramp(frame, 0, 6, EASE_OUT);
   const hero = data.meta.hero_case;
@@ -300,17 +251,18 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
       <Ambient glow="rgba(64,104,180,0.17)" cam={cam} />
 
       {/* one short line, and nothing else competing with the blocks */}
-      <div style={{position: 'absolute', top: 48 * u, left: pad, width: contentW * 0.7}}>
+      <div style={{position: 'absolute', top: 48 * u, left: pad, width: contentW * 0.6}}>
         <div
           style={{
             fontFamily: SANS,
             fontWeight: 700,
-            fontSize: 34 * u,
+            fontSize: 31 * u,
             color: C.ink,
-            letterSpacing: '-0.02em',
+            letterSpacing: '-0.025em',
+            lineHeight: 1.15,
           }}
         >
-          One decision. Is this a prompt injection?
+          {T.header}
         </div>
       </div>
 
@@ -356,9 +308,6 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
               wallMs={wallMs}
               w={blockW}
               u={u}
-              sinceAnswer={frame - (r.ms / 1000) * fps}
-              answerMs={r.ms}
-              inA={inA}
             />
           ))}
         </div>
@@ -367,9 +316,9 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
       <Timer
         ms={wallMs}
         progress={clamp01(wallMs / targetMs)}
-        text={inA ? undefined : clock(wallMs)}
+        text={clock(wallMs)}
         u={u}
-        accent={inA && wallMs >= rows[0].ms}
+        accent
         label="elapsed"
       />
 
@@ -388,9 +337,12 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
         }}
       >
         {'* '}
-        {inA ? 'real time' : `time-lapse ×${speed.toLocaleString()}`}
-        {' · one cell = one decision · Jev: '}
-        {classLabel(jev.hero?.decision)}, {Math.round((jev.hero?.p ?? 0) * 100)}%
+        {T.blocksFootB(speed.toLocaleString())}
+        {' · '}
+        {T.jevAnswer(
+          data.meta.task === 'task1' ? jev.hero?.decision ?? '' : classLabel(jev.hero?.decision),
+          Math.round((jev.hero?.p ?? 0) * 100) + '%',
+        )}
       </div>
 
       {jevFull ? (

@@ -4,6 +4,7 @@ import {C, SANS, claudeColor, pct, shortLatency, tabular, upper} from '../theme'
 import {Ambient, EASE_OUT, SNAP, StageWatermark, clamp01, ramp, useCamera} from '../stage';
 import {jevOf, panels, verdict} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
+import {stringsFor} from '../strings';
 
 /* ANIMATION-PLAN.md §4 — the scoreboard.
  *
@@ -23,7 +24,7 @@ export const Scoreboard: React.FC<FilmProps & {standalone?: boolean}> = ({
   const {fps, width, height, durationInFrames} = useVideoConfig();
   const u = height / 1080;
   const wide = layout === 'wide';
-  const routing = data.meta.task === 'task1';
+  const T = stringsFor(data.meta.task);
   const jev = jevOf(data) as System;
   const ps = panels(data, layout) as {sys: System; tier: number}[];
 
@@ -75,7 +76,7 @@ export const Scoreboard: React.FC<FilmProps & {standalone?: boolean}> = ({
             letterSpacing: '-0.02em',
           }}
         >
-          {routing ? 'Routing: speed against accuracy' : 'Injection: speed against accuracy'}
+          {T.scoreboardTitle}
         </div>
         <div style={{...upper(0.16), fontSize: 16 * u, color: C.ink3, marginTop: 10 * u}}>
           {data.meta.task_label} · {data.meta.split} split · n={jev.n} per system · sorted by accuracy

@@ -61,37 +61,31 @@ export function beats(data, layout) {
   const wide = layout === 'wide';
   const verdictLead = wide ? 3.6 : 3.2;
 
-  // Phase A is real time and therefore as long as the slowest single call; phase B
-  // is the time-lapse; the freeze is inside the same beat, so the blocks never cut.
-  const heroMs = (s) => (s && s.hero && s.hero.duration_api_ms) || (s && s.latency_ms.p50) || 0;
-  const ps = panels(data, layout);
-  const slowest = Math.max(...ps.map((p) => heroMs(p.sys)), heroMs(jevOf(data)));
-  const phaseA = slowest / 1000 + 0.45;
 
   const list = [
     {
       id: 'quadrants',
-      seconds: wide ? 18.5 : 18,
+      seconds: wide ? 17 : 16,
       caption: 'One decision. Is this a prompt injection?',
     },
     {
       id: 'decision',
-      seconds: phaseA + (wide ? 3.0 : 2.6),
+      seconds: 10,
       caption: 'One decision, then a thousand.',
     },
     {
       id: 'results',
-      seconds: (wide ? 3.6 : 3.3) + verdictLead,
+      seconds: (wide ? 2.6 : 2.3) + verdictLead,
       caption: 'And this is what the speed costs.',
     },
     {
       id: 'scoreboard',
-      seconds: wide ? 6 : 5.5,
+      seconds: wide ? 5.5 : 5,
       caption: 'Speed against accuracy.',
     },
     {
       id: 'end',
-      seconds: wide ? 4 : 3.5,
+      seconds: wide ? 3.5 : 3,
       caption: '',
     },
   ];

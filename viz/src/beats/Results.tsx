@@ -4,6 +4,7 @@ import {C, SANS, claudeColor, pct, tabular, upper} from '../theme';
 import {Ambient, EASE_OUT, SNAP, StageWatermark, clamp01, ramp, useCamera} from '../stage';
 import {jevOf, panels, verdict} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
+import {stringsFor} from '../strings';
 
 /* ANIMATION-PLAN.md §5e — the results beat, replacing the accuracy targets.
  *
@@ -119,6 +120,7 @@ export const Results: React.FC<FilmProps> = ({data, layout}) => {
   const {fps, width, height, durationInFrames} = useVideoConfig();
   const u = height / 1080;
   const wide = layout === 'wide';
+  const T = stringsFor(data.meta.task);
   const jev = jevOf(data) as System;
   const ps = panels(data, layout) as {sys: System; tier: number}[];
 
@@ -137,9 +139,11 @@ export const Results: React.FC<FilmProps> = ({data, layout}) => {
     {sys: jev, color: C.accent, isJev: true},
   ];
 
-  const buildFrames = Math.round((wide ? 5.4 : 5.0) * fps);
-  const stagger = Math.round(buildFrames * 0.45) / Math.max(1, towers.length - 1);
-  const perTower = buildFrames - stagger * (towers.length - 1);
+  // All nine rise together at the same rate and finish together, so height never
+  // reads as accuracy — only the red band differs. Jev's lags a beat, it does not
+  // build last from zero.
+  const buildFrames = Math.round((wide ? 4.2 : 4.0) * fps);
+  const jevLag = 9;
 
   const verdictStart = durationInFrames - Math.round((wide ? 3.6 : 3.2) * fps);
   const v = verdict(data);
@@ -188,7 +192,7 @@ export const Results: React.FC<FilmProps> = ({data, layout}) => {
         }}
       >
         {data.meta.split} split · n={(jev as unknown as {results: Res}).results?.n ?? jev.n} per
-        system · green = matched gold, red = missed · attack = prompt injection
+        system · {T.towersLegend}
       </div>
 
       <div
@@ -208,7 +212,7 @@ export const Results: React.FC<FilmProps> = ({data, layout}) => {
               sys={t.sys}
               color={t.color}
               isJev={t.isJev}
-              build={clamp01((frame - i * stagger) / perTower)}
+              build={clamp01((frame - (t.isJev ? jevLag : 0)) / buildFrames)}
               w={slotW}
               h={towerH}
               u={u}
@@ -287,7 +291,7 @@ export const Results: React.FC<FilmProps> = ({data, layout}) => {
         }}
       >
         {data.meta.n_note ? '* ' + data.meta.n_note + ' · ' : '* '}
-        same height everywhere · the red band is the error rate
+        {T.towersFoot}
       </div>
 
       <StageWatermark data={data} />
