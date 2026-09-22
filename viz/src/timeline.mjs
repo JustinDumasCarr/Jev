@@ -71,17 +71,17 @@ export function beats(data, layout) {
   const list = [
     {
       id: 'quadrants',
-      seconds: wide ? 12.5 : 11.5,
+      seconds: wide ? 15.5 : 15,
       caption: 'One decision. Is this a prompt injection?',
     },
     {
       id: 'decision',
-      seconds: phaseA + (wide ? 12 : 11),
+      seconds: phaseA + (wide ? 9.5 : 8.5),
       caption: 'One decision, then a thousand.',
     },
     {
       id: 'accuracy',
-      seconds: (wide ? 6.0 : 5.4) + verdictLead,
+      seconds: (wide ? 5.5 : 4.9) + verdictLead,
       caption: 'And this is what the speed costs.',
     },
     {

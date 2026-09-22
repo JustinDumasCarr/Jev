@@ -1,21 +1,21 @@
 1
-00:00:00,000 --> 00:00:12,500
+00:00:00,000 --> 00:00:15,500
 [PLACEHOLDER DATA — no run has happened yet]
 
 2
-00:00:00,000 --> 00:00:12,367
+00:00:00,000 --> 00:00:15,367
 One decision. Is this a prompt injection?
 
 3
-00:00:12,500 --> 00:00:27,767
+00:00:15,500 --> 00:00:28,267
 One decision, then a thousand.
 
 4
-00:00:27,900 --> 00:00:37,367
+00:00:28,400 --> 00:00:37,367
 Jev is as good as Opus 4.6 (thinking off).
 
 5
-00:00:35,100 --> 00:00:37,367
+00:00:35,233 --> 00:00:37,367
 Weakest slice: French -6 points vs English.
 
 6

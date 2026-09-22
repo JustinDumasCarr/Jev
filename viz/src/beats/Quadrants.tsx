@@ -27,6 +27,7 @@ type Seq = {
     {
       decision: string | null;
       p: number | null;
+      correct?: boolean | null;
       output_text: string;
       output_tokens: number;
       thinking_tokens: number;
@@ -53,6 +54,198 @@ function walk(seq: Seq[], sid: string, elapsedMs: number, loop = true) {
   const last = seq.length - 1;
   return {index: last, startedMs: t, doneCount: done, entry: seq[last]};
 }
+
+/** Every decision one row has completed, in order, with its correctness. */
+type Brick = {correct: boolean; saidPositive: boolean; goldPositive: boolean; divider?: boolean};
+
+function jevRun(seq: Seq[], elapsedMs: number): Brick[] {
+  const out: Brick[] = [];
+  let t = 0;
+  for (let i = 0; i < seq.length * 40; i++) {
+    const c = seq[i % seq.length];
+    const e = c.systems.jev;
+    const d = e?.duration_api_ms ?? 0;
+    if (elapsedMs < t + d) break;
+    t += d;
+    out.push({
+      correct: e?.correct !== false,
+      saidPositive: e?.decision === 'injection',
+      goldPositive: c.gold === 'injection',
+    });
+  }
+  return out;
+}
+
+function claudeRun(seq: Seq[], ps: {sys: System}[], elapsedMs: number): Brick[] {
+  const out: Brick[] = [];
+  let t = 0;
+  let lastModel = -1;
+  for (let k = 0; k < ps.length * 4; k++) {
+    const sid = ps[k % ps.length].sys.system;
+    const c = seq[k % seq.length];
+    const e = c?.systems[sid];
+    const d = e?.duration_api_ms ?? 0;
+    if (elapsedMs < t + d) break;
+    t += d;
+    if (k % ps.length !== lastModel && k > 0) {
+      out.push({correct: true, saidPositive: false, goldPositive: false, divider: true});
+    }
+    lastModel = k % ps.length;
+    out.push({
+      correct: e?.correct !== false,
+      saidPositive: e?.decision === 'injection',
+      goldPositive: c.gold === 'injection',
+    });
+  }
+  return out;
+}
+
+const scored = (b: Brick[]) => b.filter((x) => !x.divider);
+const pctCorrect = (b: Brick[]) => {
+  const s = scored(b);
+  return s.length ? s.filter((x) => x.correct).length / s.length : 0;
+};
+const precision = (b: Brick[]) => {
+  const said = scored(b).filter((x) => x.saidPositive);
+  return said.length ? said.filter((x) => x.goldPositive).length / said.length : null;
+};
+
+/** One brick per decision, stacked upward, coloured by correctness. */
+const Tower: React.FC<{
+  bricks: Brick[];
+  accent: string;
+  brickH: number;
+  h: number;
+  w: number;
+  u: number;
+  cols: number;
+}> = ({bricks, accent, brickH, h, w, u, cols}) => {
+  const frame = useCurrentFrame();
+  const {fps} = useVideoConfig();
+  const gap = Math.min(1.2 * u, brickH * 0.22);
+  const settle = spring({frame: frame % 3, fps, config: {damping: 14, stiffness: 320}});
+  // The brick is the same size in both towers; a tower that outgrows the track
+  // starts a second column beside it rather than rescaling.
+  const perCol = Math.max(1, Math.floor((h - 4 * u) / (brickH + gap)));
+  const colW = w / cols;
+  return (
+    <div style={{position: 'relative', width: w, height: h}}>
+      {/* the track: how far this tower could go */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: 4 * u,
+          background: 'rgba(255,255,255,0.035)',
+          border: '1px solid rgba(255,255,255,0.06)',
+        }}
+      />
+      {bricks.map((b, i) => {
+        const last = i === bricks.length - 1;
+        const bh = b.divider ? Math.max(1.2 * u, brickH * 0.5) : brickH;
+        const col = Math.floor(i / perCol);
+        const row = i % perCol;
+        return (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              left: col * colW + (b.divider ? colW * 0.22 : 2 * u),
+              width: colW - (b.divider ? colW * 0.44 : 4 * u),
+              bottom: 2 * u + row * (brickH + gap),
+              height: Math.max(1.1, bh - gap),
+              borderRadius: Math.min(2 * u, brickH * 0.3),
+              background: b.divider ? 'rgba(255,255,255,0.28)' : b.correct ? accent : C.wrong,
+              transform: last && !b.divider ? `translateY(${(1 - settle) * 7 * u}px)` : 'none',
+              opacity: last ? Math.min(1, settle * 1.6) : 1,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+/** The two possible answers, the chosen one lit. */
+const Choice: React.FC<{
+  chosen: string | null;
+  p: number | null;
+  accent: string;
+  u: number;
+  big: number;
+}> = ({chosen, p, accent, u, big}) => (
+  <div style={{display: 'flex', flexDirection: 'column', gap: 12 * u}}>
+    {['benign', 'injection'].map((opt) => {
+      const on = chosen === opt;
+      const prob = on ? p ?? 0 : null;
+      return (
+        <div
+          key={opt}
+          style={{
+            borderRadius: 12 * u,
+            border: `${on ? 2.5 * u : 1}px solid ${on ? accent : 'rgba(255,255,255,0.10)'}`,
+            background: on ? `${accent}1f` : 'transparent',
+            padding: `${11 * u}px ${14 * u}px`,
+          }}
+        >
+          <div style={{display: 'flex', alignItems: 'baseline', gap: 10 * u}}>
+            <span
+              style={{
+                fontFamily: SANS,
+                fontWeight: 700,
+                fontSize: big,
+                letterSpacing: '-0.02em',
+                color: on ? accent : C.ink3,
+                textTransform: 'uppercase',
+              }}
+            >
+              {opt}
+            </span>
+            <span
+              style={{
+                ...tabular,
+                fontWeight: 800,
+                fontSize: big * 0.72,
+                color: on ? C.ink : 'transparent',
+                marginLeft: 'auto',
+              }}
+            >
+              {on ? Math.round((prob ?? 0) * 100) + '%' : '—'}
+            </span>
+          </div>
+          {on ? (
+            <div
+              style={{
+                marginTop: 9 * u,
+                height: 9 * u,
+                borderRadius: 999,
+                background: 'rgba(255,255,255,0.10)',
+                overflow: 'hidden',
+              }}
+            >
+              {/* the probability it returned, linear */}
+              <div style={{width: `${(prob ?? 0) * 100}%`, height: '100%', background: accent}} />
+            </div>
+          ) : null}
+        </div>
+      );
+    })}
+  </div>
+);
+
+const Readout: React.FC<{bricks: Brick[]; color: string; u: number}> = ({bricks, color, u}) => {
+  const n = scored(bricks).length;
+  const pr = precision(bricks);
+  return (
+    <div style={{...tabular, fontSize: 19 * u, color: C.ink3, lineHeight: 1.5, whiteSpace: 'nowrap'}}>
+      <div>
+        decisions <span style={{color, fontWeight: 800}}>{n}</span>
+      </div>
+      <div>correct {n ? Math.round(pctCorrect(bricks) * 100) + '%' : '—'}</div>
+      <div>precision {pr == null ? '—' : Math.round(pr * 100) + '%'}</div>
+    </div>
+  );
+};
 
 const Panel: React.FC<{
   label: string;
@@ -131,15 +324,28 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
   );
 
   const jevMs = elapsed - jev.startedMs;
-  // the last case Jev actually finished — the panel is never empty, and it changes
-  // every time a decision lands
-  const shownIdx = jev.doneCount > 0 ? (jev.index - 1 + seq.length) % seq.length : jev.index;
-  const shown = seq[shownIdx];
-  const jevEntry = shown?.systems.jev;
-  const jevFlash = Math.max(0, 1 - (jevMs / 1000) * fps / 5);
-  const pBar = jev.doneCount > 0 ? jevEntry?.p ?? 0 : 0;
+  /* The text and the decision on a row must belong to the same case, on every
+     frame. So the pair on screen is the case Jev has just finished: its text on
+     the left, its decision on the right, held for that call's own duration, and
+     both advance together. At about 100 ms a call that is three frames and it
+     blurs — the blur IS the speed, and every frame of it is true. */
   const jevDone = jev.doneCount > 0;
+  const pairIdx = jevDone ? (jev.index - 1 + seq.length) % seq.length : jev.index;
+  const pair = seq[pairIdx];
+  const jevEntry = pair?.systems.jev;
+  const pBar = jevDone ? jevEntry?.p ?? 0 : 0;
   const sinceJev = (jevMs / 1000) * fps;
+
+  const jevBricks = jevRun(seq, elapsed);
+  const claudeBricks = claudeRun(seq, ps, elapsed);
+  // One brick height for both towers, computed once from what the beat will hold
+  // at its end, so nothing ever rescales mid-beat.
+  const endMs = (durationInFrames / fps) * 1000;
+  const maxBricks = Math.max(
+    jevRun(seq, endMs).length,
+    claudeRun(seq, ps, endMs).length,
+    1,
+  );
 
   const pad = (wide ? 76 : 52) * u;
   const contentW = width - pad * 2;
@@ -147,6 +353,10 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
   const colW = (contentW - gap) / 2;
   const top = 200 * u;
   const rowH = (wide ? 292 : 320) * u;
+  const towerH = rowH - (wide ? 78 : 82) * u;
+  const brickH = Math.max(2.4 * u, (towerH - 4 * u) / maxBricks);
+  const towerCols = Math.max(1, Math.ceil((maxBricks * brickH * 1.16) / (towerH - 4 * u)));
+  const towerW = Math.min(96 * u, 30 * u * towerCols);
   const enter = ramp(frame, 0, 7, EASE_OUT);
   const cam = useCamera([
     {at: 0, zoom: 1.03, x: width / 2, y: height / 2},
@@ -176,53 +386,25 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
         <div style={{display: 'flex', gap, marginBottom: 22 * u}}>
           <div style={{width: colW}}>
             <Panel label="the text" u={u} h={rowH}>
-              <div style={textStyle} key={jev.index}>
-                {jev.entry?.text}
+              <div style={textStyle} key={pairIdx}>
+                {pair?.text}
               </div>
             </Panel>
           </div>
           <div style={{width: colW}}>
-            <Panel label="Jev 1.13" accent={C.accent} u={u} h={rowH} flash={jevFlash}>
-              <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-                <div
-                  style={{
-                    fontFamily: SANS,
-                    fontWeight: 700,
-                    fontSize: (wide ? 62 : 58) * u,
-                    letterSpacing: '-0.03em',
-                    color: jevDone ? C.accent : C.ink3,
-                    lineHeight: 1.05,
-                    transform: `scale(${
-                      jevDone ? interpolate(clamp01(sinceJev / 6), [0, 1], [1.16, 1]) : 1
-                    })`,
-                    transformOrigin: 'left center',
-                  }}
-                >
-                  {jevDone ? (jevEntry?.decision || '').toUpperCase() : '· · ·'}
+            <Panel label="Jev 1.13" accent={C.accent} u={u} h={rowH}>
+              <div style={{display: 'flex', gap: 16 * u, height: '100%'}}>
+                <div style={{flex: 1, minWidth: 0}}>
+                  <Choice
+                    chosen={jevDone ? jevEntry?.decision ?? null : null}
+                    p={jevEntry?.p ?? null}
+                    accent={C.accent}
+                    u={u}
+                    big={(wide ? 34 : 32) * u}
+                  />
                 </div>
-                <div style={{marginTop: 22 * u, display: 'flex', alignItems: 'center', gap: 16 * u}}>
-                  <div
-                    style={{
-                      flex: 1,
-                      height: 16 * u,
-                      borderRadius: 999,
-                      background: 'rgba(255,255,255,0.10)',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {/* the probability it returned, no easing */}
-                    <div style={{width: `${pBar * 100}%`, height: '100%', background: C.accent}} />
-                  </div>
-                  <span style={{...tabular, fontWeight: 800, fontSize: 38 * u, color: C.ink}}>
-                    {Math.round(pBar * 100)}%
-                  </span>
-                </div>
-                <div style={{marginTop: 'auto', display: 'flex', justifyContent: 'space-between'}}>
-                  <span style={{...upper(0.16), fontSize: 15 * u, color: C.ink3}}>decisions</span>
-                  <span style={{...tabular, fontWeight: 800, fontSize: 34 * u, color: C.accent}}>
-                    {jev.doneCount}
-                  </span>
-                </div>
+                <Tower bricks={jevBricks} accent={C.accent} brickH={brickH} h={towerH} w={towerW} u={u} cols={towerCols} />
+                <Readout bricks={jevBricks} color={C.accent} u={u} />
               </div>
             </Panel>
           </div>
@@ -239,63 +421,74 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
           </div>
           <div style={{width: colW}}>
             <Panel label={model?.sys.label ?? ''} accent={claudeColor(model?.tier ?? 0)} u={u} h={rowH}>
-              <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-                {thinking ? (
-                  <div style={{display: 'flex', alignItems: 'center', gap: 14 * u, marginTop: 10 * u}}>
-                    <div
-                      style={{
-                        flex: 1,
-                        height: 12 * u,
-                        borderRadius: 999,
-                        overflow: 'hidden',
-                        background: 'rgba(255,255,255,0.07)',
-                      }}
-                    >
+              <div style={{display: 'flex', gap: 16 * u, height: '100%'}}>
+                <div style={{flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column'}}>
+                  {thinking ? (
+                    <div style={{display: 'flex', alignItems: 'center', gap: 12 * u, marginTop: 6 * u}}>
                       <div
                         style={{
-                          width: '36%',
-                          height: '100%',
+                          flex: 1,
+                          height: 11 * u,
                           borderRadius: 999,
-                          background: `linear-gradient(90deg, transparent, ${claudeColor(
-                            model?.tier ?? 0,
-                          )}, transparent)`,
-                          transform: `translateX(${interpolate((frame % 40) / 40, [0, 1], [-100, 280])}%)`,
+                          overflow: 'hidden',
+                          background: 'rgba(255,255,255,0.07)',
                         }}
+                      >
+                        <div
+                          style={{
+                            width: '36%',
+                            height: '100%',
+                            borderRadius: 999,
+                            background: `linear-gradient(90deg, transparent, ${claudeColor(
+                              model?.tier ?? 0,
+                            )}, transparent)`,
+                            transform: `translateX(${interpolate((frame % 40) / 40, [0, 1], [-100, 280])}%)`,
+                          }}
+                        />
+                      </div>
+                      <span style={{...tabular, fontSize: 21 * u, color: C.ink2, whiteSpace: 'nowrap'}}>
+                        {thinkTokens} thinking
+                      </span>
+                    </div>
+                  ) : (
+                    <Choice
+                      chosen={typed >= 1 ? botEntry?.decision ?? null : null}
+                      p={botEntry?.p ?? null}
+                      accent={claudeColor(model?.tier ?? 0)}
+                      u={u}
+                      big={(wide ? 34 : 32) * u}
+                    />
+                  )}
+                  {!thinking ? (
+                    <div
+                      style={{
+                        marginTop: 'auto',
+                        ...tabular,
+                        fontSize: 18 * u,
+                        color: C.ink3,
+                        overflow: 'hidden',
+                        maxHeight: 62 * u,
+                      }}
+                    >
+                      <Typed
+                        text={botEntry?.output_text ?? ''}
+                        progress={typed}
+                        caretColor={claudeColor(model?.tier ?? 0)}
+                        style={{fontFamily: MONO, fontSize: 18 * u, lineHeight: 1.4, display: 'block'}}
                       />
                     </div>
-                    <span style={{...tabular, fontSize: 24 * u, color: C.ink2, whiteSpace: 'nowrap'}}>
-                      {thinkTokens} thinking
-                    </span>
-                  </div>
-                ) : (
-                  <Typed
-                    text={botEntry?.output_text ?? ''}
-                    progress={typed}
-                    caretColor={claudeColor(model?.tier ?? 0)}
-                    style={{
-                      fontFamily: MONO,
-                      fontWeight: 500,
-                      fontSize: (wide ? 25 : 24) * u,
-                      lineHeight: 1.45,
-                      color: C.ink,
-                      wordBreak: 'break-word',
-                      display: 'block',
-                    }}
-                  />
-                )}
-                <div style={{marginTop: 'auto', display: 'flex', justifyContent: 'space-between'}}>
-                  <span style={{...upper(0.16), fontSize: 15 * u, color: C.ink3}}>decisions</span>
-                  <span
-                    style={{
-                      ...tabular,
-                      fontWeight: 800,
-                      fontSize: 34 * u,
-                      color: claudeColor(model?.tier ?? 0),
-                    }}
-                  >
-                    {botDone}
-                  </span>
+                  ) : null}
                 </div>
+                <Tower
+                  bricks={claudeBricks}
+                  accent={claudeColor(model?.tier ?? 0)}
+                  brickH={brickH}
+                  h={towerH}
+                  w={towerW}
+                  u={u}
+                  cols={towerCols}
+                />
+                <Readout bricks={claudeBricks} color={claudeColor(model?.tier ?? 0)} u={u} />
               </div>
             </Panel>
           </div>
