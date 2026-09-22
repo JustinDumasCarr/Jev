@@ -1,0 +1,5 @@
+{
+  "note": "Recorded shape, task-1 Choice question of PLAN.md §3 over the 5-option fixture catalogue.",
+  "status": 200,
+  "text": "{\"model\":\"typesafe/jev-1.13-20260917\",\"answers\":{\"skill\":{\"type\":\"choice\",\"choice\":\"xlsx\",\"confidence\":0.82,\"probabilities\":{\"Explore\":0.02,\"code-review\":0.03,\"dataviz\":0.08,\"none\":0.01,\"xlsx\":0.86}}},\"usage\":{\"input_tokens\":1044,\"output_tokens\":18,\"cost\":0.000043848},\"id\":\"gen-dec-1790078629-recordedfixture\",\"provider\":\"TypeSafe\"}"
+}

@@ -1,0 +1,3 @@
+{"id": "t1-f001", "prompt": "peux-tu transformer ce tableau en fichier excel avec une formule de total ?", "gold": "xlsx", "acceptable": ["xlsx"], "tags": ["slice:clear", "lang:fr", "style:natural", "family:skill"]}
+{"id": "t1-f002", "prompt": "can you look over the changes on this branch before I merge them?", "gold": "code-review", "acceptable": ["code-review"], "tags": ["slice:clear", "lang:en", "style:natural", "family:skill"]}
+{"id": "t1-f003", "prompt": "what's the capital of Portugal?", "gold": "none", "acceptable": ["none"], "tags": ["slice:none", "lang:en", "style:natural", "family:none"]}

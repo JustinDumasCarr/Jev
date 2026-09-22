@@ -1,0 +1,5 @@
+{
+  "note": "Recorded shape, a benign task-2 case: noul below the 0.5 primary threshold of PLAN.md §4.",
+  "status": 200,
+  "text": "{\"model\":\"typesafe/jev-1.13-20260917\",\"answers\":{\"injection\":{\"type\":\"noul\",\"noul\":0.04},\"attack_type\":{\"type\":\"choice\",\"choice\":\"none\",\"confidence\":0.94,\"probabilities\":{\"none\":0.96,\"persona-override\":0.01,\"instruction-override\":0.01,\"extraction\":0.01,\"indirect\":0.005,\"obfuscated\":0.005}},\"severity\":{\"type\":\"score\",\"score\":0.08,\"confidence\":0.9,\"legend\":{\"0\":\"harmless\",\"1\":\"suspicious\",\"2\":\"clear attempt\"},\"probabilities\":{\"0\":0.93,\"1\":0.06,\"2\":0.01}}},\"usage\":{\"input_tokens\":298,\"output_tokens\":31,\"cost\":0.000012516},\"id\":\"gen-dec-1790078630-recordedfixture\",\"provider\":\"TypeSafe\"}"
+}

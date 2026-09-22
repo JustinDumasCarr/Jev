@@ -1,0 +1,5 @@
+{
+  "note": "Recorded shape from the WP0 probe (tests/fixtures/jev_probe_2026-09-22/01_decisions_jev-1.13.json), re-keyed to the task-2 question set of PLAN.md §4. Values are illustrative; the wire format is verbatim.",
+  "status": 200,
+  "text": "{\"model\":\"typesafe/jev-1.13-20260917\",\"answers\":{\"injection\":{\"type\":\"noul\",\"noul\":0.93},\"attack_type\":{\"type\":\"choice\",\"choice\":\"indirect\",\"confidence\":0.71,\"probabilities\":{\"none\":0.02,\"persona-override\":0.03,\"instruction-override\":0.11,\"extraction\":0.07,\"indirect\":0.74,\"obfuscated\":0.03}},\"severity\":{\"type\":\"score\",\"score\":1.87,\"confidence\":0.66,\"legend\":{\"0\":\"harmless\",\"1\":\"suspicious\",\"2\":\"clear attempt\"},\"probabilities\":{\"0\":0.02,\"1\":0.09,\"2\":0.89}}},\"usage\":{\"input_tokens\":412,\"output_tokens\":31,\"cost\":0.000017304},\"id\":\"gen-dec-1790078628-recordedfixture\",\"provider\":\"TypeSafe\"}"
+}

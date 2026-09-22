@@ -1,0 +1,13 @@
+{
+  "catalogue_version": "fixture-1",
+  "frozen": "2026-09-22",
+  "source": "WP1 test fixture — a 5-option stand-in for data/catalogue.json so the tests run without WP2's output",
+  "option_count": 5,
+  "options": [
+    {"name": "Explore", "family": "agent", "description": "Read-only search agent for broad fan-out searches across many files and naming conventions."},
+    {"name": "code-review", "family": "skill", "description": "Review a diff, branch or pull request for correctness bugs and quality cleanups."},
+    {"name": "dataviz", "family": "skill", "description": "Design and build charts, dashboards and data visualisations with a consistent, accessible palette."},
+    {"name": "none", "family": "none", "description": "No listed skill or agent applies; answer directly."},
+    {"name": "xlsx", "family": "skill", "description": "Create, read and edit Excel spreadsheets, including formulas, formatting and multiple sheets."}
+  ]
+}

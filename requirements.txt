@@ -1,0 +1,12 @@
+# Jev vs Claude eval harness — Python 3.11 (/usr/local/bin/python3.11), .venv at the repo root.
+# Pinned 2026-09-22 (WP1). Recreate with:
+#   /usr/local/bin/python3.11 -m venv .venv && ./.venv/bin/python -m pip install -r requirements.txt
+httpx==0.28.1
+pydantic==2.13.5
+numpy==2.4.6
+scikit-learn==1.9.1
+pytest==9.1.1
+python-dotenv==1.2.3
+# typesafe-sdk is intentionally NOT pinned here: the direct TypeSafe key is waitlisted
+# (PLAN.md §12). The Jev adapter's "direct" backend imports it lazily and is only used
+# when TYPESAFE_API_KEY is set. Add `typesafe-sdk` here if that key arrives.
