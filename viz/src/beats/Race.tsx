@@ -39,10 +39,12 @@ const heroMs = (s: System | null) => (s?.hero?.duration_api_ms ?? s?.latency_ms.
 
 export function raceRows(data: FilmProps['data']) {
   const ps = panels(data, 'square') as {sys: System; tier: number}[];
-  // slowest first, so the dolly travels towards the fastest
+  // Fastest first. The camera starts beside Jev on the quickest Claude and then
+  // travels away from it, arriving at each glass exactly as that glass answers —
+  // so every lid landing is witnessed, and the last one is the long wait.
   return ps
     .map((p) => ({sys: p.sys, tier: p.tier, ms: heroMs(p.sys)}))
-    .sort((a, b) => b.ms - a.ms);
+    .sort((a, b) => a.ms - b.ms);
 }
 
 /** Screen seconds the race itself occupies, and the playback rate it implies. */
@@ -63,6 +65,7 @@ export const Race: React.FC<FilmProps & {caption: string; windowSeconds: number}
   const {fps, width, height, durationInFrames} = useVideoConfig();
   const u = height / 1080;
   const {rows, jev, slowest, speed, jevMs} = raceTiming(data, windowSeconds);
+  const layoutWide = width > height;
 
   const elapsed = Math.max(
     0,
@@ -76,24 +79,27 @@ export const Race: React.FC<FilmProps & {caption: string; windowSeconds: number}
   const tumblerW = 300 * u;
   const pitch = PITCH * u;
   const rowX = (i: number) => 520 * u + pitch * i; // world coordinates
-  const lastX = rowX(rows.length - 1);
   const jevX = 26 * u;
   const jevW = JEV_W * u;
 
   /* ---- camera: push in, dolly the row, pull back ----------------- */
-  const raceFrames = windowSeconds * fps;
-  const k = (t: number) => RACE_LEAD + t * raceFrames; // t as a fraction of the race
-  const cam = useCamera([
-    {at: 0, zoom: 0.72, x: rowX(0) + pitch * 0.6, y: benchY - glassH * 0.45},
-    {at: k(0.1), zoom: 0.72, x: rowX(0) + pitch * 0.6, y: benchY - glassH * 0.45},
-    {at: k(0.2), zoom: 1.0, x: rowX(0) + tumblerW * 0.1, y: benchY - glassH * 0.42},
-    {at: k(0.42), zoom: 1.0, x: rowX(0) + tumblerW * 0.1, y: benchY - glassH * 0.42},
-    // the lateral dolly: constant zoom, travelling to the fastest
-    {at: k(0.88), zoom: 1.0, x: lastX + tumblerW * 0.1, y: benchY - glassH * 0.42},
-    {at: k(0.99), zoom: 0.78, x: lastX - pitch * 0.35, y: benchY - glassH * 0.45},
-    {at: durationInFrames - 26, zoom: 0.78, x: lastX - pitch * 0.35, y: benchY - glassH * 0.45},
-    {at: durationInFrames, zoom: 0.84, x: lastX - pitch * 0.35, y: benchY - glassH * 0.5},
-  ]);
+  const camY = benchY - glassH * 0.44;
+  const focus = (i: number) => rowX(i) + tumblerW * 0.5 - (layoutWide ? pitch * 0.9 : pitch * 0.18);
+  // Arrive a few frames before each glass answers, hold while its lid lands, move
+  // on. The pace is therefore the data's own: about 0.8 s a glass here, and a long
+  // deliberate wait before the slowest.
+  const keys: {at: number; zoom: number; x: number; y: number}[] = [
+    {at: 0, zoom: 0.8, x: focus(0), y: camY},
+    {at: RACE_LEAD - 2, zoom: 1.0, x: focus(0), y: camY},
+  ];
+  rows.forEach((r, i) => {
+    const cf = capFrameOf(r.ms);
+    keys.push({at: Math.max(RACE_LEAD, cf - 9), zoom: 1.0, x: focus(i), y: camY});
+    keys.push({at: cf + 13, zoom: 1.0, x: focus(i), y: camY});
+  });
+  keys.push({at: durationInFrames - 30, zoom: 0.72, x: focus(rows.length - 1) - pitch * 0.5, y: camY});
+  keys.push({at: durationInFrames, zoom: 0.76, x: focus(rows.length - 1) - pitch * 0.5, y: camY - 18 * u});
+  const cam = useCamera(keys.filter((kf, i, a) => i === 0 || kf.at > a[i - 1].at));
 
   const exit = ramp(frame, durationInFrames - 10, durationInFrames, EASE_OUT);
 
@@ -214,7 +220,8 @@ export const Race: React.FC<FilmProps & {caption: string; windowSeconds: number}
           position: 'absolute',
           left: 0,
           top: 0,
-          bottom: 0,
+          // the lane below is reserved for labels: the scrim never reaches it
+          height: benchY + 34 * u,
           width: jevX + jevW + 58 * u,
           background: 'linear-gradient(90deg, rgba(7,7,10,1) 0%, rgba(7,7,10,1) 74%, rgba(7,7,10,0) 100%)',
         }}
@@ -238,10 +245,13 @@ export const Race: React.FC<FilmProps & {caption: string; windowSeconds: number}
       <div
         style={{
           position: 'absolute',
-          left: jevX,
-          top: benchY + 46 * u,
-          width: jevW,
+          left: jevX - 10 * u,
+          top: benchY + 40 * u,
+          width: jevW + 20 * u,
           textAlign: 'center',
+          background: 'linear-gradient(180deg, rgba(7,7,10,0.97) 78%, rgba(7,7,10,0) 100%)',
+          paddingBottom: 18 * u,
+          borderRadius: 14 * u,
         }}
       >
         <div style={{fontFamily: SANS, fontWeight: 700, fontSize: 38 * u, color: C.accent}}>
@@ -276,9 +286,9 @@ export const Race: React.FC<FilmProps & {caption: string; windowSeconds: number}
           left: 0,
           right: 'auto',
           top: 46 * u,
-          width: 540 * u,
+          width: (layoutWide ? 760 : 540) * u,
           textAlign: 'left',
-          padding: `0 0 0 ${44 * u}px`,
+          padding: `0 0 0 ${(layoutWide ? jevX + jevW + 70 * u : 62 * u)}px`,
           fontFamily: SANS,
           fontWeight: 700,
           fontSize: 41 * u,

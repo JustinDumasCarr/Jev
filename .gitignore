@@ -17,6 +17,8 @@ viz/out/*
 !viz/out/jev-vs-claude-1080p.FIXTURE.srt
 !viz/out/poster.FIXTURE.png
 !viz/out/contact-film-v2.png
+!viz/out/strip-lid-rim.png
+!viz/out/contact-wide.png
 !viz/out/proto/
 viz/out/proto/*
 !viz/out/proto/P1.FIXTURE.mp4

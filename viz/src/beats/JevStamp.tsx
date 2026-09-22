@@ -28,6 +28,10 @@ export const JevStamp: React.FC<FilmProps & {caption: string}> = ({data, caption
   const elapsed = travel * callMs; // linear: this is the measurement
 
   const stamp = spring({frame: frame - travelFrames, fps, config: {damping: 11, stiffness: 190, mass: 0.8}});
+  // squash on landing, then settle — the stamp has weight
+  const land = frame - travelFrames;
+  const sq = 1 + (land >= 0 ? Math.exp(-land / 7) * Math.sin((land / 6) * Math.PI * 2) * 0.16 : 0);
+  const bloom = land >= 0 ? Math.max(0, 1 - land / 13) : 0;
   const shock = interpolate(frame, [travelFrames, travelFrames + Math.round(0.6 * fps)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -54,21 +58,45 @@ export const JevStamp: React.FC<FilmProps & {caption: string}> = ({data, caption
     <AbsoluteFill style={{backgroundColor: C.bg, opacity: 1 - exit}}>
       <Ambient glow="rgba(255,106,43,0.22)" cam={cam} />
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', transform: cam.transform, transformOrigin: '0 0'}}>
-      {/* the hop */}
-      <div style={{position: 'absolute', top: 210 * u, left: 0, right: 0, height: 3 * u}}>
-        <div style={{position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.06)'}} />
+      {/* the hop: a visible path, and a light that travels out along it and back */}
+      <div style={{position: 'absolute', top: 206 * u, left: 0, right: 0, height: 4 * u}}>
         <div
           style={{
             position: 'absolute',
-            top: -4 * u,
-            left: `${pulseX * 100}%`,
-            width: 200 * u,
-            height: 11 * u,
-            marginLeft: -100 * u,
+            inset: 0,
+            background:
+              'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.14) 12%, rgba(255,255,255,0.14) 88%, rgba(255,255,255,0) 100%)',
+          }}
+        />
+        {[0, 1, 2, 3].map((k) => (
+          <div
+            key={k}
+            style={{
+              position: 'absolute',
+              top: -3 * u,
+              left: `${(pulseX - k * 0.035 * (travel < 0.5 ? 1 : -1)) * 100}%`,
+              width: (150 - k * 32) * u,
+              height: (10 - k * 1.6) * u,
+              marginLeft: -((150 - k * 32) * u) / 2,
+              borderRadius: 999,
+              background: `linear-gradient(90deg, rgba(255,106,43,0) 0%, ${C.accent} 50%, rgba(255,106,43,0) 100%)`,
+              opacity: travel < 1 ? 0.95 - k * 0.24 : 0,
+              filter: `blur(${(2 + k) * u}px)`,
+            }}
+          />
+        ))}
+        {/* the node it left from, lit as it passes */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -8 * u,
+            left: 0,
+            width: 20 * u,
+            height: 20 * u,
             borderRadius: 999,
-            background: `linear-gradient(90deg, rgba(255,106,43,0) 0%, ${C.accent} 50%, rgba(255,106,43,0) 100%)`,
-            opacity: travel < 1 ? 1 : 0,
-            filter: `blur(${2 * u}px)`,
+            background: C.accent,
+            opacity: 0.35 + 0.65 * Math.max(0, 1 - Math.abs(pulseX) * 6),
+            boxShadow: `0 0 ${26 * u}px ${C.accent}`,
           }}
         />
       </div>
@@ -77,6 +105,36 @@ export const JevStamp: React.FC<FilmProps & {caption: string}> = ({data, caption
         <div style={{...upper(0.2), fontSize: 26 * u, color: C.accent}}>{jev?.label ?? 'Jev'}</div>
         <Tag size={16 * u}>via OpenRouter</Tag>
       </div>
+
+      {/* the imprint the stamp leaves on the surface */}
+      {land > 0 ? (
+        <div
+          style={{
+            position: 'absolute',
+            width: stampW,
+            height: 300 * u,
+            borderRadius: 32 * u,
+            border: `${5 * u}px solid rgba(255,106,43,0.16)`,
+            transform: `translate(${10 * u}px, ${14 * u}px) rotate(-2.2deg)`,
+            filter: `blur(${3 * u}px)`,
+          }}
+        />
+      ) : null}
+
+      {/* the light the impact throws */}
+      {bloom > 0 ? (
+        <div
+          style={{
+            position: 'absolute',
+            width: stampW * 2.2,
+            height: stampW * 2.2,
+            borderRadius: 999,
+            background: `radial-gradient(circle, rgba(255,214,180,${0.5 * bloom}) 0%, rgba(255,106,43,${
+              0.22 * bloom
+            }) 32%, rgba(255,106,43,0) 68%)`,
+          }}
+        />
+      ) : null}
 
       {/* shockwave */}
       <div
@@ -98,7 +156,9 @@ export const JevStamp: React.FC<FilmProps & {caption: string}> = ({data, caption
           borderRadius: 32 * u,
           border: `${5 * u}px solid ${C.accent}`,
           background: 'rgba(255,106,43,0.10)',
-          transform: `scale(${interpolate(stamp, [0, 1], [1.45, 1])}) rotate(${interpolate(stamp, [0, 1], [-7, -2.2])}deg)`,
+          transform: `translateY(${interpolate(Math.min(stamp, 1), [0, 1], [-150 * u, 0])}px) scale(${
+            interpolate(stamp, [0, 1], [1.4, 1]) / sq
+          }, ${interpolate(stamp, [0, 1], [1.4, 1]) * sq}) rotate(${interpolate(stamp, [0, 1], [-7, -2.2])}deg)`,
           opacity: stamp > 0.02 ? 1 : 0,
           boxShadow: `0 ${30 * u}px ${80 * u}px rgba(255,106,43,0.18)`,
         }}

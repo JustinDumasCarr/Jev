@@ -195,10 +195,10 @@ export const Thousand: React.FC<FilmProps & {caption: string}> = ({data, layout,
   // the resolution: the counts freeze the moment Jev finishes
   const frozen = frame > jevDone + 26 ? spanMs : null;
 
-  const cols = 3;
-  const gapX = 33 * u;
-  const blockW = (width - 130 * u - gapX * 2) / cols;
-  const gridTop = 262 * u;
+  const cols = layout === 'wide' ? 5 : 3;
+  const gapX = (layout === 'wide' ? 26 : 33) * u;
+  const blockW = (width - 130 * u - gapX * (cols - 1)) / cols;
+  const gridTop = (layout === 'wide' ? 286 : 262) * u;
   const rowH = ROWS * (blockW / COLS) + 52 * u;
   const jevX = 65 * u + blockW / 2;
   const jevY = gridTop + rowH * 0.42;
@@ -255,7 +255,7 @@ export const Thousand: React.FC<FilmProps & {caption: string}> = ({data, layout,
             display: 'grid',
             gridTemplateColumns: `repeat(${cols}, 1fr)`,
             columnGap: gapX,
-            rowGap: 30 * u,
+            rowGap: (layout === 'wide' ? 42 : 30) * u,
           }}
         >
           {rows.map((r, i) => (

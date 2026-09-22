@@ -72,13 +72,13 @@ export const Watermark: React.FC<{fixture: boolean; width: number; height: numbe
           top: '50%',
           transform: 'translate(-50%, -50%) rotate(-90deg)',
           transformOrigin: 'center',
-          marginLeft: Math.round(width * 0.022),
+          marginLeft: Math.round(height * 0.020),
           background: C.accent,
           color: '#140600',
-          padding: `${Math.round(width * 0.006)}px ${Math.round(width * 0.016)}px`,
+          padding: `${Math.round(height * 0.006)}px ${Math.round(height * 0.015)}px`,
           borderRadius: 6,
           ...upper(0.16),
-          fontSize: Math.round(width * 0.0145),
+          fontSize: Math.round(height * 0.0145),
           whiteSpace: 'nowrap',
         }}
       >

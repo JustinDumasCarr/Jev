@@ -1,7 +1,7 @@
 import React from 'react';
 import {interpolate, random, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {C} from '../theme';
-import {IMPACT, SNAP, clamp01, wobble} from '../stage';
+import {SNAP, clamp01, wobble} from '../stage';
 
 /* A real tumbler, drawn big.
  *
@@ -12,10 +12,17 @@ import {IMPACT, SNAP, clamp01, wobble} from '../stage';
  * The one thing that is never eased, sprung or fudged: `frac`, the liquid level,
  * which is elapsed time over the shared cap and nothing else. */
 
+/** One liquid for every glass. The system is identified by the rim, the lid and
+ *  the label — never by the colour of what is being poured, because what is being
+ *  poured is the same thing in every glass: elapsed time. */
+export const LIQUID = '#4d8fe0';
+export const LIQUID_DEEP = '#2f6ec0';
+
 export type TumblerProps = {
   id: string;
   /** 0..1, strictly linear in elapsed time */
   frac: number;
+  /** the system's colour: rim, lid, label and a thin tint. Not the liquid. */
   color: string;
   accent?: boolean;
   /** frames since this system answered; negative while it is still pouring */
@@ -83,9 +90,11 @@ export const Tumbler: React.FC<TumblerProps> = ({
   const surfRx = halfAt(surfaceY);
 
   /* ---- impact -------------------------------------------------- */
-  const lidS = done ? spring({frame: since, fps, config: IMPACT}) : 0;
-  const lidY = done ? interpolate(Math.min(lidS, 1), [0, 0.16, 1], [-86 * u, -104 * u, 0]) : 0;
-  const lidSquash = done ? 1 + wobble(since - 6, 6, 8) * 0.26 : 1;
+  // A lid has weight: it falls over about half a second and overshoots a little
+  // before it settles. IMPACT was too stiff — it read as a pop, not a drop.
+  const lidS = done ? spring({frame: since, fps, config: {damping: 13, stiffness: 140, mass: 1.0}}) : 0;
+  const lidY = done ? interpolate(lidS, [0, 1], [-130 * u, 0]) : 0;
+  const lidSquash = done ? 1 + wobble(since - 9, 6, 8) * 0.24 : 1;
   const flash = done ? Math.max(0, 1 - since / 10) : 0;
   const splash = clamp01(1 - sincePour / 10);
 
@@ -99,9 +108,9 @@ export const Tumbler: React.FC<TumblerProps> = ({
           </clipPath>
           {/* colour deepens with depth */}
           <linearGradient id={`lq-${cid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity={0.72} />
-            <stop offset="45%" stopColor={color} stopOpacity={0.9} />
-            <stop offset="100%" stopColor={color} stopOpacity={1} />
+            <stop offset="0%" stopColor={LIQUID} stopOpacity={0.78} />
+            <stop offset="45%" stopColor={LIQUID} stopOpacity={0.93} />
+            <stop offset="100%" stopColor={LIQUID_DEEP} stopOpacity={1} />
           </linearGradient>
           <linearGradient id={`gl-${cid}`} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="rgba(255,255,255,0.16)" />
@@ -122,7 +131,27 @@ export const Tumbler: React.FC<TumblerProps> = ({
         />
         {/* the light the liquid bounces onto the bench */}
         {level > 4 * u ? (
-          <ellipse cx={cx} cy={baseY + 6 * u} rx={botW * 0.5} ry={8 * u} fill={color} opacity={0.18} />
+          <>
+            {/* caustic: the light the liquid throws onto the bench */}
+            <ellipse
+              cx={cx}
+              cy={baseY + 7 * u}
+              rx={botW * (0.52 + clamp01(frac) * 0.22)}
+              ry={(9 + clamp01(frac) * 5) * u}
+              fill={LIQUID}
+              opacity={0.1 + clamp01(frac) * 0.22}
+              style={{filter: `blur(${9 * u}px)`}}
+            />
+            <ellipse
+              cx={cx}
+              cy={baseY + 6 * u}
+              rx={botW * 0.34}
+              ry={6 * u}
+              fill="#bcd9ff"
+              opacity={0.08 + clamp01(frac) * 0.2}
+              style={{filter: `blur(${5 * u}px)`}}
+            />
+          </>
         ) : null}
 
         {/* the vessel body */}
@@ -165,6 +194,26 @@ export const Tumbler: React.FC<TumblerProps> = ({
                 fill="none"
                 strokeLinecap="round"
               />
+              {/* the back edge of the base, seen through the liquid: shifted
+                  sideways and brightened, the way glass bends what is behind it */}
+              <ellipse
+                cx={cx + 9 * u}
+                cy={baseY - baseH}
+                rx={halfAt(baseY - baseH) * 1.04}
+                ry={ryAt(baseY - baseH) * 1.15}
+                fill="none"
+                stroke="rgba(190,222,255,0.5)"
+                strokeWidth={3 * u}
+              />
+              {/* and the tier's own colour as a thin tint on the wall */}
+              <rect
+                x={cx - topW / 2}
+                y={surfaceY}
+                width={topW}
+                height={level + baseH}
+                fill={color}
+                opacity={0.12}
+              />
             </>
           ) : null}
 
@@ -178,8 +227,8 @@ export const Tumbler: React.FC<TumblerProps> = ({
                 cy={surfaceY + slosh * 4 * u}
                 rx={surfRx}
                 ry={surfRy}
-                fill={color}
-                opacity={0.3}
+                fill={LIQUID}
+                opacity={0.42}
               />
               <ellipse
                 cx={cx}
@@ -282,7 +331,7 @@ export const Tumbler: React.FC<TumblerProps> = ({
         {done ? (
           <g
             transform={`translate(0 ${lidY}) translate(${cx} ${topY}) scale(${1 / lidSquash} ${lidSquash}) translate(${-cx} ${-topY})`}
-            opacity={clamp01(lidS * 3)}
+            opacity={clamp01(since / 2)}
           >
             {/* the side of the lid, so it has thickness */}
             <path

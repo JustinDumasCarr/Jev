@@ -225,7 +225,7 @@ export const Targets: React.FC<FilmProps & {caption: string}> = ({data, layout, 
       <div
         style={{
           position: 'absolute',
-          top: 188 * u,
+          top: (layout === 'wide' ? 150 : 188) * u,
           left: 0,
           right: 0,
           display: 'grid',
@@ -233,7 +233,7 @@ export const Targets: React.FC<FilmProps & {caption: string}> = ({data, layout, 
           justifyContent: 'center',
           justifyItems: 'start',
           columnGap: layout === 'wide' ? 96 * u : 18 * u,
-          rowGap: 18 * u,
+          rowGap: (layout === 'wide' ? 10 : 18) * u,
         }}
       >
         {shots.map((s, i) => (

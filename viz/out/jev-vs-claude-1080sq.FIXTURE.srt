@@ -11,22 +11,22 @@ One real case. One question: is this a prompt injection?
 Jev answers.
 
 4
-00:00:04,400 --> 00:00:14,367
+00:00:04,400 --> 00:00:14,767
 Jev has categorized before Claude has finished thinking.
 
 5
-00:00:14,500 --> 00:00:23,967
+00:00:14,900 --> 00:00:22,367
 Now do it a thousand times.
 
 6
-00:00:24,100 --> 00:00:33,067
+00:00:22,500 --> 00:00:31,467
 Jev is as good as Opus 4.6 (thinking off).
 
 7
-00:00:30,933 --> 00:00:33,067
+00:00:29,333 --> 00:00:31,467
 Weakest slice: French -6 points vs English.
 
 8
-00:00:33,200 --> 00:00:37,067
+00:00:31,600 --> 00:00:35,467
 Jev is as good as Opus 4.6 (thinking off); as good as Sonnet 5 (thinking on).
 

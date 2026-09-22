@@ -54,7 +54,7 @@ export function wallSeconds(data, layout) {
 /** The race beat is stretched to a fixed screen window and the playback rate is
  * stated on screen; the beat never shrinks below what the row needs to read. */
 export function raceWindowSeconds(layout) {
-  return layout === 'wide' ? 8.8 : 7.6;
+  return layout === 'wide' ? 9.2 : 8.0;
 }
 
 export function beats(data, layout) {
@@ -80,7 +80,7 @@ export function beats(data, layout) {
     },
     {
       id: 'thousand',
-      seconds: wide ? 10.5 : 9.6,
+      seconds: wide ? 8.5 : 7.6,
       caption: 'Now do it a thousand times.',
     },
     {
