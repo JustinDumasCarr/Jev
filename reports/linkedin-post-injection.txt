@@ -1,6 +1,6 @@
 We ran prompt-injection attempts past a model that never writes a single token.
 
-Jev (TypeSafe) returns a typed decision with a probability. No text, no reasoning, no streaming.
+Jev (TypeSafe) returns a typed decision with a probability. No text, no streaming.
 
 So we raced it against every current Claude model on the same labelled messages: half attacks, half harmless.
 
@@ -18,11 +18,11 @@ Jev almost never flags a harmless message, but misses roughly one attack in eigh
 
 Haiku catches nearly every attack, and flags one harmless message in seven.
 
-For a guardrail on every chat turn, that trade-off matters more than the headline number.
+For a guardrail on every turn, that trade-off matters more than the headline.
 
 The video shows one decision as it happens, then a thousand, then the ranking.
 
-Measured, not quoted. Our own run, Claude via Claude Code at low effort with thinking off, Jev via OpenRouter. Preliminary cut, same cases for every model. Datasets, harness and results are public, link in comments.
+Measured, not quoted. Our own run, Claude via Claude Code at low effort with thinking off, Jev via OpenRouter. Same cases for every model. Datasets, harness and results are public, link in comments.
 
 Where would a 0.5 s guardrail change what you ship?
 
