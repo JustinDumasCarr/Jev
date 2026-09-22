@@ -128,3 +128,5 @@
   20/800 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
   30/800 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
   40/800 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/800 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/800 {'ok': 60, 'truncated': 0, 'refusal': 0, 'error': 0}
