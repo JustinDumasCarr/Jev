@@ -47,3 +47,7 @@ viz/out/proto/v2/*
 !viz/out/proto/v2/P3.FIXTURE.mp4
 !viz/out/proto/v2/P5.FIXTURE.mp4
 !viz/out/proto/v2/contact-v2.png
+
+# WP10: the pre-scrub runs, kept on disk and out of git. Every row in them was
+# scored against prompts, a catalogue and cases that no longer exist (data/CHANGED-IDS.md).
+results-pre-scrub/
