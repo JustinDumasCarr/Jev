@@ -1,6 +1,6 @@
 # Jev vs Claude — evaluation plan
 
-**Owner:** Justin (AI engineer). **Executors:** Opus 5 subagents, one per work package (briefs in `SUBAGENT-BRIEFS.md`). **Status:** planned 2026-09-22, not started. **Background:** `reference/JEV-RESEARCH-2026-09-22.md`. **Access (decided 2026-09-22):** Claude runs through the Claude Code subscription (`claude -p`), not the Anthropic API; Jev through OpenRouter. See §2 and §6. **Repo:** this folder (`Jev`) is a sibling of `../Arianne2026`, the product repo the eval is for; Arianne2026 files are referenced as `../Arianne2026/...`.
+**Owner:** Justin (AI engineer). **Executors:** Opus 5 subagents, one per work package (briefs in `SUBAGENT-BRIEFS.md`). **Status:** planned 2026-09-22, not started. **Background:** `reference/JEV-RESEARCH-2026-09-22.md`. **Access (decided 2026-09-22):** Claude runs through the Claude Code subscription (`claude -p`), not the Anthropic API; Jev through OpenRouter. See §2 and §6. **Repo:** this folder (`Jev`) is self-contained; the product repo the eval was run for is not part of it and is referred to below as the product repo.
 
 ## 1. Question we are answering
 
@@ -40,7 +40,7 @@ For each task we run **1,000 labelled prompts** through Jev and through every cu
 
 ## 3. Task 1 — skill and agent search
 
-**Catalogue (the option set).** 36 options: the 25 skills and 5 agent types listed in a Claude Code session in the Arianne2026 repo (dataviz, artifact-design, artifact-diagramming, artifact-capabilities, update-config, keybindings-help, code-review, simplify, fewer-permission-prompts, loop, claude-api, workflow-authoring, run, session-start-hook, docs, import-memory, morning, skill-creator, canvas-design, xlsx, pptx, pdf, docx, init, security-review; agents claude-code-guide, Explore, Plan, general-purpose, statusline-setup), the 5 team skills planned in `../Arianne2026/.planning/HUB-PLAN.md` (writer, research, wp-page-update, client-email, marketing-analysis), and `none`. Each option has a name and a one-paragraph description taken from the real skill listing, or written from HUB-PLAN for the five planned ones. The catalogue is frozen in `data/catalogue.json` and is the same text for Jev (`Choice.criteria`) and Claude (system prompt).
+**Catalogue (the option set).** 36 options: the 25 skills and 5 agent types listed in a Claude Code session in the product repo (dataviz, artifact-design, artifact-diagramming, artifact-capabilities, update-config, keybindings-help, code-review, simplify, fewer-permission-prompts, loop, claude-api, workflow-authoring, run, session-start-hook, docs, import-memory, morning, skill-creator, canvas-design, xlsx, pptx, pdf, docx, init, security-review; agents claude-code-guide, Explore, Plan, general-purpose, statusline-setup), the 5 team skills planned in the product's internal planning document (writer, research, wp-page-update, client-email, marketing-analysis), and `none`. Each option has a name and a one-paragraph description taken from the real skill listing, or, for the five planned ones, a generic description of what the skill does for a small business. The catalogue is frozen in `data/catalogue.json` and is the same text for Jev (`Choice.criteria`) and Claude (system prompt).
 
 **Case format** (`data/task1_cases.jsonl`, one per line):
 
@@ -91,7 +91,7 @@ Every case is tagged `prefilter:caught` or `prefilter:passed`. Caught cases stil
 
 | Slice | Count | Source |
 |---|---|---|
-| Benign, ARIANNE-realistic (relocation, neighbourhoods, schools, fees questions, EN+FR) | 250 | synthesised from the Arianne2026 specs and `../Arianne2026/content/`; no real client text |
+| Benign, banking-app support (accounts, cards, transfers, fees, fraud alerts, login trouble, statements, loans; EN) | 250 | synthesised; no real product, institution or customer text. This slice was a domain-realistic slice for the product the eval was run for until it was regenerated on 2026-09-22, before publication, for privacy. |
 | Benign, hard negatives (quotes an injection while discussing security; "ignore my last message"; role-play requests that are legitimate; long pasted articles) | 150 | synthesised |
 | Benign, generic chat | 100 | public benign splits |
 | Injection, direct jailbreak / persona override | 150 | public datasets (candidates: deepset/prompt-injections, jackhhao/jailbreak-classification, hackaprompt, allenai/wildjailbreak, xTRam1/safe-guard-prompt-injection; licences verified in WP3) |
@@ -212,7 +212,7 @@ Harness rules (from the eval checklist, all mandatory):
 | 5 | Smoke + pilot | Opus 5 subagent E | 1, 4 | `results/` pilot rows, cost extrapolation, go / no-go |
 | 6 | Full runs | subagent E (continued) | 5 + Justin's go | all `results/` per §7 |
 | 7 | Analysis | Opus 5 subagent F | 6 | `harness/metrics.py` outputs, figures, disagreement read |
-| 8 | Report + decision | subagent F + Justin | 7 | `REPORT.md`, `../Arianne2026/reports/jev-vs-claude-2026-09.md` summary (committed in Arianne2026), open-brain capture, register entry if we adopt |
+| 8 | Report + decision | subagent F + Justin | 7 | `REPORT.md`, a 300-word summary committed in the product repo, open-brain capture, register entry if we adopt |
 | 9 | Latency animation | Opus 5 subagent G | 1 (fixture build), 7 (real data) | `viz/latency-race.html` + `viz/out/latency-race-1080p.mp4` per `ANIMATION-PLAN.md`: a real-time race of one decision across all nine systems, then distribution, throughput, cost and accuracy with CIs |
 
 WP1, WP2 and WP3 run in parallel. WP9 builds against fixture data any time after WP1 and swaps in real data after WP7. WP0's remaining human step (OpenRouter key into `.env`) takes five minutes: do it first.
@@ -220,7 +220,7 @@ WP1, WP2 and WP3 run in parallel. WP9 builds against fixture data any time after
 ## 11. What we do with the answer
 
 - Task 2: if Jev's equivalent tier is Sonnet 5 or better on `prefilter:passed` with recall ≥ 0.95 on direct injections, it becomes the first model gate in the chat app and in the prospect email agent, with Claude only on the `noul` band 0.3–0.7. If its equivalent tier is Haiku or below, or FR recall is more than 5 points under EN, it is not adopted for the guardrail and the reasons go in the report.
-- Task 1: if top-1 strict accuracy is within 2 points of Sonnet 5, we prototype a Jev router in front of skill selection for the team skills (`../Arianne2026/.claude/skills/`), measuring end-to-end latency saved. Otherwise we keep description-based triggering.
+- Task 1: if top-1 strict accuracy is within 2 points of Sonnet 5, we prototype a Jev router in front of skill selection for the team skills in the product repo, measuring end-to-end latency saved. Otherwise we keep description-based triggering.
 - Either way, the datasets stay as living suites: new production failure modes become cases, and the eval re-runs on each new Jev or Claude release.
 
 ## 12. Assumptions and open items
@@ -228,5 +228,5 @@ WP1, WP2 and WP3 run in parallel. WP9 builds against fixture data any time after
 - **Jev access (updated 2026-09-22):** the direct TypeSafe key is waitlisted, but Jev is self-serve today through resellers. **Primary route: OpenRouter**, slug `typesafe/jev-1.13` (pinned; `~typesafe/jev-latest`, with the tilde, is the rolling alias). Verified 2026-09-22: `POST /api/alpha/decisions`, ~280 ms upstream, 400–700 ms wall via the hop, billed at input tokens × $0.042/M with a 276-token fixed overhead per call; not deterministic run to run (same body gave `noul` 0.70 then 0.68), which is why Jev gets 3 reps, same `state` + `questions` body. Alternatives: Cloudflare AI (`typesafe/jev`), AI/ML API (`typesafe/jev` on `/v1/decisions`, 32K context), Vercel AI Gateway. Cloudflare and AI/ML API expose only the unversioned alias, so OpenRouter first. Latency is reported as "via OpenRouter" (one extra hop); accuracy is unaffected. Reseller pricing is not published on the listing pages, so WP0 records the actual charge of one call. If the direct key arrives later, re-run the 200-case variance subset on it to confirm parity and switch.
 - **Claude access is the Claude Code subscription**, not the API. Verified 2026-09-22 that all eight Claude ids are served with matching ids and that structured output, `--effort` and `duration_api_ms` work. What this costs the design: thinking is not controllable per call (only effort), the `opus5-nothink` config may not exist, latency is measured as the CLI's API round trip ("via Claude Code"), dollar costs are notional list prices computed from logged tokens, and throughput is bounded by usage windows rather than rate limits. If any Claude model later stops being served through the subscription, it is dropped from the matrix and the report says so.
 - "Opus x" in the request is read as every served Opus (4.6, 4.7, 4.8, 5). Legacy Opus 4.5 and Sonnet 4.5 are excluded; add them only if Justin asks.
-- The skill catalogue mirrors what Claude Code lists in the Arianne2026 repo today plus the five planned team skills; it is an approximation of the production router, not the router itself.
+- The skill catalogue mirrors what Claude Code lists in the product repo today plus the five planned team skills; it is an approximation of the production router, not the router itself.
 - No real client or prospect text goes into `data/`; every domain-realistic case is synthesised.

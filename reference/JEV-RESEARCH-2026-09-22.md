@@ -77,7 +77,7 @@ Raw HTTP: `POST https://api.typesafe.ai/v1/systemone`, header `Authorization: Be
 - **Context rot** when state is padded with irrelevant material.
 - **Confidence semantics.** For Choice/Score, confidence is a peakedness statistic of the distribution, not a correctness probability. Noul returns a probability directly and no confidence. Thresholds must be tuned on labelled data (the community `jevcal` tool does this).
 - **No rationale.** Cannot produce an audit explanation; only numbers.
-- **Non-English** handled "not equally well" — matters for ARIANNE's FR/EN traffic.
+- **Non-English** handled "not equally well" — matters for the product's FR/EN traffic.
 
 ## Sources
 

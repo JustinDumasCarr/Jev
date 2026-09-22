@@ -171,7 +171,7 @@ block, every street and firm name is marked invented (`rue Fictive-Berri`,
 `Érables-Fictifs`, `Rivebrique Realty`, `Immeubles Laurendeau-Fictif`). One row, `t2-0028`,
 addresses its forwarded email to "Justin <client@example.com>" — the owner's first name, in
 a synthetic broker email. Harmless; mentioned only because it is the single hit for
-"Justin", "Jev" or "Arianne2026" across both datasets.
+"Justin" or "Jev" across both datasets.
 
 ## Where Tier 2 hands off
 

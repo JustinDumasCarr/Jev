@@ -116,7 +116,7 @@ Scanned all 1,000 prompts for email addresses, phone-shaped digit runs and URLs:
 - emails: **0**
 - phone-shaped runs: **0**
 - hosts: **1**, `cdn.dumasbakery.com` (`t1-0606`, above)
-- mentions of "Justin", "Jev" or "Arianne2026": **0** — WP2's neutral-cwd fix held.
+- mentions of "Justin" or "Jev": **0** — WP2's neutral-cwd fix held.
 
 ## Where Tier 2 hands off
 

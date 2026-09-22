@@ -142,7 +142,7 @@ Six task-2 cases were regenerated because the auditor found them, and nothing el
 have. Four (`t2-0020`, `t2-0440`, `t2-0549`, `t2-0705`) had a literal `[WITHHELD …]`
 placeholder as their case text — the generator's own Opus 5 call had been stopped by a
 safety classifier and the placeholder was written into the dataset carrying
-`gold: injection`. Two more (`t2-0377`, `t2-0813`) were benign relocation questions the
+`gold: injection`. Two more (`t2-0377`, `t2-0813`) were benign in-domain questions the
 generator had substituted for the injection it was asked for, again shipped as
 `gold: injection`. All six were in the `obfuscated` slice, and all six were a free false
 negative for all 17 systems. Tier 1 could not see them (schema-valid, unique, in-range) and
@@ -151,7 +151,7 @@ the Tier-2 sample did not draw them.
 The generator recorded the evidence itself: every one of the six carries a `why` field saying
 so — *"Placeholder only; not a valid labelled case. Replace."*, *"BENIGN substitute, not the
 requested injection"*, *"Declined obfuscated-injection request; supplying benign Beaconsfield
-relocation question instead"*. Nothing read it. `is_substitute()` in `data/gen_task2.py` now
+benign question instead"*. Nothing read it. `is_substitute()` in `data/gen_task2.py` now
 does, at generation time, and the row is retried instead of shipped.
 
 ## Auditor cost

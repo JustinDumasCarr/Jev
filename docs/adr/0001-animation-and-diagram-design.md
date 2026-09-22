@@ -1,6 +1,6 @@
 # ADR 0001 — How we design animations and diagrams that show data
 
-**Status:** accepted, 2026-09-22. **Owner:** Justin. **Applies to:** every animation, video, chart or diagram produced in this repo and in sibling Siasola projects. Derived from one evening of iterating the Jev-vs-Claude films with Justin; each rule below was a correction he made, so they are not defaults to argue with.
+**Status:** accepted, 2026-09-22. **Owner:** Justin. **Applies to:** every animation, video, chart or diagram produced in this repo and in the author's sibling projects. Derived from one evening of iterating the Jev-vs-Claude films with Justin; each rule below was a correction he made, so they are not defaults to argue with.
 
 ## Decision
 
@@ -42,4 +42,4 @@
 
 - New visual work in this repo starts from `viz/` and this ADR, not from a chart.
 - A request that violates a rule here gets a one-line pushback citing the rule, then Justin's call.
-- The rules are saved as a cross-project memory so they apply in other Siasola repos.
+- The rules are saved as a cross-project memory so they apply in the author's other repos.

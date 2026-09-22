@@ -202,12 +202,12 @@ def personal_data() -> None:
                 if "555-01" not in p.replace(" ", "-") and "555 01" not in p:
                     real_phone.append((c["id"], p))
         leak = [c["id"] for c in rows
-                if re.search(r"\bJustin\b|\bJev\b|Arianne2026", c[field])]
+                if re.search(r"\bJustin\b|\bJev\b", c[field])]
         print(f"  {task}: non-fictional email domains {len(bad_mail)} {bad_mail[:5]}")
         print(f"         non-fictional hosts {len(bad_host)} {sorted(set(bad_host))[:5]}")
         print(f"         phone-shaped outside the 555-01xx reserved block "
               f"{len(real_phone)} {real_phone[:5]}")
-        print(f"         mentions Justin / Jev / Arianne2026: {len(leak)} {leak[:5]}")
+        print(f"         mentions Justin / Jev: {len(leak)} {leak[:5]}")
 
 
 def main() -> int:

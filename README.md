@@ -24,5 +24,5 @@ pip install -r requirements.txt      # written by WP0
 cp .env.example .env                 # then fill in OPENROUTER_API_KEY (Claude runs via the logged-in `claude` CLI)
 ```
 
-This repo sits next to `../Arianne2026`, which it reads for the skill catalogue and domain content. Status and
+This repo is self-contained. The skill catalogue and the domain vocabulary behind the datasets were drawn from an internal planning document and a content folder in the product repo the eval was run for; neither is part of this repo. Status and
 working rules are in `CLAUDE.md`.

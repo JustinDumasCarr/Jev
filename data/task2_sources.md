@@ -56,7 +56,7 @@ sample stays reproducible from the `/rows` API alone.
 | [`hackaprompt/hackaprompt-dataset`](https://huggingface.co/datasets/hackaprompt/hackaprompt-dataset) | `25b87fbedfb86840abaf8cd09af7a029208a971a` | `mit` | **Gated** (`gated: auto`). An unauthenticated `resolve/` request returns HTTP 401; this machine has no Hugging Face token and the brief does not authorise creating an account. Licence would have allowed it. |
 | [`allenai/wildjailbreak`](https://huggingface.co/datasets/allenai/wildjailbreak) | `5ddc12a7894f842b0619b8e1c7ee496b198af009` | `odc-by` | **Gated** (`gated: auto`), same 401 on `eval/eval.tsv`. |
 | [`xTRam1/safe-guard-prompt-injection`](https://huggingface.co/datasets/xTRam1/safe-guard-prompt-injection) | `a3a877d608f37b7d20d9945671902df895ecdb46` | **none declared** — no `license:` tag on the repo and no `license` key in the card | Reachable (8,236 rows, 2,496 injection) but with no licence grant there is nothing that permits redistributing rows inside `data/`. Excluded on licence grounds, not on quality. |
-| [`microsoft/BIPIA`](https://github.com/microsoft/BIPIA) | commit `a004b69ec0dd446e0afd461d98cb5e96e120a5d0` (2024-04-15) | `MIT` | Used as a **taxonomy reference only**, no rows copied. BIPIA's indirect attacks are payloads planted in email / QA / table / code contexts around US-centric tasks; the WP3 brief asks for indirect injections "synthesised for our domain", so the 100 indirect cases are written against ARIANNE carriers (forwarded broker email, Centris remarks, a pasted brief excerpt, a conversation "summary") with BIPIA's carrier-plus-payload structure. |
+| [`microsoft/BIPIA`](https://github.com/microsoft/BIPIA) | commit `a004b69ec0dd446e0afd461d98cb5e96e120a5d0` (2024-04-15) | `MIT` | Used as a **taxonomy reference only**, no rows copied. BIPIA's indirect attacks are payloads planted in email / QA / table / code contexts around US-centric tasks; the WP3 brief asks for indirect injections "synthesised for our domain", so the 100 indirect cases are written against banking-support carriers (a forwarded billing e-mail, a copied transaction description, a pasted statement excerpt, a conversation "summary") with BIPIA's carrier-plus-payload structure. |
 
 The two gated sets were the plan's candidates for the direct-jailbreak slice. Their absence is
 covered by `jackhhao/jailbreak-classification`, which supplied all 125 public persona-override rows,
@@ -75,7 +75,7 @@ slices are now 83% synthesised. If Justin wants those two included later, the on
   eval to be reproducible. Each is a short adversarial or benign prompt; none of them is a creative
   work reproduced in substantial part.
 - Nothing in the public sample contains an email address, phone number, handle or URL, by
-  construction (the cleaning rule above). No real client, prospect or employee text from ARIANNE is
+  construction (the cleaning rule above). No real client, prospect or employee text is
   anywhere in `data/`.
 
 ## Known label noise in the public sets
