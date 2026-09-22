@@ -201,8 +201,9 @@ Primary run ≈ $115. Variance subset (+2 reps × 200 × 8 Claude models) ≈ $4
 | 6 | Full runs | subagent E (continued) | 5 + Justin's go | all `results/` per §7 |
 | 7 | Analysis | Opus 5 subagent F | 6 | `harness/metrics.py` outputs, figures, disagreement read |
 | 8 | Report + decision | subagent F + Justin | 7 | `REPORT.md`, `../Arianne2026/reports/jev-vs-claude-2026-09.md` summary (committed in Arianne2026), open-brain capture, register entry if we adopt |
+| 9 | Latency animation | Opus 5 subagent G | 1 (fixture build), 7 (real data) | `viz/latency-race.html` + `viz/out/latency-race-1080p.mp4` per `ANIMATION-PLAN.md`: a real-time race of one decision across all nine systems, then distribution, throughput, cost and accuracy with CIs |
 
-WP1, WP2 and WP3 run in parallel. WP0's human steps (OpenRouter key, retention setting) take ten minutes: do them first.
+WP1, WP2 and WP3 run in parallel. WP9 builds against fixture data any time after WP1 and swaps in real data after WP7. WP0's human steps (OpenRouter key, retention setting) take ten minutes: do them first.
 
 ## 11. What we do with the answer
 

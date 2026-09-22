@@ -260,3 +260,25 @@ for Justin to post. Commit.
 ```
 
 Acceptance: REPORT.md answers the headline question in its first paragraph with numbers and CIs.
+
+---
+
+## WP9 — Latency animation (subagent G)
+
+```
+Work package WP9. Read ANIMATION-PLAN.md fully; it is the specification. Load the dataviz skill before writing any
+drawing code and take the palette from its references/palette.md. Build in this order: (1) harness/viz_data.py
+that turns results/ plus the WP7 metrics output into viz/data.json in the schema of ANIMATION-PLAN.md §3, and
+viz/data.fixture.json with the placeholder values in §3 and meta.fixture = true, with a pytest that both produce
+schema-valid output; (2) viz/latency-race.html as a pure render(t_ms) function implementing every scene in §5 and
+every rule in §6, controls per §5, reduced-motion path, the PLACEHOLDER DATA watermark whenever meta.fixture is
+true (no flag may remove it); (3) viz/build.py that inlines data.json, exports frames at 30 fps through
+playwright-cli, encodes viz/out/latency-race-1080p.mp4 with ffmpeg and writes the matching .srt. Scene 7
+(accuracy with CIs and the templated verdict) is mandatory and must render correctly for both a Jev-wins and a
+Jev-loses data.json; test both with fixtures. If results/ has real rows and results/analysis/ exists, run step (4):
+rebuild on real data, check three numbers by hand against results/analysis/, commit data.json, the html and the
+mp4. Otherwise stop after (3) and publish the fixture page as an Artifact for review. No API spend. Commit.
+```
+
+Acceptance: ANIMATION-PLAN.md §8's acceptance list; the fixture page is reviewable before any real run exists.
+
