@@ -5,3 +5,22 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 viz/frames/
+
+# WP9 (ANIMATION-PLAN.md): the Remotion subproject. node_modules and every render stay
+# out of git except one clearly named fixture cut per layout and the prototype round, so
+# Justin can watch them without the repo carrying every re-render.
+viz/node_modules/
+viz/out/*
+!viz/out/jev-vs-claude-1080sq.FIXTURE.mp4
+!viz/out/jev-vs-claude-1080p.FIXTURE.mp4
+!viz/out/jev-vs-claude-1080sq.FIXTURE.srt
+!viz/out/jev-vs-claude-1080p.FIXTURE.srt
+!viz/out/poster.FIXTURE.png
+!viz/out/proto/
+viz/out/proto/*
+!viz/out/proto/P1.FIXTURE.mp4
+!viz/out/proto/P2.FIXTURE.mp4
+!viz/out/proto/P3.FIXTURE.mp4
+!viz/out/proto/P4.FIXTURE.mp4
+!viz/out/proto/P5.FIXTURE.mp4
+!viz/out/proto/contact.png

@@ -1,0 +1,23 @@
+{
+  "name": "jev-vs-claude-viz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WP9 — the Jev vs Claude latency film (ANIMATION-PLAN.md). Remotion composition; data comes from harness/viz_data.py, never from this package.",
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "./render.sh",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.416",
+    "@remotion/google-fonts": "4.0.416",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.416"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}
