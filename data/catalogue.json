@@ -1,7 +1,7 @@
 {
   "catalogue_version": "1.0.0",
   "frozen": "2026-09-22",
-  "source": "PLAN.md section 3; descriptions from each skill's SKILL.md / public documentation, and from ../Arianne2026/.planning/HUB-PLAN.md Steps 3-5 for writer, research, wp-page-update, client-email, marketing-analysis.",
+  "source": "PLAN.md section 3; descriptions from each skill's SKILL.md / public documentation, and from an internal planning document for writer, research, wp-page-update, client-email, marketing-analysis.",
   "option_count": 36,
   "options": [
     {
@@ -47,7 +47,7 @@
     {
       "name": "client-email",
       "family": "skill",
-      "description": "The ARIANNE prospect email agent (HUB-PLAN Step 3). It takes an inbound prospect thread that a human has tagged, creates or updates the contact in HubSpot with source, date and thread link, extracts what the person actually wants (buy, rent or relocate, timeline, budget signals, family situation, neighbourhood interests), computes what qualification information is still missing against the checklist, writes a reply in Manon's approved voice asking for the gaps or answering their questions, and follows the thread until the checklist is complete, alerting the team when a hot lead appears. Legal, fee, immigration, complaint and negotiation questions become drafts for human review rather than auto-sent replies."
+      "description": "Handle an inbound prospect or customer e-mail thread that someone on the team has tagged for follow-up. It creates or updates the contact record in the CRM with source, date and a link to the thread, reads what the sender actually wants along with their timeline and budget signals, works out which qualification details are still missing against a checklist, drafts a reply in the business's approved voice that either asks for the gaps or answers the questions, and keeps following the thread until the checklist is complete, flagging a hot lead for a human. Legal, pricing, complaint and negotiation questions become drafts for human review rather than replies that go out on their own."
     },
     {
       "name": "code-review",
@@ -102,7 +102,7 @@
     {
       "name": "marketing-analysis",
       "family": "skill",
-      "description": "The ARIANNE analytics agent (HUB-PLAN Step 5, content spec 09). It pulls GA4 and Search Console data, and HubSpot once that is live, turns them into the weekly marketing report committed under reports/, and converts the traffic, ranking and conversion picture into concrete recommendations for what to write next. Use it for questions about web traffic, search performance, which pages or keywords are working, and where the funnel is leaking."
+      "description": "Turn a small business's web and marketing analytics into a decision. It pulls analytics, search console and CRM data, turns them into the recurring marketing report committed under reports/, and converts the traffic, ranking and conversion picture into concrete recommendations about what to publish next. Use it for questions about web traffic, search performance, which pages or keywords are working, and where the funnel is leaking."
     },
     {
       "name": "morning",
@@ -127,7 +127,7 @@
     {
       "name": "research",
       "family": "skill",
-      "description": "The research half of the ARIANNE content engine (HUB-PLAN Step 4). It gathers and verifies the material a blog post, web page, brief or newsletter will be built on, draws every market number from the repo's own data/sources/ (QPAREB, Matrix, the schools database) rather than inventing them, and leaves a committed research pack in the repo that the writer skill then works from. Use it when a piece of content needs facts, figures or background assembled before drafting."
+      "description": "The research half of a small business's content pipeline. It gathers and verifies the material a blog post, web page, brief or newsletter will be built on, draws every figure from the repository's own vetted sources under data/sources/ rather than inventing them, and leaves a committed research pack that the writing step then works from. Use it when a piece of content needs facts, figures or background assembled before anyone starts drafting."
     },
     {
       "name": "run",
@@ -172,12 +172,12 @@
     {
       "name": "wp-page-update",
       "family": "skill",
-      "description": "Update an existing page or post on the ARIANNE WordPress site through the WordPress MCP bridge (HUB-PLAN Steps 2 and 4). Use it when the request is to change live site copy rather than to write something new: fix wording, refresh a number, add or remove a section, or update a landing page. The final version is shown in chat and waits for an explicit instruction to publish, every publish call is logged, and OACIQ-sensitive, fee, referral or immigration-adjacent wording goes through Manon before it goes live."
+      "description": "Update an existing page or post on a small business's WordPress site through the WordPress MCP bridge. Use it when the request is to change live site copy rather than to write something new: fix wording, refresh a number, add or remove a section, or update a landing page. The final version is shown in chat and waits for an explicit instruction to publish, every publish call is logged, and regulated, pricing or referral wording is held for human approval before it goes live."
     },
     {
       "name": "writer",
       "family": "skill",
-      "description": "The writing half of the ARIANNE content engine (HUB-PLAN Step 4). It drafts client-facing content in the approved house voice (content spec 06) in one of its modes, blog post, web page, brief, newsletter or LinkedIn post, landing drafts in content/ in the repo and then as WordPress drafts. Market claims come only from data/sources/, and broker-fee, referral and listing language only from approved spec wording."
+      "description": "The drafting half of a small business's content pipeline. It writes client-facing copy in the approved house voice in one of its modes, blog post, web page, brief, newsletter or social post, landing drafts in content/ in the repository and then as WordPress drafts. Factual claims come only from the vetted sources under data/sources/, and regulated, fee or referral language only from approved wording."
     },
     {
       "name": "xlsx",

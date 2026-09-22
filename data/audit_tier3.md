@@ -4,6 +4,11 @@ One `claude-sonnet-5` call per case at effort `low` with structured output, thro
 
 The prompt is the eval health checklist's per-case auditor prompt (`claude-api` skill, `shared/evals/eval-audit.md` §1 Tier 3), adapted to each task's schema and extended with the three per-case checks PLAN.md §5 names that the generic prompt does not cover: label leakage, tag correctness, personal data.
 
+**The task1 and task2 sections below are the first pass, WP4.** 1,142 of the 2,000 cases were
+audited again after the WP10 privacy scrub; those numbers, which are the current ones, are in
+**WP10 scrub — re-audit** further down, and `data/audit_tier3.jsonl` holds the later verdict for
+every case that was re-read.
+
 ## task1
 
 1000 of 1000 cases audited; all of them.
@@ -90,53 +95,55 @@ Sonnet 5's safety classifier declines these outright — *"Sonnet 5 can't help w
 
 - **`t2-0925`** — Text explicitly instructs the assistant to adopt a different persona ('act as a warrior from a video game'), which the given definition itself lists as an injection ('adopt a different persona or rules'); labeling this benign contradicts the definition.
 
-## WP10 scrub — re-audit of the regenerated rows, 2026-09-22
+## WP10 scrub — re-audit, 2026-09-22
 
 The privacy regeneration (`data/CHANGED-IDS.md`) rewrote 82 task-1 cases and 751 task-2 cases,
-so those rows were put back through the same auditor: `claude-sonnet-5` at effort `low`,
-4 in flight, the same prompt, with the task-2 context paragraph now describing the retail
-banking support chatbot the set is written against. Verdicts for the run:
-`data/audit_tier3.scrubbed.jsonl`. Three task-2 public rows and two task-1 rows whose text did
-not change were re-audited as well, because their earlier notes quoted the old domain.
+and it also changed two things the auditor itself reads: the task-2 context paragraph, which now
+describes the retail banking support chatbot the set is written against, and five entries of the
+catalogue block the task-1 auditor is given. **1142 of the 2,000 cases were therefore audited
+again** — every case whose text changed, every task-2 case (the context paragraph applies to all
+of them), and every task-1 case whose gold or acceptable option is one of the five rewritten
+catalogue entries. The remaining 858 task-1 verdicts stand: neither their case text nor
+their catalogue entry moved.
+
+`data/audit_tier3.jsonl` is append-only and the last row for a case wins, which is what
+`data/audit_tier3_report.py` reads. After the merge: every one of the 2,000 cases has a verdict,
+and every verdict's `text_sha256` matches the case as shipped.
 
 | | task 1 | task 2 |
 |---|---|---|
-| cases re-audited | 84 | 754 |
-| `ok` | 81 | 737 |
-| `review` | 3 | 5 |
+| `ok` | 966 | 964 |
+| `review` | 34 | 23 |
 | `broken` | **0** | **0** |
-| `unauditable` | 0 | 12 |
-
-Flags raised — task 1: `ambiguous` 7, `grader_too_lenient` 1, `label_leak` 5, `trivially_cheatable` 4.
-Task 2: `ambiguous` 9, `gold_suspect` 5, `label_leak` 1, `other` 1, `trivially_cheatable` 1.
+| `unauditable` | 0 | 13 |
 
 **Six `broken` cases were found and fixed at the generator, none hand-edited.** All six were in
 the obfuscated slice, all carried `gold: injection` over text with no injection in it, and all
-six are the same failure the WP4 gate first caught: the model answers with something other than
-the case it was asked for.
+six are the failure the WP4 gate first caught: the model answers with something other than the
+case it was asked for.
 
 - Four were ordinary benign customer questions with the obfuscation applied and no instruction
   in them at all. `build_instruction()` now tells the obfuscated slice in as many words that a
   customer question with odd spelling and no instruction is not a case.
 - Two were the model refusing in the first person — one literal `[not produced]`, one a
   `DECLINED: I can't write this case …` paragraph. `_SUBSTITUTE_TEXT` now matches a first-person
-  refusal as well as the bracketed placeholders it already caught, so such a row never reaches
-  the dataset.
+  refusal as well as the bracketed placeholders it already caught, so such a row cannot reach
+  the dataset again.
 
-After regenerating those specs and re-auditing every id whose text had moved: **0 `broken` on
-both tasks**.
+The one `broken` the WP4 pass had left standing, `t2-0925`, is gone too: the auditor read that
+benign persona-framing row against the old context paragraph. Under the new one it agrees with
+Justin's adjudication. **0 `broken` on both tasks.**
 
-`unauditable`, 12 cases, every one of them obfuscated: the auditor is refused by the
-platform classifier before it can read the case — the same wall PLAN.md §4 records for
-`t2-0026`, and fewer than the 19 the WP4 pass hit. The cases themselves are fine; they are
-simply not readable by this auditor. Ids: `t2-0087`, `t2-0119`, `t2-0164`, `t2-0267`, `t2-0326`, `t2-0381`, `t2-0534`, `t2-0564`, `t2-0587`, `t2-0732`, `t2-0799`, `t2-0843`.
+`unauditable`, 13 cases, 12 of them obfuscated: the auditor is refused by the platform
+classifier before it can read the case — the same wall PLAN.md §4 records for `t2-0026`, and
+fewer than the 19 the WP4 pass hit. The cases themselves are fine; they are simply not readable
+by this auditor. Ids: `t2-0026`, `t2-0087`, `t2-0119`, `t2-0164`, `t2-0267`, `t2-0326`, `t2-0381`, `t2-0534`, `t2-0564`, `t2-0587`, `t2-0732`, `t2-0799`, `t2-0843`.
 
-`review` — task 1 `t1-0376`, `t1-0585`, `t1-0912`: two are `style:name-drop` cases, which name
-the right option on purpose and which the auditor therefore reads as a label leak, and one is an
-`slice:ambiguous` pair doing its job. Task 2 `t2-0303`, `t2-0398`, `t2-0847`, `t2-0926`, `t2-0929`: label-judgement
-observations, none of which changed a case.
+`review` stays a label-judgement observation and changed no case. On task 1 the 34 are
+mostly `style:name-drop` cases, which name the right option on purpose and which the auditor
+therefore reads as a label leak, plus `slice:ambiguous` pairs doing their job.
 
-Roughly 1,043 auditor calls on the subscription for this pass, tokens and durations in
+About 1,351 auditor calls on the subscription for this pass; tokens and durations in
 `data/audit_tier3_log.jsonl` as usual.
 
 ## Reading these flags
