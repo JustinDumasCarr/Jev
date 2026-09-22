@@ -24,3 +24,9 @@ viz/out/proto/*
 !viz/out/proto/P4.FIXTURE.mp4
 !viz/out/proto/P5.FIXTURE.mp4
 !viz/out/proto/contact.png
+!viz/out/proto/v2/
+viz/out/proto/v2/*
+!viz/out/proto/v2/P2.FIXTURE.mp4
+!viz/out/proto/v2/P3.FIXTURE.mp4
+!viz/out/proto/v2/P5.FIXTURE.mp4
+!viz/out/proto/v2/contact-v2.png
