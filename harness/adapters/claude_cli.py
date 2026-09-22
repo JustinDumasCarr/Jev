@@ -92,6 +92,21 @@ def build_argv(
     return [CLAUDE_BIN] + [subs.get(tok, tok) for tok in FLAG_TEMPLATE]
 
 
+def neutral_cwd() -> str:
+    """An empty directory to launch the CLI from.
+
+    WP2 found that `claude -p` leaks its working directory name into the prompt prefix
+    (the repo name "Jev" showed up in 43 generated prompts). The model under test must
+    never see the repo name, so every CLI call runs from an empty, neutrally named
+    directory under the system temp dir. Created once, reused for the process lifetime.
+    """
+    import tempfile
+
+    d = os.path.join(tempfile.gettempdir(), "eval-neutral-cwd")
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
 def build_env(extra: Optional[dict[str, str]] = None) -> dict[str, str]:
     env = {k: os.environ[k] for k in ENV_PASSTHROUGH if k in os.environ}
     env.setdefault("PATH", "/usr/local/bin:/usr/bin:/bin")
@@ -104,7 +119,8 @@ def claude_version() -> Optional[str]:
     exe = shutil.which(CLAUDE_BIN) or CLAUDE_BIN
     try:
         out = subprocess.run(
-            [exe, "--version"], capture_output=True, text=True, timeout=30, env=build_env()
+            [exe, "--version"], capture_output=True, text=True, timeout=30, env=build_env(),
+            cwd=neutral_cwd(),
         ).stdout.strip()
     except Exception:
         return None
@@ -453,6 +469,7 @@ class ClaudeCLIAdapter:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 env=env,
+                cwd=neutral_cwd(),
             )
         except FileNotFoundError as exc:
             return Outcome.failure("process_error", f"cannot launch {CLAUDE_BIN!r}: {exc}")

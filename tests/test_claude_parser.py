@@ -374,3 +374,13 @@ def test_overhead_tokens_are_kept_out_of_the_scored_usage():
     assert out.cost_usd_list + out.usage["overhead_cost_usd_list"] == pytest.approx(
         out.cost_usd_reported, rel=1e-3
     )
+
+
+def test_neutral_cwd_is_empty_and_not_the_repo():
+    import os
+    from harness.adapters.claude_cli import neutral_cwd
+
+    d = neutral_cwd()
+    assert os.path.isdir(d)
+    assert os.listdir(d) == []
+    assert "Jev" not in os.path.basename(d)
