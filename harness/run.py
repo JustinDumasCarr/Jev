@@ -425,6 +425,7 @@ async def run(
         "split": split,
         "limit": limit,
         "cases_path": str(cases_path or default_cases_path(task)),
+        "data_sha256": data_hashes(task, cases_path),
         "cases_total": len(cases),
         "cases_run": len(todo),
         "cases_skipped_resume": len(cases) - len(todo),
@@ -452,6 +453,29 @@ async def run(
             pass
     writer.write_meta(meta)
     return meta
+
+
+def file_sha256(path: Path) -> Optional[str]:
+    """sha256 of a data file's bytes (WP5: recorded in run_meta.json so any case the
+    WP4 audit later regenerates can be identified and the affected rows rerun)."""
+    import hashlib
+
+    try:
+        return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def data_hashes(task: str, cases_path: Optional[Path] = None) -> dict[str, Optional[str]]:
+    cases = Path(cases_path) if cases_path else default_cases_path(task)
+    out = {str(cases.relative_to(REPO_ROOT) if cases.is_absolute() and str(cases).startswith(str(REPO_ROOT)) else cases): file_sha256(cases)}
+    cat = DATA_DIR / "catalogue.json"
+    if cat.exists():
+        out["data/catalogue.json"] = file_sha256(cat)
+    splits = DATA_DIR / "splits.json"
+    if splits.exists():
+        out["data/splits.json"] = file_sha256(splits)
+    return out
 
 
 def git_sha() -> Optional[str]:
