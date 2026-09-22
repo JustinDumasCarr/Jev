@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 import sys
 import zlib
@@ -25,6 +26,17 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent
+
+
+def _case_path(task: str) -> Path:
+    """The case file a split is derived from. Overridable so a regenerated dataset can be
+    split where it is staged, without touching the shipped files."""
+    env = {"task1": "JEV_T1_CASES", "task2": "JEV_T2_CASES"}[task]
+    return Path(os.environ[env]) if os.environ.get(env) else DATA / f"{task}_cases.jsonl"
+
+
+SPLITS_PATH = (Path(os.environ["JEV_SPLITS"]) if os.environ.get("JEV_SPLITS")
+               else DATA / "splits.json")
 SEED = 20260922
 TRAIN_N = 300
 TEST_N = 700
@@ -39,7 +51,7 @@ def load_cases(task: str) -> list[dict]:
     two and the read would die on a JSONDecodeError. WP3 sanitises those out of task 2;
     reading this way keeps the loader correct regardless.
     """
-    path = DATA / f"{task}_cases.jsonl"
+    path = _case_path(task)
     rows = [
         json.loads(line)
         for line in path.read_text(encoding="utf-8").split("\n")
@@ -189,7 +201,7 @@ def main() -> int:
 
     obj = build_splits()
     blob = json.dumps(obj, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
-    path = DATA / "splits.json"
+    path = SPLITS_PATH
     if args.cmd == "write":
         path.write_text(blob, encoding="utf-8")
         print(f"wrote {path} ({len(blob)} bytes)")

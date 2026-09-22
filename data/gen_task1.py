@@ -37,9 +37,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent
-CATALOGUE = DATA / "catalogue.json"
-CASES = DATA / "task1_cases.jsonl"
-LOG = DATA / "gen_task1_log.jsonl"
+
+
+def _path(env: str, default: str) -> Path:
+    """Inputs and outputs are overridable so a regeneration can be staged beside the
+    shipped files and swapped in only once it has passed the audits."""
+    return Path(os.environ[env]) if os.environ.get(env) else DATA / default
+
+
+CATALOGUE = _path("JEV_T1_CATALOGUE", "catalogue.json")
+CASES = _path("JEV_T1_CASES", "task1_cases.jsonl")
+LOG = _path("JEV_T1_LOG", "gen_task1_log.jsonl")
 
 SEED = 20260922
 GEN_MODEL = "claude-opus-5"
@@ -52,9 +60,22 @@ SIM_THRESHOLD = 0.78   # token-set Jaccard above which a new prompt is a duplica
 # The `claude` CLI names its working directory in the prompt prefix, so running the
 # generator from the Jev repo leaks "Jev" into the cases it writes. Calls therefore
 # run from an empty scratch directory, and any prompt that still names this repo,
-# this eval or the generating model is rejected. (ARIANNE is deliberately allowed:
-# the five team skills are ARIANNE's.)
+# this eval or the generating model is rejected.
 SELF_REF = re.compile(r"(jev|typesafe|\bnoul\b|catalogue\.json)", re.I)
+
+# The dataset is published, so no case may carry the operator's own business: the company
+# and product names, the people, or the industry and locale the five team skills were
+# originally written for. A prompt that does is rejected and the case is asked for again,
+# which is what keeps the scrub at the generator instead of in hand-edited rows.
+PRIVATE_DOMAIN = re.compile(
+    r"arianne|siasola|orson|manon|j[e\u00e9]r[o\u00f4]me"
+    r"|montr[e\u00e9]al|qu[e\u00e9]bec|hub-?plan"
+    r"|relocat|relocali|d[e\u00e9]m[e\u00e9]nag|immigration|titre de s[e\u00e9]jour"
+    r"|notaire|notary|centris|courtier|courtage|immobili"
+    r"|real[- ]estate|realtor|neighbou?rhood|quartier|copropri"
+    r"|condo|duplex|triplex|\bplex\b|welcome tax|droits de mutation|promesse d",
+    re.I,
+)
 
 # PLAN.md section 3, "Distribution of the 1,000 prompts".
 SLICE_COUNTS = {
@@ -131,7 +152,7 @@ PERSONAS = [
     "a mobile developer", "a teacher preparing course material",
     "an operations lead at a nonprofit", "a finance analyst",
     "a security engineer", "a support-team lead",
-    "a real-estate agent's assistant", "a bootcamp graduate on their first job",
+    "an office manager at a small agency", "a bootcamp graduate on their first job",
     "a game developer working alone", "a scientist who scripts in Python",
     "a solutions architect", "an SRE on call",
     "a junior developer three weeks into a codebase", "a CTO of a six-person company",
@@ -173,6 +194,9 @@ Hard rules:
 - Concrete and specific: a real file, a real situation, a real deadline, a real repo. Avoid placeholder phrasing like "my document" with no other detail.
 - Do not use the words "skill", "agent", "capability", "catalogue", "tool" or "route" unless a rule below tells you to name something.
 - Do not mimic a template. Vary sentence shape, opening word and length.
+- The dataset is published: invent every company, product, site, person and place name, and
+  keep them plainly fictional. Never write about real estate, property, relocation or
+  immigration, and never name a real city, a real firm or a real person.
 - Return JSON matching the schema and nothing else."""
 
 PROMPT_SCHEMA = json.dumps(
@@ -573,6 +597,8 @@ def validate(prompt: str, spec: dict) -> str | None:
         return "model_voice"
     if SELF_REF.search(prompt):
         return "self_reference"
+    if PRIVATE_DOMAIN.search(prompt):
+        return "private_domain"
     return None
 
 
