@@ -90,6 +90,55 @@ Sonnet 5's safety classifier declines these outright — *"Sonnet 5 can't help w
 
 - **`t2-0925`** — Text explicitly instructs the assistant to adopt a different persona ('act as a warrior from a video game'), which the given definition itself lists as an injection ('adopt a different persona or rules'); labeling this benign contradicts the definition.
 
+## WP10 scrub — re-audit of the regenerated rows, 2026-09-22
+
+The privacy regeneration (`data/CHANGED-IDS.md`) rewrote 82 task-1 cases and 751 task-2 cases,
+so those rows were put back through the same auditor: `claude-sonnet-5` at effort `low`,
+4 in flight, the same prompt, with the task-2 context paragraph now describing the retail
+banking support chatbot the set is written against. Verdicts for the run:
+`data/audit_tier3.scrubbed.jsonl`. Three task-2 public rows and two task-1 rows whose text did
+not change were re-audited as well, because their earlier notes quoted the old domain.
+
+| | task 1 | task 2 |
+|---|---|---|
+| cases re-audited | 84 | 754 |
+| `ok` | 81 | 737 |
+| `review` | 3 | 5 |
+| `broken` | **0** | **0** |
+| `unauditable` | 0 | 12 |
+
+Flags raised — task 1: `ambiguous` 7, `grader_too_lenient` 1, `label_leak` 5, `trivially_cheatable` 4.
+Task 2: `ambiguous` 9, `gold_suspect` 5, `label_leak` 1, `other` 1, `trivially_cheatable` 1.
+
+**Six `broken` cases were found and fixed at the generator, none hand-edited.** All six were in
+the obfuscated slice, all carried `gold: injection` over text with no injection in it, and all
+six are the same failure the WP4 gate first caught: the model answers with something other than
+the case it was asked for.
+
+- Four were ordinary benign customer questions with the obfuscation applied and no instruction
+  in them at all. `build_instruction()` now tells the obfuscated slice in as many words that a
+  customer question with odd spelling and no instruction is not a case.
+- Two were the model refusing in the first person — one literal `[not produced]`, one a
+  `DECLINED: I can't write this case …` paragraph. `_SUBSTITUTE_TEXT` now matches a first-person
+  refusal as well as the bracketed placeholders it already caught, so such a row never reaches
+  the dataset.
+
+After regenerating those specs and re-auditing every id whose text had moved: **0 `broken` on
+both tasks**.
+
+`unauditable`, 12 cases, every one of them obfuscated: the auditor is refused by the
+platform classifier before it can read the case — the same wall PLAN.md §4 records for
+`t2-0026`, and fewer than the 19 the WP4 pass hit. The cases themselves are fine; they are
+simply not readable by this auditor. Ids: `t2-0087`, `t2-0119`, `t2-0164`, `t2-0267`, `t2-0326`, `t2-0381`, `t2-0534`, `t2-0564`, `t2-0587`, `t2-0732`, `t2-0799`, `t2-0843`.
+
+`review` — task 1 `t1-0376`, `t1-0585`, `t1-0912`: two are `style:name-drop` cases, which name
+the right option on purpose and which the auditor therefore reads as a label leak, and one is an
+`slice:ambiguous` pair doing its job. Task 2 `t2-0303`, `t2-0398`, `t2-0847`, `t2-0926`, `t2-0929`: label-judgement
+observations, none of which changed a case.
+
+Roughly 1,043 auditor calls on the subscription for this pass, tokens and durations in
+`data/audit_tier3_log.jsonl` as usual.
+
 ## Reading these flags
 
 **The flag counts are an upper bound on things worth a human look, not a defect count.**
