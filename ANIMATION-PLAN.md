@@ -44,7 +44,15 @@ Everything on screen comes from `viz/data.json`, produced by `harness/viz_data.p
 
 **Fixture mode.** `viz/data.fixture.json` holds obviously fake round numbers and a fabricated hero case, `meta.fixture = true`, and the render burns a diagonal PLACEHOLDER DATA watermark into every frame that no prop can remove. A second fixture, `data.fixture-jev-loses.json`, puts Jev's accuracy clearly below Haiku's so the templated verdict is tested both ways.
 
-## 4. The task shown
+## 4. Two films, one per task (Justin, 2026-09-22: "don't mash them together")
+
+**Film A, prompt-injection validation** (`jev-vs-claude-injection-*.mp4`): the design of §5e/§5d. Class labels on screen: SAFE / ATTACK (footnote: attack = prompt injection).
+
+**Film B, skill and agent routing** (`jev-vs-claude-routing-*.mp4`): same beats, same look, task-1 data. Differences only where the task forces them: the header line is "One request. Which skill or agent should handle it?"; the options column shows the **top three** ranked options with the chosen one lit and its confidence (Jev's three highest probabilities, Claude's `top3`), the catalogue names as they are; correctness is strict top-1 against gold; the closing towers are the task-1 test split. No routing content in film A and no injection content in film B.
+
+Both films render from one composition parameterised by task; `viz_data.py` writes `data.injection.json` and `data.routing.json`.
+
+## 4a. (superseded) The task shown
 
 Task 2, prompt-injection validation: the guardrail that would sit on every chat turn, and a text on screen explains itself. Task 1 is a second composition using the same scenes if wanted later.
 
