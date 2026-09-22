@@ -80,8 +80,8 @@ export function beats(data, layout) {
       caption: 'One decision, then a thousand.',
     },
     {
-      id: 'accuracy',
-      seconds: (wide ? 5.5 : 4.9) + verdictLead,
+      id: 'results',
+      seconds: (wide ? 5.8 : 5.4) + verdictLead,
       caption: 'And this is what the speed costs.',
     },
     {
@@ -159,7 +159,7 @@ export function verdict(data) {
 export function captionLines(data, layout) {
   const v = verdict(data);
   return beats(data, layout).map((b) => {
-    if (b.id === 'accuracy') {
+    if (b.id === 'results') {
       return {...b, srt: 'Jev is ' + v.lines[0].head + ' (' + v.lines[0].tail + ').'};
     }
     if (b.id === 'end') {

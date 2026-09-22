@@ -11,14 +11,10 @@ One decision. Is this a prompt injection?
 One decision, then a thousand.
 
 4
-00:00:26,900 --> 00:00:34,867
+00:00:26,900 --> 00:00:35,367
 Jev is as good as Opus 4.6 (thinking off).
 
 5
-00:00:32,967 --> 00:00:34,867
-Weakest slice: French -6 points vs English.
-
-6
-00:00:35,000 --> 00:00:38,867
+00:00:35,500 --> 00:00:39,367
 Jev is as good as Opus 4.6 (thinking off); as good as Sonnet 5 (thinking on).
 

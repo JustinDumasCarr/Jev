@@ -47,10 +47,25 @@ def test_fixture_numbers_are_the_documented_placeholders():
         assert by_id[f"{base}-nothink"]["latency_ms"]["p50"] == pytest.approx(
             by_id[base]["latency_ms"]["p50"] / 2.0
         )
-    for s in data["systems"]:
-        if s["system"] != "jev":
-            assert s["accuracy"]["point"] == 0.80
-            assert s["accuracy"]["ci_low"] == 0.77 and s["accuracy"]["ci_high"] == 0.83
+    # accuracies are spread, not uniform, so the results beat never reads as filler
+    accs = {s["system"]: s["accuracy"]["point"] for s in data["systems"] if s["system"] != "jev"}
+    assert min(accs.values()) >= 0.83 and max(accs.values()) <= 0.96
+    assert len(set(accs.values())) >= 6, "fixture accuracies must differ per system"
+    assert by_id["jev"]["accuracy"]["point"] == 0.93
+
+
+def test_results_sequence_matches_the_accuracy():
+    """The tower is literally the results, so the string has to agree with the number."""
+    for loses in (False, True):
+        for s in viz_data.make_fixture(loses)["systems"]:
+            r = s["results"]
+            seq = r["correct_sequence"]
+            assert len(seq) == r["n"] and set(seq) <= {"0", "1"}
+            assert abs(seq.count("1") / len(seq) - s["accuracy"]["point"]) < 0.005
+            assert 0 < r["precision"] <= 1 and 0 < r["recall"] <= 1
+    # every tower is the same height, so the red band alone is the error rate
+    ns = {s["results"]["n"] for s in viz_data.make_fixture()["systems"]}
+    assert len(ns) == 1
 
 
 def test_jev_loses_fixture_actually_puts_jev_below_haiku():
@@ -390,6 +405,26 @@ def test_sequence_from_a_synthetic_tree(tmp_path):
     again = viz_data.build("task2", results_root=root, analysis_dir=tmp_path / "nope",
                            data_dir=data_dir)
     assert [c["id"] for c in again["sequence"]] == [c["id"] for c in seq]
+
+
+def test_sequence_has_fabricated_misses():
+    """Red bricks and a sub-100% readout must be exercised before any real run."""
+    win = viz_data.make_fixture()["sequence"]
+    lose = viz_data.make_fixture(jev_loses=True)["sequence"]
+
+    def rate(seq, sid):
+        return sum(1 for c in seq if c["systems"][sid]["correct"]) / len(seq)
+
+    assert 0.88 <= rate(win, "jev") <= 0.96, "Jev should sit near 93% on the winning fixture"
+    assert rate(lose, "jev") < rate(win, "jev") - 0.1, "the losing fixture must look clearly worse"
+    assert rate(win, "haiku45-nothink") < 1.0, "the Claude row needs a miss too"
+    # a miss is a real disagreement with gold, not just a flag
+    for seq in (win, lose):
+        for c in seq:
+            e = c["systems"]["jev"]
+            assert (e["decision"] == c["gold"]) == bool(e["correct"])
+            if not e["correct"]:
+                assert e["p"] < 0.7, "a wrong call should not be a confident one"
 
 
 def test_validator_requires_the_sequence():

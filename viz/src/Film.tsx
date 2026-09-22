@@ -6,7 +6,7 @@ import {captionLines} from './timeline.mjs';
 import {Decision} from './beats/Decision';
 import {Quadrants} from './beats/Quadrants';
 import {EndCard} from './beats/EndCard';
-import {Targets} from './beats/Targets';
+import {Results} from './beats/Results';
 import type {FilmProps} from './types';
 
 export const Film: React.FC<FilmProps> = ({layout, data}) => {
@@ -21,7 +21,7 @@ export const Film: React.FC<FilmProps> = ({layout, data}) => {
   const render = (id: string, caption: string) => {
     if (id === 'quadrants') return <Quadrants layout={layout} data={data} />;
     if (id === 'decision') return <Decision layout={layout} data={data} />;
-    if (id === 'accuracy') return <Targets layout={layout} data={data} caption={caption} />;
+    if (id === 'results') return <Results layout={layout} data={data} />;
     return <EndCard layout={layout} data={data} />;
   };
 

@@ -25,9 +25,13 @@ export const C = {
   accent: '#ff6a2b',
   accentDim: 'rgba(255,106,43,0.18)',
   accentGlow: 'rgba(255,106,43,0.45)',
-  good: '#3ddc84',
-  /** a decision that missed gold — muted, never alarming */
-  wrong: '#8e4a55',
+  /* Correct / incorrect: the dataviz skill's status pair, which clears 3:1 on the
+     dark surface. Red-green confusion is covered by a secondary cue, not colour:
+     a correct brick is solid, an incorrect one carries a lighter outline. */
+  good: '#0ca30c',
+  goodEdge: '#7de07d',
+  wrong: '#d03b3b',
+  wrongEdge: '#ffb4b4',
 };
 
 /** One hue, graded by tier: brightest = strongest model, on a dark surface. */

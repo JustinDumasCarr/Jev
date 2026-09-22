@@ -411,7 +411,43 @@ def build_sequence(
     return out
 
 
+def results_block(
+    task: str,
+    rows: Sequence[dict[str, Any]],
+    metrics_entry: Optional[dict[str, Any]],
+) -> dict[str, Any]:
+    """The per-case outcome of this system on the test split, in a fixed order.
+
+    ANIMATION-PLAN.md §5e: the results beat builds one brick per case, so the tower
+    is literally the results rather than a picture of a summary statistic. Order is
+    sorted case id, which is stable across runs and independent of the seed.
+    """
+    ok = sorted(_scorable(rows), key=lambda r: r["case_id"])
+    seq = "".join("1" if r.get("correct") else "0" for r in ok)
+
+    positive = "injection" if task == "task2" else None
+    prec = rec = None
+    if metrics_entry:
+        for k in ("precision", "recall"):
+            v = metrics_entry.get(k)
+            if isinstance(v, dict):
+                v = v.get("point")
+            if isinstance(v, (int, float)):
+                if k == "precision":
+                    prec = float(v)
+                else:
+                    rec = float(v)
+    if positive and (prec is None or rec is None):
+        tp = sum(1 for r in ok if r.get("decision") == positive and r.get("gold") == positive)
+        fp = sum(1 for r in ok if r.get("decision") == positive and r.get("gold") != positive)
+        fn = sum(1 for r in ok if r.get("decision") != positive and r.get("gold") == positive)
+        prec = tp / (tp + fp) if (tp + fp) else None
+        rec = tp / (tp + fn) if (tp + fn) else None
+    return {"n": len(ok), "correct_sequence": seq, "precision": prec, "recall": rec}
+
+
 def system_block(
+    task: str,
     system_id: str,
     rows: Sequence[dict[str, Any]],
     metrics_entry: Optional[dict[str, Any]],
@@ -473,6 +509,7 @@ def system_block(
         },
         "cost_per_1000_usd": cost,
         "accuracy": accuracy,
+        "results": results_block(task, rows, metrics_entry),
         "hero": hero_block(next((r for r in ok if r.get("case_id") == hero_case_id), None)),
         "equivalent_tier_note": note,
     }
@@ -564,7 +601,7 @@ def build(
 
     systems = [
         system_block(
-            sid, rows,
+            task, sid, rows,
             ((metrics or {}).get("systems") or {}).get(sid),
             paired.get(sid),
             hero_case_id=hero_id,
@@ -621,7 +658,7 @@ def build(
 
 _REQUIRED_SYSTEM_KEYS = (
     "system", "label", "family", "pair", "thinking", "n", "latency_ms", "tokens",
-    "cost_per_1000_usd", "accuracy", "hero", "equivalent_tier_note",
+    "cost_per_1000_usd", "accuracy", "results", "hero", "equivalent_tier_note",
 )
 _REQUIRED_META_KEYS = (
     "task", "split", "filter", "run_date", "git_sha", "machine", "footnotes", "fixture",
@@ -719,6 +756,15 @@ def validate(obj: Any) -> list[str]:
         c = s.get("cost_per_1000_usd")
         if c is not None and (not isinstance(c, (int, float)) or c < 0):
             bad(f"{where}.cost_per_1000_usd must be a non-negative number or null")
+        res = s.get("results")
+        if not isinstance(res, dict):
+            bad(f"{where}.results missing")
+        else:
+            cs = res.get("correct_sequence")
+            if not isinstance(cs, str):
+                bad(f"{where}.results.correct_sequence must be a string of 0/1")
+            elif cs and set(cs) - {"0", "1"}:
+                bad(f"{where}.results.correct_sequence has characters other than 0/1")
         if not isinstance(s.get("tokens"), dict):
             bad(f"{where}.tokens missing")
         hero = s.get("hero")
@@ -829,12 +875,17 @@ FIXTURE_TEXTS = [
 ]
 
 
-def _fixture_sequence() -> list[dict[str, Any]]:
+def _fixture_sequence(jev_loses: bool = False) -> list[dict[str, Any]]:
     rng = np.random.default_rng(SEED + 7)
     cases = []
     for i in range(SEQUENCE_SIZE):
         text = FIXTURE_TEXTS[i % len(FIXTURE_TEXTS)]
         gold = "injection" if (i % len(FIXTURE_TEXTS)) % 2 == 0 else "benign"
+        # Deliberate misses, so the red bricks and a non-100% readout are exercised
+        # before any real data exists. Jev ~93% on the winning fixture (3 of 40) and
+        # clearly worse on the losing one (1 in 4); the Claude row gets one miss.
+        jev_miss = (i % 4 == 2) if jev_loses else (i % 14 == 5)
+        claude_miss = i % 19 == 5
         per: dict[str, Any] = {}
         for base in ("jev",) + CLAUDE_TIER_ORDER:
             for sid in ([base] if base == "jev" else [base, f"{base}-nothink"]):
@@ -843,17 +894,20 @@ def _fixture_sequence() -> list[dict[str, Any]]:
                 dur = float(round(p50 * float(rng.uniform(0.85, 1.25)) / 10.0) * 10.0)
                 out_tok = int(rng.integers(52, 96))
                 think_tok = int(rng.integers(180, 900)) if think else 0
-                pr = float(round(rng.uniform(0.86, 0.99), 2))
+                missed = jev_miss if sid == "jev" else claude_miss
+                said = ("benign" if gold == "injection" else "injection") if missed else gold
+                # a wrong call is usually a less confident one
+                pr = float(round(rng.uniform(0.52, 0.68) if missed else rng.uniform(0.86, 0.99), 2))
                 obj = (
                     {"injection": pr, "attack_type": "extraction", "severity": "clear attempt"}
                     if sid == "jev"
-                    else {"verdict": gold, "p_injection": pr, "reason": FIXTURE_HERO_REASON}
+                    else {"verdict": said, "p_injection": pr, "reason": FIXTURE_HERO_REASON}
                 )
                 split = (think_tok / (think_tok + out_tok)) if (think_tok + out_tok) else 0.0
                 per[sid] = {
-                    "decision": gold,
+                    "decision": said,
                     "p": pr,
-                    "correct": True,
+                    "correct": not missed,
                     "output_text": json.dumps(obj, ensure_ascii=False),
                     "output_tokens": out_tok,
                     "thinking_tokens": think_tok,
@@ -872,6 +926,28 @@ def _fixture_p50(sid: str) -> float:
     return p50 / 2.0 if sid.endswith("-nothink") else p50
 
 
+def _fixture_results(sid: str, acc: float, n: int = 700) -> dict[str, Any]:
+    """A per-case outcome string that really does have this accuracy, plus a
+    precision/recall pair around it. Deterministic per system."""
+    rng = np.random.default_rng(SEED + sum(ord(c) for c in sid))
+    wrong = int(round(n * (1 - acc)))
+    idx = set(rng.choice(n, size=wrong, replace=False).tolist()) if wrong else set()
+    seq = "".join("0" if i in idx else "1" for i in range(n))
+    return {
+        "n": n,
+        "correct_sequence": seq,
+        "precision": round(min(0.995, acc + float(rng.uniform(-0.02, 0.03))), 3),
+        "recall": round(max(0.5, acc - float(rng.uniform(0.0, 0.05))), 3),
+    }
+
+
+#: Fixture accuracies, spread so the results beat never reads as uniform placeholder.
+FIXTURE_ACC = {
+    "fable51": 0.96, "opus5": 0.95, "opus48": 0.93, "opus47": 0.92,
+    "opus46": 0.90, "sonnet5": 0.89, "sonnet46": 0.87, "haiku45": 0.84,
+}
+
+
 def make_fixture(jev_loses: bool = False) -> dict[str, Any]:
     """Obviously fake round numbers: Jev 100 ms, the Claude systems 1,000-5,000 ms in even
     steps, each no-thinking variant at half its thinking pair, accuracy 0.80 +/- 0.03."""
@@ -888,6 +964,8 @@ def make_fixture(jev_loses: bool = False) -> dict[str, Any]:
             ("claude-nothink", think_p50 / 2.0, costs[i] * 0.6),
         ):
             sid = base if fam == "claude-think" else f"{base}-nothink"
+            # the no-thinking twin gives up a little accuracy, as one would expect
+            acc = FIXTURE_ACC[base] - (0.0 if fam == "claude-think" else 0.01)
             sample = _fixture_sample(p50, 0.22)
             systems.append({
                 "system": sid,
@@ -910,15 +988,17 @@ def make_fixture(jev_loses: bool = False) -> dict[str, Any]:
                     "thinking_median": 420.0 if fam == "claude-think" else 0.0,
                 },
                 "cost_per_1000_usd": round(cost, 2),
-                "accuracy": {"point": 0.80, "ci_low": 0.77, "ci_high": 0.83,
+                "accuracy": {"point": acc, "ci_low": round(acc - 0.025, 3),
+                             "ci_high": round(min(0.999, acc + 0.025), 3),
                              "source": "fixture"},
+                "results": _fixture_results(sid, acc),
                 "hero": _fixture_hero(sid, p50, fam == "claude-think",
                                       i * 2 + (0 if fam == "claude-think" else 1)),
                 "equivalent_tier_note": None,
             })
 
     jev_sample = _fixture_sample(100.0, 0.18)
-    jev_acc = (0.62, 0.59, 0.65) if jev_loses else (0.80, 0.77, 0.83)
+    jev_acc = (0.72, 0.69, 0.75) if jev_loses else (0.93, 0.905, 0.955)
     systems.append({
         "system": "jev",
         "label": LABELS["jev"],
@@ -936,6 +1016,7 @@ def make_fixture(jev_loses: bool = False) -> dict[str, Any]:
         "cost_per_1000_usd": 0.03,
         "accuracy": {"point": jev_acc[0], "ci_low": jev_acc[1], "ci_high": jev_acc[2],
                      "source": "fixture"},
+        "results": _fixture_results("jev" + ("-loses" if jev_loses else ""), jev_acc[0]),
         "hero": _fixture_hero("jev", 100.0, False, 99),
         "equivalent_tier_note": None,
     })
@@ -1001,7 +1082,7 @@ def make_fixture(jev_loses: bool = False) -> dict[str, Any]:
             "metrics_source": None,
             "verdict": verdict,
         },
-        "sequence": _fixture_sequence(),
+        "sequence": _fixture_sequence(jev_loses),
         "systems": systems,
     }
 

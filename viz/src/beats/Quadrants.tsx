@@ -56,7 +56,7 @@ function walk(seq: Seq[], sid: string, elapsedMs: number, loop = true) {
 }
 
 /** Every decision one row has completed, in order, with its correctness. */
-type Brick = {correct: boolean; saidPositive: boolean; goldPositive: boolean; divider?: boolean};
+type Brick = {correct: boolean; saidPositive: boolean; goldPositive: boolean; atMs: number; divider?: boolean};
 
 function jevRun(seq: Seq[], elapsedMs: number): Brick[] {
   const out: Brick[] = [];
@@ -71,6 +71,7 @@ function jevRun(seq: Seq[], elapsedMs: number): Brick[] {
       correct: e?.correct !== false,
       saidPositive: e?.decision === 'injection',
       goldPositive: c.gold === 'injection',
+      atMs: t,
     });
   }
   return out;
@@ -88,13 +89,14 @@ function claudeRun(seq: Seq[], ps: {sys: System}[], elapsedMs: number): Brick[] 
     if (elapsedMs < t + d) break;
     t += d;
     if (k % ps.length !== lastModel && k > 0) {
-      out.push({correct: true, saidPositive: false, goldPositive: false, divider: true});
+      out.push({correct: true, saidPositive: false, goldPositive: false, atMs: t, divider: true});
     }
     lastModel = k % ps.length;
     out.push({
       correct: e?.correct !== false,
       saidPositive: e?.decision === 'injection',
       goldPositive: c.gold === 'injection',
+      atMs: t,
     });
   }
   return out;
@@ -118,16 +120,14 @@ const Tower: React.FC<{
   h: number;
   w: number;
   u: number;
-  cols: number;
-}> = ({bricks, accent, brickH, h, w, u, cols}) => {
+}> = ({bricks, accent, brickH, h, w, u}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const gap = Math.min(1.2 * u, brickH * 0.22);
-  const settle = spring({frame: frame % 3, fps, config: {damping: 14, stiffness: 320}});
-  // The brick is the same size in both towers; a tower that outgrows the track
-  // starts a second column beside it rather than rescaling.
-  const perCol = Math.max(1, Math.floor((h - 4 * u) / (brickH + gap)));
-  const colW = w / cols;
+
+  // One column, always. The brick height was scaled once at beat start from the
+  // largest count the beat will reach, so the tallest tower ends near the top and
+  // every other tower is proportionally short at exactly the same brick size.
   return (
     <div style={{position: 'relative', width: w, height: h}}>
       {/* the track: how far this tower could go */}
@@ -143,21 +143,32 @@ const Tower: React.FC<{
       {bricks.map((b, i) => {
         const last = i === bricks.length - 1;
         const bh = b.divider ? Math.max(1.2 * u, brickH * 0.5) : brickH;
-        const col = Math.floor(i / perCol);
-        const row = i % perCol;
+        // each brick settles from its own landing frame, not on a shared pulse
+        const sinceLand = frame - (b.atMs / 1000) * fps;
+        const settle = spring({frame: sinceLand, fps, config: {damping: 14, stiffness: 320}});
+
         return (
           <div
             key={i}
             style={{
               position: 'absolute',
-              left: col * colW + (b.divider ? colW * 0.22 : 2 * u),
-              width: colW - (b.divider ? colW * 0.44 : 4 * u),
-              bottom: 2 * u + row * (brickH + gap),
+              left: b.divider ? w * 0.22 : 2 * u,
+              width: w - (b.divider ? w * 0.44 : 4 * u),
+              bottom: 2 * u + i * (brickH + gap),
               height: Math.max(1.1, bh - gap),
               borderRadius: Math.min(2 * u, brickH * 0.3),
-              background: b.divider ? 'rgba(255,255,255,0.28)' : b.correct ? accent : C.wrong,
-              transform: last && !b.divider ? `translateY(${(1 - settle) * 7 * u}px)` : 'none',
-              opacity: last ? Math.min(1, settle * 1.6) : 1,
+              background: b.divider
+                ? 'rgba(255,255,255,0.32)'
+                : b.correct
+                  ? C.good
+                  : C.wrong,
+              // the secondary cue: a miss carries a lighter edge, a hit is solid
+              boxShadow: b.divider || b.correct ? 'none' : `inset 0 0 0 ${Math.max(0.8, brickH * 0.18)}px ${C.wrongEdge}`,
+              transform:
+                sinceLand < 10 && !b.divider
+                  ? `translateY(${(1 - Math.min(settle, 1)) * 8 * u}px)`
+                  : 'none',
+              opacity: sinceLand < 10 ? Math.min(1, Math.max(0, sinceLand) / 2) : 1,
             }}
           />
         );
@@ -205,12 +216,12 @@ const Choice: React.FC<{
               style={{
                 ...tabular,
                 fontWeight: 800,
-                fontSize: big * 0.72,
+                fontSize: big * 0.6,
                 color: on ? C.ink : 'transparent',
                 marginLeft: 'auto',
               }}
             >
-              {on ? Math.round((prob ?? 0) * 100) + '%' : '—'}
+              {on ? Math.round((prob ?? 0) * 100) + '%' : ''}
             </span>
           </div>
           {on ? (
@@ -237,12 +248,17 @@ const Readout: React.FC<{bricks: Brick[]; color: string; u: number}> = ({bricks,
   const n = scored(bricks).length;
   const pr = precision(bricks);
   return (
-    <div style={{...tabular, fontSize: 19 * u, color: C.ink3, lineHeight: 1.5, whiteSpace: 'nowrap'}}>
-      <div>
-        decisions <span style={{color, fontWeight: 800}}>{n}</span>
-      </div>
-      <div>correct {n ? Math.round(pctCorrect(bricks) * 100) + '%' : '—'}</div>
-      <div>precision {pr == null ? '—' : Math.round(pr * 100) + '%'}</div>
+    <div style={{display: 'flex', flexDirection: 'column', gap: 14 * u, whiteSpace: 'nowrap'}}>
+      {[
+        ['decisions', String(n), color],
+        ['correct', n ? Math.round(pctCorrect(bricks) * 100) + '%' : '—', C.ink],
+        ['precision', pr == null ? '—' : Math.round(pr * 100) + '%', C.ink],
+      ].map(([k, v, col]) => (
+        <div key={k}>
+          <div style={{...upper(0.16), fontSize: 14 * u, color: C.ink3}}>{k}</div>
+          <div style={{...tabular, fontWeight: 800, fontSize: 32 * u, color: col as string}}>{v}</div>
+        </div>
+      ))}
     </div>
   );
 };
@@ -354,9 +370,13 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
   const top = 200 * u;
   const rowH = (wide ? 292 : 320) * u;
   const towerH = rowH - (wide ? 78 : 82) * u;
-  const brickH = Math.max(2.4 * u, (towerH - 4 * u) / maxBricks);
-  const towerCols = Math.max(1, Math.ceil((maxBricks * brickH * 1.16) / (towerH - 4 * u)));
-  const towerW = Math.min(96 * u, 30 * u * towerCols);
+  // 2 : 1 : 1 — options, tower, stats — with a hard gutter between each.
+  const gutter = 20 * u;
+  const inner = colW - 44 * u - gutter * 2;
+  const optW = inner * 0.5;
+  const towerW = inner * 0.25;
+  const statW = inner * 0.25;
+  const brickH = (towerH - 4 * u) / maxBricks;
   const enter = ramp(frame, 0, 7, EASE_OUT);
   const cam = useCamera([
     {at: 0, zoom: 1.03, x: width / 2, y: height / 2},
@@ -393,18 +413,20 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
           </div>
           <div style={{width: colW}}>
             <Panel label="Jev 1.13" accent={C.accent} u={u} h={rowH}>
-              <div style={{display: 'flex', gap: 16 * u, height: '100%'}}>
-                <div style={{flex: 1, minWidth: 0}}>
+              <div style={{display: 'flex', gap: gutter, height: '100%'}}>
+                <div style={{width: optW, minWidth: 0, overflow: 'hidden'}}>
                   <Choice
                     chosen={jevDone ? jevEntry?.decision ?? null : null}
                     p={jevEntry?.p ?? null}
                     accent={C.accent}
                     u={u}
-                    big={(wide ? 34 : 32) * u}
+                    big={(wide ? 28 : 25) * u}
                   />
                 </div>
-                <Tower bricks={jevBricks} accent={C.accent} brickH={brickH} h={towerH} w={towerW} u={u} cols={towerCols} />
-                <Readout bricks={jevBricks} color={C.accent} u={u} />
+                <Tower bricks={jevBricks} accent={C.accent} brickH={brickH} h={towerH} w={towerW} u={u} />
+                <div style={{width: statW, minWidth: 0}}>
+                  <Readout bricks={jevBricks} color={C.accent} u={u} />
+                </div>
               </div>
             </Panel>
           </div>
@@ -421,8 +443,8 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
           </div>
           <div style={{width: colW}}>
             <Panel label={model?.sys.label ?? ''} accent={claudeColor(model?.tier ?? 0)} u={u} h={rowH}>
-              <div style={{display: 'flex', gap: 16 * u, height: '100%'}}>
-                <div style={{flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column'}}>
+              <div style={{display: 'flex', gap: gutter, height: '100%'}}>
+                <div style={{width: optW, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
                   {thinking ? (
                     <div style={{display: 'flex', alignItems: 'center', gap: 12 * u, marginTop: 6 * u}}>
                       <div
@@ -456,7 +478,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                       p={botEntry?.p ?? null}
                       accent={claudeColor(model?.tier ?? 0)}
                       u={u}
-                      big={(wide ? 34 : 32) * u}
+                      big={(wide ? 28 : 25) * u}
                     />
                   )}
                   {!thinking ? (
@@ -486,9 +508,10 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                   h={towerH}
                   w={towerW}
                   u={u}
-                  cols={towerCols}
                 />
-                <Readout bricks={claudeBricks} color={claudeColor(model?.tier ?? 0)} u={u} />
+                <div style={{width: statW, minWidth: 0}}>
+                  <Readout bricks={claudeBricks} color={claudeColor(model?.tier ?? 0)} u={u} />
+                </div>
               </div>
             </Panel>
           </div>
