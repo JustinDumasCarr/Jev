@@ -271,3 +271,6 @@
   190/514 {'ok': 189, 'truncated': 0, 'refusal': 1, 'error': 0}
   200/514 {'ok': 199, 'truncated': 0, 'refusal': 1, 'error': 0}
   210/514 {'ok': 209, 'truncated': 0, 'refusal': 1, 'error': 0}
+  220/514 {'ok': 218, 'truncated': 0, 'refusal': 2, 'error': 0}
+  230/514 {'ok': 227, 'truncated': 0, 'refusal': 3, 'error': 0}
+  240/514 {'ok': 237, 'truncated': 0, 'refusal': 3, 'error': 0}

@@ -275,3 +275,6 @@
   310/529 {'ok': 306, 'truncated': 0, 'refusal': 4, 'error': 0}
   320/529 {'ok': 316, 'truncated': 0, 'refusal': 4, 'error': 0}
   330/529 {'ok': 326, 'truncated': 0, 'refusal': 4, 'error': 0}
+  340/529 {'ok': 336, 'truncated': 0, 'refusal': 4, 'error': 0}
+  350/529 {'ok': 346, 'truncated': 0, 'refusal': 4, 'error': 0}
+  360/529 {'ok': 356, 'truncated': 0, 'refusal': 4, 'error': 0}

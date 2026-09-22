@@ -43,3 +43,4 @@ task1 jev: rows=700  scored=700  errors=0 refusals=0 acc=0.939 [0.921, 0.956] p5
 | task2 | 2026-09-22 20:10:39 | task2 haiku45: rows=1000 scored=1000 errors=0 refusals=0 acc=0.936 [0.920, 0.951] p50=10956ms cost/1k=$6.409
 | task1 | 2026-09-22 20:10:48 | task1 sonnet5-nothink: rows=1000 scored=1000 errors=0 refusals=0 acc=0.943 [0.930, 0.957] p50=2607ms cost/1k=$4.956
 | task1 | 2026-09-22 20:13:43 | task1 sonnet5: rows=1000 scored=1000 errors=0 refusals=0 acc=0.954 [0.941, 0.966] p50=2604ms cost/1k=$4.828
+| task1 | 2026-09-22 20:19:31 | task1 sonnet46-nothink: rows=1000 scored=1000 errors=0 refusals=0 acc=0.934 [0.919, 0.948] p50=3105ms cost/1k=$7.000
