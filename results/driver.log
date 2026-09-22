@@ -877,3 +877,8 @@
 2026-09-22 20:10:26 [w3] committed: 200-case subset opus48, both tasks
 2026-09-22 20:10:26 [w3] run task1 haiku45-nothink variance-first
 2026-09-22 20:10:27 [w3] run task2 haiku45-nothink variance-first
+2026-09-22 20:10:30 [w3] committed: 200-case subset haiku45-nothink, both tasks
+2026-09-22 20:10:30 [w3] run task1 haiku45 full
+2026-09-22 20:10:31 [w3] full task1 haiku45: error rate 0%
+2026-09-22 20:10:38 [w3] run task2 haiku45 full
+2026-09-22 20:10:39 [w3] full task2 haiku45: error rate 0%
