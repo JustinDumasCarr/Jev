@@ -1,9 +1,8 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {Typed} from '../chrome';
 import {C, CLASS_ORDER, MONO, SANS, claudeColor, classLabel, tabular, upper} from '../theme';
 import {Ambient, EASE_OUT, POP, SNAP, StageWatermark, Timer, clamp01, ramp, useCamera} from '../stage';
-import {jevOf, panels} from '../timeline.mjs';
+import {byId, jevOf} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 import {stringsFor} from '../strings';
 
@@ -60,12 +59,13 @@ function walk(seq: Seq[], sid: string, elapsedMs: number, loop = true) {
 /** Every decision one row has completed, in order, with its correctness. */
 type Brick = {correct: boolean; saidPositive: boolean; goldPositive: boolean; atMs: number; divider?: boolean};
 
-function jevRun(seq: Seq[], elapsedMs: number): Brick[] {
+/** Every decision one system has completed, in order, at its own measured durations. */
+function runOf(seq: Seq[], sid: string, elapsedMs: number): Brick[] {
   const out: Brick[] = [];
   let t = 0;
   for (let i = 0; i < seq.length * 40; i++) {
     const c = seq[i % seq.length];
-    const e = c.systems.jev;
+    const e = c.systems[sid];
     const d = e?.duration_api_ms ?? 0;
     if (elapsedMs < t + d) break;
     t += d;
@@ -79,30 +79,68 @@ function jevRun(seq: Seq[], elapsedMs: number): Brick[] {
   return out;
 }
 
-function claudeRun(seq: Seq[], ps: {sys: System}[], elapsedMs: number): Brick[] {
-  const out: Brick[] = [];
-  let t = 0;
-  let lastModel = -1;
-  for (let k = 0; k < ps.length * 4; k++) {
-    const sid = ps[k % ps.length].sys.system;
-    const c = seq[k % seq.length];
-    const e = c?.systems[sid];
-    const d = e?.duration_api_ms ?? 0;
-    if (elapsedMs < t + d) break;
-    t += d;
-    if (k % ps.length !== lastModel && k > 0) {
-      out.push({correct: true, saidPositive: false, goldPositive: false, atMs: t, divider: true});
-    }
-    lastModel = k % ps.length;
-    out.push({
-      correct: e?.correct !== false,
-      saidPositive: e?.decision === 'injection',
-      goldPositive: c.gold === 'injection',
-      atMs: t,
-    });
+/* The two fixed lines under the options. Same two keys, same order, same height
+ * for every case and every model, so the box can never jump between cases: the
+ * decision the model returned, then the number it returned with it. */
+function outLines(entry?: {output_text: string} | null): [string, string] {
+  if (!entry) return ['', ''];
+  let obj: Record<string, unknown>;
+  try {
+    obj = JSON.parse(entry.output_text) as Record<string, unknown>;
+  } catch {
+    return ['', ''];
   }
-  return out;
+  const top3 = obj.top3 as string[] | undefined;
+  const l1 =
+    typeof obj.verdict === 'string'
+      ? `"verdict": "${obj.verdict}"`
+      : top3 && top3.length
+        ? `"top3": ["${top3[0]}", \u2026]`
+        : '';
+  const key =
+    typeof obj.p_injection === 'number'
+      ? 'p_injection'
+      : typeof obj.confidence === 'number'
+        ? 'confidence'
+        : null;
+  const l2 = key ? `"${key}": ${(obj[key] as number).toFixed(2)}` : '';
+  return [l1, l2];
 }
+
+/** The output box: two monospace lines that never wrap and never resize. */
+const OutBox: React.FC<{
+  lines: [string, string];
+  u: number;
+  size: number;
+  caret?: string | null;
+  caretOn?: 0 | 1;
+}> = ({lines, u, size, caret, caretOn}) => {
+  const lineH = Math.round(size * 1.5);
+  return (
+    <div style={{fontFamily: MONO, fontSize: size, color: C.ink2}}>
+      {lines.map((l, i) => (
+        <div
+          key={i}
+          style={{height: lineH, lineHeight: `${lineH}px`, whiteSpace: 'nowrap', overflow: 'hidden'}}
+        >
+          {l}
+          {caret && caretOn === i ? (
+            <span
+              style={{
+                display: 'inline-block',
+                width: size * 0.55,
+                height: size * 0.95,
+                marginLeft: 2 * u,
+                verticalAlign: '-0.1em',
+                background: caret,
+              }}
+            />
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const scored = (b: Brick[]) => b.filter((x) => !x.divider);
 const pctCorrect = (b: Brick[]) => {
@@ -189,7 +227,7 @@ const Choice: React.FC<{
   /** routing shows the model's ranked top three instead of the two classes */
   options?: string[] | null;
 }> = ({chosen, p, accent, u, big, options}) => (
-  <div style={{display: 'flex', flexDirection: 'column', gap: options ? 9 * u : 12 * u}}>
+  <div style={{display: 'flex', flexDirection: 'column', gap: options ? 5 * u : 0}}>
     {(options ?? (CLASS_ORDER as unknown as string[])).slice(0, options ? 3 : 2).map((opt, rank) => {
       const on = options ? rank === 0 && chosen != null : chosen === opt;
       const small = Boolean(options) && rank > 0;
@@ -210,8 +248,8 @@ const Choice: React.FC<{
             zIndex: on ? 2 : 1,
             background: on ? `${accent}1f` : 'transparent',
             padding: options
-              ? `${(small ? 5 : 8) * u}px ${12 * u}px`
-              : `${11 * u}px ${14 * u}px`,
+              ? `${(small ? 3 : 8) * u}px ${12 * u}px`
+              : `${8 * u}px ${14 * u}px`,
           }}
         >
           <div style={{display: 'flex', alignItems: 'baseline', gap: 10 * u}}>
@@ -222,6 +260,11 @@ const Choice: React.FC<{
                 fontSize: options ? big * (small ? 0.58 : 0.8) : big,
                 letterSpacing: '-0.02em',
                 color: on ? accent : C.ink3,
+                // the top pick gets two lines whether it needs them or not, so a
+                // long skill name never resizes the block between cases
+                ...(options && !small
+                  ? {display: 'block', height: big * 0.8 * 1.12 * 2, lineHeight: 1.12, overflow: 'hidden'}
+                  : {}),
               }}
             >
               {options ? opt : classLabel(opt)}
@@ -241,8 +284,8 @@ const Choice: React.FC<{
           {/* always present, so a box never changes height between cases */}
           <div
             style={{
-              marginTop: small ? 5 * u : 9 * u,
-              height: small ? 5 * u : 9 * u,
+              marginTop: small ? 5 * u : 7 * u,
+              height: small ? 5 * u : 7 * u,
               borderRadius: 999,
               background: on ? 'rgba(255,255,255,0.10)' : 'transparent',
               overflow: 'hidden',
@@ -282,7 +325,10 @@ const Panel: React.FC<{
   h: number;
   flash?: number;
   sub?: string | null;
-}> = ({label, accent, children, u, h, flash = 0, sub}) => (
+  /** the options column's width: the sub line may never run into the tower */
+  subW?: number;
+  subH?: number;
+}> = ({label, accent, children, u, h, flash = 0, sub, subW, subH}) => (
   <div
     style={{
       position: 'relative',
@@ -304,10 +350,12 @@ const Panel: React.FC<{
           style={{
             fontFamily: SANS,
             fontWeight: 500,
-            fontSize: 20 * u,
+            fontSize: 17 * u,
+            lineHeight: 1.25,
             color: C.ink2,
             marginTop: 4 * u,
-            whiteSpace: 'nowrap',
+            maxWidth: subW,
+            height: subH,
           }}
         >
           {sub}
@@ -327,54 +375,43 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
   const T = stringsFor(data.meta.task);
   const correctLabel = T.correctLabel;
   const seq = ((data as unknown as {sequence: Seq[]}).sequence || []).filter((c) => c.text);
-  const ps = panels(data, layout) as {sys: System; tier: number}[];
+  // One Claude for the whole beat, named once: Sonnet 5 with thinking off.
+  const BOT = 'sonnet5-nothink';
+  const botSys = (byId(data, BOT) || byId(data, 'sonnet5')) as System;
+  const botColor = claudeColor(botSys?.tier_rank ?? 5);
   const jevSys = jevOf(data) as System;
   const elapsed = (frame / fps) * 1000;
 
   const jev = walk(seq, 'jev', elapsed);
 
-  /* The bottom row: one case per model, in tier order, each at its own duration. */
-  let t = 0;
-  let mi = 0;
-  let ci = 0;
-  let startedMs = 0;
-  let botDone = 0;
-  for (let k = 0; k < ps.length * 4; k++) {
-    const model = ps[k % ps.length];
-    const c = seq[k % seq.length];
-    const d = c?.systems[model.sys.system]?.duration_api_ms ?? 0;
-    if (elapsed < t + d) {
-      mi = k % ps.length;
-      ci = k % seq.length;
-      startedMs = t;
-      botDone = k;
-      break;
-    }
-    t += d;
-    mi = k % ps.length;
-    ci = k % seq.length;
-    startedMs = t;
-    botDone = k + 1;
-  }
-  const model = ps[mi];
-  const botCase = seq[ci];
-  const botEntry = botCase?.systems[model.sys.system];
-  const botMs = elapsed - startedMs;
+  /* The bottom row: the same sequence, walked at Sonnet 5's own measured
+     durations. One model for the whole beat, so the comparison never moves. */
+  const bot = walk(seq, BOT, elapsed);
+  const ci = bot.index;
+  const botCase = bot.entry ?? seq[ci];
+  const botEntry = botCase?.systems[BOT];
+  const botMs = elapsed - bot.startedMs;
   const thinkMs = botEntry?.thinking_ms_est ?? 0;
   const typeMs = Math.max(1, (botEntry?.duration_api_ms ?? 1) - thinkMs);
   const thinking = botMs < thinkMs;
   const typed = clamp01((botMs - thinkMs) / typeMs); // linear: its own measured rate
-  // the verdict token has landed once the streamed prefix has passed it
-  const botText = botEntry?.output_text ?? '';
   const botDecision = botEntry?.decision ?? '';
-  const verdictAt = botDecision ? botText.indexOf(botDecision) + botDecision.length + 1 : 0;
-  const verdictLanded = !thinking && typed * botText.length >= verdictAt && verdictAt > 0;
   const thinkTokens = Math.floor(
     interpolate(botMs, [0, Math.max(1, thinkMs)], [0, botEntry?.thinking_tokens ?? 0], {
       extrapolateLeft: 'clamp',
       extrapolateRight: 'clamp',
     }),
   );
+
+  // the answer streams into the same two-line template it will end as
+  const botLines = outLines(botEntry);
+  const botChars = botLines[0].length + botLines[1].length;
+  const shown = Math.floor(typed * botChars);
+  const streamed: [string, string] = [
+    botLines[0].slice(0, Math.min(shown, botLines[0].length)),
+    shown > botLines[0].length ? botLines[1].slice(0, shown - botLines[0].length) : '',
+  ];
+  const caretOn: 0 | 1 = shown >= botLines[0].length ? 1 : 0;
 
   const jevMs = elapsed - jev.startedMs;
   /* The text and the decision on a row must belong to the same case, on every
@@ -389,23 +426,19 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
   const pBar = jevDone ? jevEntry?.p ?? 0 : 0;
   const sinceJev = (jevMs / 1000) * fps;
 
-  const jevBricks = jevRun(seq, elapsed);
-  const claudeBricks = claudeRun(seq, ps, elapsed);
+  const jevBricks = runOf(seq, 'jev', elapsed);
+  const claudeBricks = runOf(seq, BOT, elapsed);
   // One brick height for both towers, computed once from what the beat will hold
   // at its end, so nothing ever rescales mid-beat.
   const endMs = (durationInFrames / fps) * 1000;
-  const maxBricks = Math.max(
-    jevRun(seq, endMs).length,
-    claudeRun(seq, ps, endMs).length,
-    1,
-  );
+  const maxBricks = Math.max(runOf(seq, 'jev', endMs).length, runOf(seq, BOT, endMs).length, 1);
 
-  // the static line under each model name: its final test-split accuracy
+  // the static line under each model name: its final accuracy on this split,
+  // short enough to sit inside the options column and never reach the tower
   const subFor = (sys?: System | null) => {
     if (!sys) return null;
     const a = sys.accuracy;
-    const verb = T.accuracyPhrase;
-    return `${verb} ${(a.point * 100).toFixed(1)}% of the time  [${(a.ci_low * 100).toFixed(0)}–${(
+    return `${(a.point * 100).toFixed(1)}% correct  [${(a.ci_low * 100).toFixed(0)}–${(
       a.ci_high * 100
     ).toFixed(0)}]`;
   };
@@ -416,14 +449,20 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
   const colW = (contentW - gap) / 2;
   const top = 200 * u;
   const rowH = (wide ? 292 : 320) * u;
-  const streamH = (wide ? 76 : 80) * u;
-  const towerH = rowH - (wide ? 78 : 82) * u - streamH;
+  const streamH = (wide ? 72 : 76) * u;
+  // the header block, the gap above the output box and the box itself all come
+  // out of the panel, so nothing is clipped at the bottom edge
+  const towerH = rowH - (wide ? 84 : 88) * u - streamH;
   // 2 : 1 : 1 — options, tower, stats — with a hard gutter between each.
   const gutter = 20 * u;
   const inner = colW - 44 * u - gutter * 2;
   const optW = inner * 0.5;
   const towerW = inner * 0.25;
   const statW = inner * 0.25;
+  // the sub is short enough for one line inside the options column, and its
+  // height is fixed either way so the header block never moves
+  const subH = Math.round(17 * 1.3) * u;
+  const outSize = (wide ? 19 : 18) * u;
   const brickH = (towerH - 4 * u) / maxBricks;
   const enter = ramp(frame, 0, 7, EASE_OUT);
   const cam = useCamera([
@@ -433,15 +472,12 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
 
   const streamRow: React.CSSProperties = {
     height: streamH,
-    marginTop: 14 * u,
-    padding: `${11 * u}px ${14 * u}px`,
+    marginTop: 10 * u,
+    padding: `${9 * u}px ${14 * u}px`,
     borderRadius: 12 * u,
     border: '1px solid rgba(255,255,255,0.10)',
     background: 'rgba(255,255,255,0.03)',
     overflow: 'hidden',
-    // a clean fade where the two lines end, so a longer object reads as trimmed
-    maskImage: 'linear-gradient(180deg, #000 68%, rgba(0,0,0,0) 100%)',
-    WebkitMaskImage: 'linear-gradient(180deg, #000 68%, rgba(0,0,0,0) 100%)',
   };
 
   const textStyle = {
@@ -456,8 +492,9 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
     <AbsoluteFill style={{backgroundColor: C.bg, opacity: enter}}>
       <Ambient glow="rgba(64,104,180,0.16)" cam={cam} />
 
-      <div style={{position: 'absolute', top: 48 * u, left: pad}}>
-        <div style={{fontFamily: SANS, fontWeight: 700, fontSize: 31 * u, color: C.ink, letterSpacing: '-0.025em', lineHeight: 1.15}}>
+      {/* the stopwatch owns the top right, so the header stops well short of it */}
+      <div style={{position: 'absolute', top: 48 * u, left: pad, width: width - pad - 430 * u}}>
+        <div style={{fontFamily: SANS, fontWeight: 700, fontSize: 31 * u, color: C.ink, letterSpacing: '-0.025em', lineHeight: 1.18}}>
           {T.header}
         </div>
       </div>
@@ -473,7 +510,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
             </Panel>
           </div>
           <div style={{width: colW}}>
-            <Panel label={jevSys.label} accent={C.accent} u={u} h={rowH} sub={subFor(jevSys)}>
+            <Panel label={jevSys.label} accent={C.accent} u={u} h={rowH} sub={subFor(jevSys)} subW={optW} subH={subH}>
               <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
               <div style={{display: 'flex', gap: gutter, height: towerH}}>
                 <div style={{width: optW, minWidth: 0, overflow: 'hidden'}}>
@@ -492,9 +529,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                 </div>
               </div>
               <div style={{...streamRow, borderColor: `${C.accent}33`}}>
-                <span style={{fontFamily: MONO, fontSize: (wide ? 19 : 18) * u, lineHeight: 1.45, color: C.ink2}}>
-                  {jevEntry?.output_text ?? ''}
-                </span>
+                <OutBox lines={jevDone ? outLines(jevEntry) : ['', '']} u={u} size={outSize} />
               </div>
               </div>
             </Panel>
@@ -511,7 +546,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
             </Panel>
           </div>
           <div style={{width: colW}}>
-            <Panel label={model?.sys.label ?? ''} accent={claudeColor(model?.tier ?? 0)} u={u} h={rowH} sub={subFor(model?.sys)}>
+            <Panel label={botSys?.label ?? ''} accent={botColor} u={u} h={rowH} sub={subFor(botSys)} subW={optW} subH={subH}>
               <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
               <div style={{display: 'flex', gap: gutter, height: towerH}}>
                 <div style={{width: optW, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
@@ -520,25 +555,25 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                       chosen={botDecision || null}
                       options={routing ? botEntry?.top3 ?? null : null}
                       p={botEntry?.p ?? null}
-                      accent={claudeColor(model?.tier ?? 0)}
+                      accent={botColor}
                       u={u}
                       big={(wide ? 28 : 25) * u}
                     />
                 </div>
                 <Tower
                   bricks={claudeBricks}
-                  accent={claudeColor(model?.tier ?? 0)}
+                  accent={botColor}
                   brickH={brickH}
                   h={towerH}
                   w={towerW}
                   u={u}
                 />
                 <div style={{width: statW, minWidth: 0}}>
-                  <Readout bricks={claudeBricks} color={claudeColor(model?.tier ?? 0)} u={u} correctLabel={correctLabel} />
+                  <Readout bricks={claudeBricks} color={botColor} u={u} correctLabel={correctLabel} />
                 </div>
               </div>
               {/* the answer streaming in is the main event of this panel */}
-              <div style={{...streamRow, borderColor: `${claudeColor(model?.tier ?? 0)}44`}}>
+              <div style={{...streamRow, borderColor: `${botColor}44`}}>
                 {thinking ? (
                   <div style={{display: 'flex', alignItems: 'center', gap: 12 * u, height: '100%'}}>
                     <div
@@ -555,9 +590,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                           width: '36%',
                           height: '100%',
                           borderRadius: 999,
-                          background: `linear-gradient(90deg, transparent, ${claudeColor(
-                            model?.tier ?? 0,
-                          )}, transparent)`,
+                          background: `linear-gradient(90deg, transparent, ${botColor}, transparent)`,
                           transform: `translateX(${interpolate((frame % 40) / 40, [0, 1], [-100, 280])}%)`,
                         }}
                       />
@@ -567,20 +600,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                     </span>
                   </div>
                 ) : (
-                <Typed
-                  text={thinking ? '' : botText}
-                  progress={thinking ? 0 : typed}
-                  caretColor={claudeColor(model?.tier ?? 0)}
-                  style={{
-                    fontFamily: MONO,
-                    fontWeight: 500,
-                    fontSize: (wide ? 21 : 20) * u,
-                    lineHeight: 1.45,
-                    color: C.ink,
-                    wordBreak: 'break-word',
-                    display: 'block',
-                  }}
-                />
+                <OutBox lines={streamed} u={u} size={outSize} caret={botColor} caretOn={caretOn} />
                 )}
               </div>
               </div>
