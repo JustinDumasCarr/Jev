@@ -65,6 +65,20 @@ Justin, 2026-09-22: **it has to be Jev against the different Claude models, not 
 
 **Honesty rules.** Typing rate, thinking counter, stopwatch, odometers and clocks are all driven by measured values from `data.json`; springs and easing apply to objects (stamp, arrows, panels, camera), never to a quantity that encodes a measurement. Every number on screen is traceable to a results row. The verdict copy is templated; the render must be correct on both fixtures. The watermark is unremovable in fixture mode.
 
+## 5c. Prototype round (2026-09-22): motion metaphors, not counters
+
+Justin on the first Remotion render: numbers changing is not an animation. The middle scenes must be **objects that move, fill, race and arrive**. He wants choices and will narrow them down on prototypes. Build these as separate short Remotion compositions on fixture data, square, about 8 s each, same nine systems, same stopwatch in the corner, then a contact sheet:
+
+| # | Prototype | Encoding (must stay linear in time) |
+|---|---|---|
+| P1 | **Rocket launch** | Nine rockets on vertical lanes lift off together; height = elapsed time; Jev's reaches the target line and bursts into its answer stamp; others keep climbing on exhaust trails. |
+| P2 | **Rings filling** | Nine rings sweep closed at one shared rate; a ring closes at the system's time and snaps into its stamp; Jev's closes in a blink. |
+| P3 | **Glasses filling** | Liquid pours into nine glasses at one shared rate (§5a); a glass caps at the system's time; Jev's caps almost empty. |
+| P4 | **Sprint** | Nine runners on horizontal lanes at one shared speed; the finish line is the answer; Jev crosses while the rest are mid-stride. |
+| P5 | **The thousand-square** (for the "1,000 times" scene) | One 1,000-cell square per system; cells light at the system's real decisions-per-second in time-lapse; Jev's fills in seconds, Claude's has a handful lit at scene end. |
+
+Justin picks one of P1–P4 for the race and confirms P5 (or an alternative) for the thousand-call scene. The prompt beat, Jev's stamp, the accuracy targets and the end card from the first render are kept as the frame around whichever metaphor wins.
+
 ## 5b. LinkedIn constraints (primary destination)
 
 LinkedIn autoplays muted in a feed the viewer is scrolling past. That sets four hard rules for the square cut:
