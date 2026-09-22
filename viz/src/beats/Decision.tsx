@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, random, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {C, SANS, claudeColor, clock, money, tabular, upper} from '../theme';
+import {C, SANS, claudeColor, classLabel, clock, money, tabular, upper} from '../theme';
 import {
   Ambient,
   Camera,
@@ -390,7 +390,7 @@ export const Decision: React.FC<FilmProps> = ({data, layout}) => {
         {'* '}
         {inA ? 'real time' : `time-lapse ×${speed.toLocaleString()}`}
         {' · one cell = one decision · Jev: '}
-        {(jev.hero?.decision || '').toLowerCase()}, {Math.round((jev.hero?.p ?? 0) * 100)}%
+        {classLabel(jev.hero?.decision)}, {Math.round((jev.hero?.p ?? 0) * 100)}%
       </div>
 
       {jevFull ? (

@@ -188,7 +188,7 @@ export const Results: React.FC<FilmProps> = ({data, layout}) => {
         }}
       >
         {data.meta.split} split · n={(jev as unknown as {results: Res}).results?.n ?? jev.n} per
-        system · green = matched gold, red = missed
+        system · green = matched gold, red = missed · attack = prompt injection
       </div>
 
       <div

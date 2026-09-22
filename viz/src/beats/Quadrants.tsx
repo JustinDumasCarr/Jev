@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {Typed} from '../chrome';
-import {C, MONO, SANS, claudeColor, tabular, upper} from '../theme';
+import {C, CLASS_ORDER, MONO, SANS, claudeColor, classLabel, tabular, upper} from '../theme';
 import {Ambient, EASE_OUT, POP, SNAP, StageWatermark, Timer, clamp01, ramp, useCamera} from '../stage';
 import {panels} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
@@ -186,7 +186,7 @@ const Choice: React.FC<{
   big: number;
 }> = ({chosen, p, accent, u, big}) => (
   <div style={{display: 'flex', flexDirection: 'column', gap: 12 * u}}>
-    {['benign', 'injection'].map((opt) => {
+    {CLASS_ORDER.map((opt) => {
       const on = chosen === opt;
       const prob = on ? p ?? 0 : null;
       return (
@@ -207,10 +207,9 @@ const Choice: React.FC<{
                 fontSize: big,
                 letterSpacing: '-0.02em',
                 color: on ? accent : C.ink3,
-                textTransform: 'uppercase',
               }}
             >
-              {opt}
+              {classLabel(opt)}
             </span>
             <span
               style={{
@@ -246,17 +245,15 @@ const Choice: React.FC<{
 
 const Readout: React.FC<{bricks: Brick[]; color: string; u: number}> = ({bricks, color, u}) => {
   const n = scored(bricks).length;
-  const pr = precision(bricks);
   return (
-    <div style={{display: 'flex', flexDirection: 'column', gap: 14 * u, whiteSpace: 'nowrap'}}>
+    <div style={{display: 'flex', flexDirection: 'column', gap: 22 * u, whiteSpace: 'nowrap'}}>
       {[
         ['decisions', String(n), color],
         ['correct', n ? Math.round(pctCorrect(bricks) * 100) + '%' : '—', C.ink],
-        ['precision', pr == null ? '—' : Math.round(pr * 100) + '%', C.ink],
       ].map(([k, v, col]) => (
         <div key={k}>
-          <div style={{...upper(0.16), fontSize: 14 * u, color: C.ink3}}>{k}</div>
-          <div style={{...tabular, fontWeight: 800, fontSize: 32 * u, color: col as string}}>{v}</div>
+          <div style={{...upper(0.16), fontSize: 15 * u, color: C.ink3}}>{k}</div>
+          <div style={{...tabular, fontWeight: 800, fontSize: 38 * u, color: col as string}}>{v}</div>
         </div>
       ))}
     </div>
@@ -332,6 +329,11 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
   const typeMs = Math.max(1, (botEntry?.duration_api_ms ?? 1) - thinkMs);
   const thinking = botMs < thinkMs;
   const typed = clamp01((botMs - thinkMs) / typeMs); // linear: its own measured rate
+  // the verdict token has landed once the streamed prefix has passed it
+  const botText = botEntry?.output_text ?? '';
+  const botDecision = botEntry?.decision ?? '';
+  const verdictAt = botDecision ? botText.indexOf(botDecision) + botDecision.length + 1 : 0;
+  const verdictLanded = !thinking && typed * botText.length >= verdictAt && verdictAt > 0;
   const thinkTokens = Math.floor(
     interpolate(botMs, [0, Math.max(1, thinkMs)], [0, botEntry?.thinking_tokens ?? 0], {
       extrapolateLeft: 'clamp',
@@ -369,7 +371,8 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
   const colW = (contentW - gap) / 2;
   const top = 200 * u;
   const rowH = (wide ? 292 : 320) * u;
-  const towerH = rowH - (wide ? 78 : 82) * u;
+  const streamH = (wide ? 76 : 80) * u;
+  const towerH = rowH - (wide ? 78 : 82) * u - streamH;
   // 2 : 1 : 1 — options, tower, stats — with a hard gutter between each.
   const gutter = 20 * u;
   const inner = colW - 44 * u - gutter * 2;
@@ -382,6 +385,19 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
     {at: 0, zoom: 1.03, x: width / 2, y: height / 2},
     {at: durationInFrames, zoom: 1, x: width / 2, y: height / 2},
   ]);
+
+  const streamRow: React.CSSProperties = {
+    height: streamH,
+    marginTop: 14 * u,
+    padding: `${11 * u}px ${14 * u}px`,
+    borderRadius: 12 * u,
+    border: '1px solid rgba(255,255,255,0.10)',
+    background: 'rgba(255,255,255,0.03)',
+    overflow: 'hidden',
+    // a clean fade where the two lines end, so a longer object reads as trimmed
+    maskImage: 'linear-gradient(180deg, #000 68%, rgba(0,0,0,0) 100%)',
+    WebkitMaskImage: 'linear-gradient(180deg, #000 68%, rgba(0,0,0,0) 100%)',
+  };
 
   const textStyle = {
     fontFamily: SANS,
@@ -413,7 +429,8 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
           </div>
           <div style={{width: colW}}>
             <Panel label="Jev 1.13" accent={C.accent} u={u} h={rowH}>
-              <div style={{display: 'flex', gap: gutter, height: '100%'}}>
+              <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+              <div style={{display: 'flex', gap: gutter, height: towerH}}>
                 <div style={{width: optW, minWidth: 0, overflow: 'hidden'}}>
                   <Choice
                     chosen={jevDone ? jevEntry?.decision ?? null : null}
@@ -427,6 +444,12 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                 <div style={{width: statW, minWidth: 0}}>
                   <Readout bricks={jevBricks} color={C.accent} u={u} />
                 </div>
+              </div>
+              <div style={{...streamRow, borderColor: `${C.accent}33`}}>
+                <span style={{fontFamily: MONO, fontSize: (wide ? 19 : 18) * u, lineHeight: 1.45, color: C.ink2}}>
+                  {jevEntry?.output_text ?? ''}
+                </span>
+              </div>
               </div>
             </Panel>
           </div>
@@ -443,7 +466,8 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
           </div>
           <div style={{width: colW}}>
             <Panel label={model?.sys.label ?? ''} accent={claudeColor(model?.tier ?? 0)} u={u} h={rowH}>
-              <div style={{display: 'flex', gap: gutter, height: '100%'}}>
+              <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+              <div style={{display: 'flex', gap: gutter, height: towerH}}>
                 <div style={{width: optW, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
                   {thinking ? (
                     <div style={{display: 'flex', alignItems: 'center', gap: 12 * u, marginTop: 6 * u}}>
@@ -474,32 +498,13 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                     </div>
                   ) : (
                     <Choice
-                      chosen={typed >= 1 ? botEntry?.decision ?? null : null}
+                      chosen={verdictLanded ? botDecision : null}
                       p={botEntry?.p ?? null}
                       accent={claudeColor(model?.tier ?? 0)}
                       u={u}
                       big={(wide ? 28 : 25) * u}
                     />
                   )}
-                  {!thinking ? (
-                    <div
-                      style={{
-                        marginTop: 'auto',
-                        ...tabular,
-                        fontSize: 18 * u,
-                        color: C.ink3,
-                        overflow: 'hidden',
-                        maxHeight: 62 * u,
-                      }}
-                    >
-                      <Typed
-                        text={botEntry?.output_text ?? ''}
-                        progress={typed}
-                        caretColor={claudeColor(model?.tier ?? 0)}
-                        style={{fontFamily: MONO, fontSize: 18 * u, lineHeight: 1.4, display: 'block'}}
-                      />
-                    </div>
-                  ) : null}
                 </div>
                 <Tower
                   bricks={claudeBricks}
@@ -512,6 +517,24 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                 <div style={{width: statW, minWidth: 0}}>
                   <Readout bricks={claudeBricks} color={claudeColor(model?.tier ?? 0)} u={u} />
                 </div>
+              </div>
+              {/* the answer streaming in is the main event of this panel */}
+              <div style={{...streamRow, borderColor: `${claudeColor(model?.tier ?? 0)}44`}}>
+                <Typed
+                  text={thinking ? '' : botText}
+                  progress={thinking ? 0 : typed}
+                  caretColor={claudeColor(model?.tier ?? 0)}
+                  style={{
+                    fontFamily: MONO,
+                    fontWeight: 500,
+                    fontSize: (wide ? 21 : 20) * u,
+                    lineHeight: 1.45,
+                    color: C.ink,
+                    wordBreak: 'break-word',
+                    display: 'block',
+                  }}
+                />
+              </div>
               </div>
             </Panel>
           </div>
@@ -534,7 +557,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
           textOverflow: 'ellipsis',
         }}
       >
-        * real time · real test cases · each answer is what that model returned
+        * real time · real test cases · attack = prompt injection
       </div>
 
       <StageWatermark data={data} />

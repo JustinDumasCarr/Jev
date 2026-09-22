@@ -89,3 +89,10 @@ export const clock = (ms: number) => {
   const pad = (n: number) => String(n).padStart(2, '0');
   return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 };
+
+/* What the two classes are CALLED on screen. The data keeps saying "benign" and
+   "injection"; only these strings change if the wording changes again. */
+export const CLASS_LABELS: Record<string, string> = {benign: 'SAFE', injection: 'ATTACK'};
+export const CLASS_ORDER = ['benign', 'injection'] as const;
+export const classLabel = (v: string | null | undefined) =>
+  (v && CLASS_LABELS[v]) || (v ? v.toUpperCase() : '');
