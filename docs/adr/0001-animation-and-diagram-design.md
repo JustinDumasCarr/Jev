@@ -11,6 +11,8 @@
 3. **Nothing technical front and centre.** Speed factors ("×9"), confidence readouts, method notes, "wall clock", "p50": none of it near the visual. Anything that must be disclosed goes in **one asterisk line at the very bottom** of the frame, small.
 4. **Plain words on screen.** Two classes are "Safe" and "Attack", not "benign" and "injection"; the technical term lives in the footnote ("attack = prompt injection"). If a label needs explaining, it is the wrong label.
 
+4b. **Example content on screen is English and generic.** No client business context, no French, no domain-specific cases; frame it as an ordinary user and an ordinary chatbot ("someone messaging a chatbot"). The examples are still real scored cases, filtered, never invented.
+
 ### State changes, not transitions
 
 5. **A change of state is a hard cut on a single frame** from one complete state to the next. No fade, no spring, no empty frame, no resize. Every element keeps identical geometry across states; only text, highlight and numbers change. Reserve fixed space (e.g. two lines) for variable-length content so nothing ever moves.
