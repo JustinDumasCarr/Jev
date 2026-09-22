@@ -228,3 +228,7 @@
   70/89 {'ok': 69, 'truncated': 0, 'refusal': 1, 'error': 0}
   80/89 {'ok': 78, 'truncated': 0, 'refusal': 2, 'error': 0}
 {"task": "task2", "system": "opus5-nothink", "counts": {"ok": 87, "truncated": 0, "refusal": 2, "error": 0}, "elapsed_s": 165.6, "pauses": []}
+  10/200 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/200 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/200 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/200 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
