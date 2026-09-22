@@ -52,7 +52,7 @@ Everything on screen comes from `viz/data.json`, produced by `harness/viz_data.p
 
 **Scoreboard beat (Justin, 2026-09-22: "where do we show speed and accuracy compared to each model").** Each film's last beat before the end card: nine rows (all 17 in the wide cut), one per system, Jev's lit; per row a bar for median response time (linear ms, labelled, "via Claude Code" / "via OpenRouter" in small type) and a bar for accuracy with the 95% interval as a whisker; rows sorted by accuracy; bars grow in with a stagger; the verdict line under it. About 6 s.
 
-**Film C, the scoreboard alone** (`jev-vs-claude-scoreboard-*.mp4`, about 15 s): both tasks side by side in one frame, routing left and injection right, same rows and bars, one verdict line per task, the end card's provenance line. No other beats. This is the headline share.
+**Standalone scoreboard clips, one per task** (`jev-vs-claude-routing-scoreboard-*.mp4`, `jev-vs-claude-injection-scoreboard-*.mp4`, about 12 s each): the scoreboard beat alone with its verdict line and the provenance line. Justin, 2026-09-22: the two tasks are never shown in one frame; there is no combined film.
 
 Both films render from one composition parameterised by task; `viz_data.py` writes `data.injection.json` and `data.routing.json`.
 
