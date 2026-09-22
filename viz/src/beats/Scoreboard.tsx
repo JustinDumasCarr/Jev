@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {C, SANS, claudeColor, pct, shortLatency, tabular, upper} from '../theme';
 import {Ambient, EASE_OUT, SNAP, StageWatermark, clamp01, ramp, useCamera} from '../stage';
-import {jevOf, panels, verdict, verdictSentence} from '../timeline.mjs';
+import {jevOf, panels, verdictBlock} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 import {stringsFor} from '../strings';
 
@@ -53,7 +53,10 @@ export const Scoreboard: React.FC<FilmProps & {standalone?: boolean}> = ({
   const top = (standalone ? 214 : 196) * u;
   const rowH = (wide ? 62 : 64) * u;
 
-  const v = verdict(data);
+  const v = verdictBlock(data);
+  // one line, never wrapped: the type shrinks until the sentence fits the margins
+  const headlineSize = Math.min((wide ? 44 : 40) * u, contentW / Math.max(1, v.headline.length * 0.52));
+  const smallPrintSize = Math.min(18 * u, contentW / Math.max(1, v.smallPrint.length * 0.48));
   const enter = ramp(frame, 0, 8, EASE_OUT);
   const exit = standalone ? 0 : ramp(frame, durationInFrames - 9, durationInFrames, EASE_OUT);
   const cam = useCamera([
@@ -203,13 +206,13 @@ export const Scoreboard: React.FC<FilmProps & {standalone?: boolean}> = ({
           transform: `translateY(${interpolate(ramp(frame, verdictAt, verdictAt + 12, EASE_OUT), [0, 1], [18, 0])}px)`,
           fontFamily: SANS,
           fontWeight: 700,
-          fontSize: (wide ? 44 : 40) * u,
+          fontSize: headlineSize,
           letterSpacing: '-0.03em',
+          whiteSpace: 'nowrap',
           color: C.ink,
         }}
       >
-        {verdictSentence(v.lines[0])}{' '}
-        <span style={{...upper(0.14), fontSize: 20 * u, color: C.ink3}}>{v.lines[0].tail}</span>
+        {v.headline}
       </div>
 
       <div
@@ -217,23 +220,40 @@ export const Scoreboard: React.FC<FilmProps & {standalone?: boolean}> = ({
           position: 'absolute',
           left: pad,
           right: pad,
-          bottom: 38 * u,
+          bottom: (standalone ? 86 : 56) * u,
+          textAlign: 'center',
+          opacity: ramp(frame, verdictAt, verdictAt + 12, EASE_OUT),
+          fontFamily: SANS,
+          fontWeight: 500,
+          fontSize: smallPrintSize,
+          color: C.ink3,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {v.smallPrint}
+      </div>
+
+      <div
+        style={{
+          position: 'absolute',
+          left: pad,
+          right: pad,
+          bottom: (standalone ? 34 : 24) * u,
           textAlign: 'center',
           fontFamily: SANS,
           fontWeight: 500,
-          fontSize: 17 * u,
+          fontSize: 16 * u,
           color: C.ink3,
           lineHeight: 1.5,
         }}
       >
         {data.meta.task_label} · {data.meta.filter} · {data.meta.split} split · {data.meta.run_date} ·
         git {data.meta.git_sha}
-        {data.meta.n_note ? <><br />{data.meta.n_note}</> : null}
         {standalone ? (
           <>
             <br />
             Claude latency via Claude Code (duration_api_ms, effort low, thinking off); Jev via
-            OpenRouter. Non-inferiority margin {v.marginPts} points, fixed before any data.
+            OpenRouter.
           </>
         ) : null}
       </div>

@@ -3,7 +3,7 @@ import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from
 import {Tag} from '../chrome';
 import {C, SANS, claudeColor, money, pct, shortLatency, tabular, upper} from '../theme';
 import {Ambient, EASE_OUT, SNAP, StageWatermark, ramp, useCamera} from '../stage';
-import {jevOf, panels, verdict, verdictSentence} from '../timeline.mjs';
+import {jevOf, panels, verdictBlock} from '../timeline.mjs';
 import type {FilmProps, System} from '../types';
 
 /* Beat 6 — the end card, and the poster frame. Three enormous numbers for Jev, the
@@ -54,8 +54,12 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
   const u = height / 1080;
   const jev = jevOf(data) as System;
   const ps = panels(data, layout) as {sys: System; tier: number}[];
-  const v = verdict(data);
+  const v = verdictBlock(data);
   const m = data.meta;
+  // one line, never wrapped: the type shrinks until the sentence fits the margins
+  const contentW = width - 120 * u;
+  const headlineSize = Math.min(46 * u, contentW / Math.max(1, v.headline.length * 0.52));
+  const smallPrintSize = Math.min(19 * u, contentW / Math.max(1, v.smallPrint.length * 0.48));
 
   const camE = useCamera([
     {at: 0, zoom: 1.08, x: width / 2, y: height / 2},
@@ -158,22 +162,30 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
             opacity: spring({frame: frame - 18, fps, config: {damping: 200}, durationInFrames: 14}),
           }}
         >
-          {v.lines.map((l: {head: string | null; full: string | null; tail: string}, i: number) => (
-            <div
-              key={i}
-              style={{
-                fontFamily: SANS,
-                fontWeight: 700,
-                fontSize: 46 * u,
-                letterSpacing: '-0.03em',
-                color: C.ink,
-                marginBottom: 2 * u,
-              }}
-            >
-              {verdictSentence(l)}{' '}
-              <span style={{...upper(0.14), fontSize: 20 * u, color: C.ink3}}>{l.tail}</span>
-            </div>
-          ))}
+          <div
+            style={{
+              fontFamily: SANS,
+              fontWeight: 700,
+              fontSize: headlineSize,
+              letterSpacing: '-0.03em',
+              whiteSpace: 'nowrap',
+              color: C.ink,
+            }}
+          >
+            {v.headline}
+          </div>
+          <div
+            style={{
+              fontFamily: SANS,
+              fontWeight: 500,
+              fontSize: smallPrintSize,
+              color: C.ink3,
+              whiteSpace: 'nowrap',
+              marginTop: 10 * u,
+            }}
+          >
+            {v.smallPrint}
+          </div>
         </div>
       </div>
 
@@ -194,11 +206,9 @@ export const EndCard: React.FC<FilmProps> = ({data, layout}) => {
       >
         {m.task_label} · {m.filter} · {m.split} split · n={jev.n} per system · {m.run_date} · git{' '}
         {m.git_sha}
-        {m.n_note ? <><br />{m.n_note}</> : null}
         <br />
         Claude latency via Claude Code (duration_api_ms, effort low, thinking off); Jev via OpenRouter.
-        Claude cost is notional list price; Jev's is the real charge. Non-inferiority margin{' '}
-        {v.marginPts} points, fixed before any data.
+        Claude cost is notional list price; Jev's is the real charge.
       </div>
       </AbsoluteFill>
       <StageWatermark data={data} />
