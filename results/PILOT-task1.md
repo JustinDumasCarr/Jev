@@ -4,11 +4,13 @@
 was not ready and task 2 was not run. Claude CLI 2.1.276, harness at the commit this file
 lands in.
 
-**Dataset state.** `data/task1_cases.jsonl` is final at Tier 1 but **the WP4 audit gate has
-not run**, so `data/splits.json` does not exist and every run here used `--split all`. Each
-`run_meta.json` records the sha256 of the exact dataset bytes used
-(`data_sha256`), so any case the audit later regenerates can be identified and its rows
-rerun:
+**Dataset state.** Every run here used `--split all`, because `data/splits.json` did not
+exist when they started. WP4 committed it at 15:34, during the pilot (commit `7f25632`), and
+`data/task1_cases.jsonl` is byte-identical to what these runs used — the WP4 fixes so far
+touched task 2 only. So nothing needs rerunning, and the test split can simply be applied at
+analysis time: `metrics.py --split test` on the Jev full run gives **0.939 strict on all
+three reps** (n = 700), against 0.935 / 0.935 / 0.937 on all 1,000. Each `run_meta.json` records the sha256 of the exact dataset bytes used (`data_sha256`), so
+any case a later audit pass regenerates can be identified and its rows rerun:
 
 - `data/task1_cases.jsonl` `712bf31b7f12c2f4a016c42ffb71bbd4c23f2c89228a419f1817e75f54fb6630`
 - `data/catalogue.json` `9c85e07da3554044a3260639e8bf36eb8558c6db5be12f742340683b09521650`
@@ -138,8 +140,8 @@ pauses**, 62 s of wall time for the whole thing.
 
 Run-to-run spread on the headline is 0.2 points, which is reassuring given PREFLIGHT.md
 found Jev non-deterministic at the single-call level (0.70 vs 0.68 on the same body).
-These are all 1,000 cases, **not** the test split — `splits.json` does not exist yet, so
-these numbers will be recomputed on test once WP4 lands.
+These are all 1,000 cases. On the test split that WP4 committed mid-pilot, all three reps
+give 0.939 [0.920, 0.956] (n = 700, `metrics.py --split test`).
 
 **OpenRouter cash.** **$0.5242 for this work package** (smoke $0.0017 + pilot $0.0086 +
 full run $0.5140), summed from each response's `usage.cost`. Cross-checked against

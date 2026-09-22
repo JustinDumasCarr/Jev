@@ -16,11 +16,17 @@ recorded in `run_meta.json`.
 | task1 | jev full (rep 2) | 1000 | 0 | 0 | 0 | 0.1713 | 0.5242 | 21s |
 | task1 | jev full (rep 3) | 1000 | 0 | 0 | 0 | 0.1713 | 0.5242 | 24s |
 
-`metrics.py --quick` on the Jev full run (`--task task1 --systems jev --split all`;
-`data/splits.json` does not exist yet, so this is all 1,000 cases, not the test split):
+`metrics.py --quick` on the Jev full run. `--split all` (all 1,000 cases) is what the run
+itself used, since `data/splits.json` did not exist when it started; WP4 committed it during
+the pilot and the task-1 cases are unchanged, so the test-split numbers below are the same
+rows re-filtered, not a rerun:
 
 ```
 task1 jev: rows=1000 scored=1000 errors=0 refusals=0 acc=0.935 [0.919, 0.949] p50=517ms cost/1k=$0.171   (rep 1)
 task1 jev: rows=1000 scored=1000 errors=0 refusals=0 acc=0.935 [0.919, 0.949] p50=545ms cost/1k=$0.171   (rep 2)
 task1 jev: rows=1000 scored=1000 errors=0 refusals=0 acc=0.937 [0.921, 0.951] p50=686ms cost/1k=$0.171   (rep 3)
+
+task1 jev: rows=700  scored=700  errors=0 refusals=0 acc=0.939 [0.920, 0.956] p50=516ms cost/1k=$0.171   (rep 1, --split test)
+task1 jev: rows=700  scored=700  errors=0 refusals=0 acc=0.939 [0.921, 0.956] p50=542ms cost/1k=$0.171   (rep 2, --split test)
+task1 jev: rows=700  scored=700  errors=0 refusals=0 acc=0.939 [0.921, 0.956] p50=688ms cost/1k=$0.171   (rep 3, --split test)
 ```
