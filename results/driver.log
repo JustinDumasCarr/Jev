@@ -28,3 +28,5 @@
 2026-09-22 23:11:15 [w1] run task2 opus47 variance-first
 2026-09-22 23:12:54 [w2] run task2 opus48-nothink variance-first
 2026-09-22 23:14:06 [w3] run task2 opus48 variance-first
+2026-09-22 23:16:52 [w4] committed: 200-case subset opus47-nothink, both tasks
+2026-09-22 23:16:52 [w4] run task1 opus5-nothink variance-first
