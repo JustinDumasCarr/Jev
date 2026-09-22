@@ -153,6 +153,10 @@ _REFUSAL_PATTERNS = (
     re.compile(r"\bI(?:\'|\u2019)m not calling the\b", re.I),
 )
 
+#: Platform safety classifier refusal, as the CLI renders it (WP6, 2026-09-22).
+_PLATFORM_REFUSAL_RE = re.compile(r"can(?:'|\u2019)?t help with this.{0,200}anthropic\.com/legal/aup", re.I | re.S)
+_REFUSAL_CATEGORY_RE = re.compile(r"Details:\s*`\[([^\]]+)\]`")
+
 _EPOCH_RE = re.compile(r"\|(\d{9,13})\b")
 _ISO_RE = re.compile(r"(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2})?)")
 _CLOCK_RE = re.compile(r"reset[s]?\s+at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?", re.I)
@@ -289,6 +293,48 @@ def parse_result(
             raw=result,
             stderr=stderr,
             pause_until_epoch=parse_reset_epoch(text),
+        )
+
+    # --- platform safety refusal surfaced as is_error (observed 2026-09-22, WP6) --------
+    # The CLI reports stop_reason "refusal" with is_error true and the text "API Error:
+    # <Model> can't help with this ... anthropic.com/legal/aup ... Details: `[bio]`". The
+    # model under test produced no modelUsage entry (only the CLI's Haiku side call). PLAN.md
+    # §2: a refusal is a graded outcome, never an error, so it becomes a results row with
+    # status "refusal", decision null, and the category from the Details line.
+    if result.get("is_error") and (
+        result.get("stop_reason") == "refusal" or _PLATFORM_REFUSAL_RE.search(text or "")
+    ):
+        cat = _REFUSAL_CATEGORY_RE.search(text or "")
+        raw = dict(result)
+        raw["_harness"] = {
+            "requested_model": requested_model,
+            "model_usage_keys": sorted((result.get("modelUsage") or {}).keys()),
+            "served_model_source": "refusal_no_usage",
+            "refusal_detected_by": "is_error+stop_reason" if result.get("stop_reason") == "refusal" else "is_error+text",
+            "refusal_category": cat.group(1) if cat else "platform_safety",
+            "stderr": stderr[:4000],
+            "flag_set_sha256": flag_set_hash(),
+        }
+        aux = result.get("modelUsage") or {}
+        return Outcome(
+            ok=True,
+            status="refusal",
+            served_model=requested_model,
+            stop_reason="refusal",
+            is_error=True,
+            usage={
+                "input_tokens": 0, "output_tokens": 0, "cache_read_input_tokens": 0,
+                "cache_creation_input_tokens": 0, "thinking_tokens": 0,
+                "aux_input_tokens": sum(int((v or {}).get("inputTokens") or 0) for v in aux.values()),
+                "aux_output_tokens": sum(int((v or {}).get("outputTokens") or 0) for v in aux.values()),
+                "overhead_tokens": sum(int((v or {}).get("inputTokens") or 0) + int((v or {}).get("outputTokens") or 0) for v in aux.values()),
+                "overhead_cost_usd_list": sum((claude_cost_usd(v or {}, {}) or 0.0) for v in aux.values()) if aux else 0.0,
+            },
+            cost_usd_list=0.0,
+            cost_usd_reported=result.get("total_cost_usd"),
+            latency_ms=result.get("duration_api_ms"),
+            duration_ms=result.get("duration_ms"),
+            raw=raw,
         )
 
     if result.get("is_error"):

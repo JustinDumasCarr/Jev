@@ -384,3 +384,15 @@ def test_neutral_cwd_is_empty_and_not_the_repo():
     assert os.path.isdir(d)
     assert os.listdir(d) == []
     assert "Jev" not in os.path.basename(d)
+
+
+def test_platform_safety_refusal_is_a_graded_outcome():
+    """WP6: is_error + stop_reason refusal + AUP text -> status refusal, never errors.jsonl."""
+    import json, pathlib
+    from harness.adapters.claude_cli import parse_result
+    stdout = pathlib.Path("tests/fixtures/claude_cli_probe_2026-09-22/platform-refusal-sonnet46.json").read_text()
+    out = parse_result(stdout, task="task2", requested_model="claude-sonnet-4-6", stderr="")
+    assert out.ok and out.status == "refusal"
+    assert out.served_model == "claude-sonnet-4-6"
+    assert out.raw["_harness"]["refusal_category"] == "bio"
+    assert out.usage["input_tokens"] == 0 and out.usage["overhead_tokens"] > 0
