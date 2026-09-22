@@ -22,10 +22,10 @@ The page is written as a pure function of time: `render(t_ms)` draws the frame f
 
 Everything on screen comes from `viz/data.json`, produced by `harness/viz_data.py` from `results/` and the WP7 metrics output. Nothing is typed by hand.
 
-Per system (the nine primary configurations in PLAN.md §2; `opus5-nothink` and the effort sweep are excluded from the animation to keep nine lanes — open decision D2):
+Per system (all 17 primary systems in PLAN.md §2; which ones are drawn in which cut is decision D6; the effort sweep is excluded):
 
 ```json
-{"system": "sonnet5", "label": "Sonnet 5", "family": "claude", "n": 700,
+{"system": "sonnet5-nothink", "label": "Sonnet 5", "family": "claude-nothink", "pair": "sonnet5", "thinking": false, "n": 700,
  "latency_ms": {"p50": 0, "p95": 0, "min": 0, "max": 0, "sample": [/* 300 latencies drawn with fixed seed */]},
  "cost_per_1000_usd": 0.0,
  "accuracy": {"point": 0.0, "ci_low": 0.0, "ci_high": 0.0},
@@ -140,7 +140,8 @@ Steps 1–3 can run any time after WP1 defines the results schema; step 4 waits 
 ## 9. Open decisions (defaults in bold; the build proceeds on the defaults)
 
 - **D1 — formats.** Decided 2026-09-22: **square 1:1 for LinkedIn first**, plus the 16:9 cut for slides and the report.
-- **D2 — lanes.** **Nine primary systems.** Adding `opus5-nothink` and the two effort-sweep configs makes twelve lanes and weakens the race; if wanted, they go in a second "effort" chapter, not the main race.
+- **D2 — lanes.** Superseded by D6.
 - **D3 — second task.** **Task 2 only in the video; both tasks in the page** via a toggle, since the page costs nothing extra per task.
 - **D4 — sound.** **None in the square cut** (LinkedIn autoplays muted; everything must work silent). The 16:9 cut may add a stopwatch tick and completion chime as an optional audio track.
+- **D6 — which Claude family races (decided 2026-09-22, Justin can override).** The matrix now has 17 systems (Jev, 8 Claude with thinking, 8 with thinking off). Nine glasses is the most a 1080×1080 frame holds legibly. The square cut races **Jev against the eight no-thinking Claude systems**, because thinking off is the fastest and cheapest Claude shape, so this is the race most favourable to Claude and the honest one to publish. Every no-thinking glass carries a small "thinking off" tag. The 16:9 cut shows both families: each Claude glass has a lighter ghost glass behind it for the thinking variant, capped at its own time. The interactive page has a family toggle (thinking / no thinking / both). `data.json` carries all 17 systems with a `family` field (`jev`, `claude-think`, `claude-nothink`) and a `pair` field linking the two variants of one model.
 - **D5 — Jev direct key.** If the direct TypeSafe key arrives and the 200-case parity run is done (PLAN.md §12), the Jev lane shows the direct latency with a second, lighter marker for the OpenRouter figure.
