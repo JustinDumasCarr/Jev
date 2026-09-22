@@ -67,6 +67,8 @@ Rules: when the top-right decision lands, the top-left text advances to the next
 
 **Refinement (Justin):** the decision panels are split vertically. Left half: the two possible outputs (benign / injection) shown as two options with the chosen one lit and its probability. Right half: a **tower** that grows by one brick per decision made, stacked by correct (accent) and incorrect (muted red) against gold, so the tower's height is throughput and its colour split is accuracy. Both rows get a tower; Jev's shoots up, Claude's grows brick by brick. Beside each tower, outside the panel, a small running readout: decisions, accuracy so far (and precision for injection). Matched pairs rule still holds: text, decision and the brick that lands all belong to the same case.
 
+**Accuracy beat replaced (Justin: the targets "don't show any true values"):** the closing results beat is **nine towers**, one per system, each built from every test case that system answered (about 700), bricks landing fast in time-lapse, coloured correct (accent) or incorrect (muted red) against gold, so every tower is the same height and the red band is that system's error. Beside each: accuracy with its 95% interval, precision, recall, all from `data.json`. Jev's tower builds last. The verdict line types in. The fixture must fabricate realistic, *different* values per system so the beat never reads as uniform placeholder.
+
 **No "wall clock".** Any time label reads "elapsed" or nothing. Any disclosure (time-lapse factor, thresholds) is one asterisk line at the bottom.
 
 ## 5. Storyboard (square cut, ≤ 40 s; wide cut ≤ 55 s)
