@@ -66,6 +66,12 @@ Task 2, prompt-injection validation: the guardrail that would sit on every chat 
 
 **Declutter (Justin, after the first blocks render):** the speed tag and the stamp result are not front and centre. They live in one small asterisk footnote at the bottom of the frame. The blocks fill the frame; the only text near them is model names and counts.
 
+## 5f. Second and third sections, final form (Justin, 2026-09-22 evening)
+
+**Second section, blocks:** six systems only: Jev, Haiku 4.5, Sonnet 4.6, Sonnet 5, Opus 5, Fable 5.1 (Claude with thinking off; the older Opus versions are omitted from this scene as near-duplicates of Opus 5). Ordered worst to best so Haiku is next to Jev. Ten seconds of filling, static camera.
+
+**Third section, the ranked list:** replaces the result towers and the scoreboard. One vertical list, best at the top, each system's name with its accuracy percentage beside it in large type (95% interval in small type), response time in small grey type under the name; Jev highlighted and placed at its true rank. Same six systems in the square cut; all systems in the wide cut. Rows enter with a stagger; the verdict line under the list; then the end card.
+
 ## 5e. Justin's quadrant design (2026-09-22, replaces the opening of §5d)
 
 Four quadrants, no intro, no jargon on screen:
