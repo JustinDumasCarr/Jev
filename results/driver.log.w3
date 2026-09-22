@@ -143,3 +143,4 @@
   110/135 {'ok': 108, 'truncated': 0, 'refusal': 2, 'error': 0}
   120/135 {'ok': 118, 'truncated': 0, 'refusal': 2, 'error': 0}
   130/135 {'ok': 127, 'truncated': 0, 'refusal': 3, 'error': 0}
+{"task": "task2", "system": "sonnet5-nothink", "counts": {"ok": 132, "truncated": 0, "refusal": 3, "error": 0}, "elapsed_s": 345.5, "pauses": []}
