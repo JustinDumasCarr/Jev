@@ -195,11 +195,13 @@ function nearestClaude(data) {
   const jev = jevOf(data);
   let best = null;
   if (paired) {
-    for (const id of Object.keys(paired)) {
-      const sys = byId(data, id);
+    // only the systems the film actually shows, so the headline's "n times
+    // faster" agrees with the ranked list the viewer just read
+    for (const sys of blocksSystems(data)) {
       if (!sys || sys.family === 'jev') continue;
-      const p = paired[id];
-      if (!best || p.diff_pts > best.p.diff_pts) best = {id, p, sys};
+      const p = paired[sys.system];
+      if (!p) continue;
+      if (!best || p.diff_pts > best.p.diff_pts) best = {id: sys.system, p, sys};
     }
     return best;
   }
@@ -218,40 +220,66 @@ function nearestClaude(data) {
   return best;
 }
 
+/** What the film says the systems are doing, per task. */
+const TASK_PHRASE = {task1: 'picks the right tool', task2: 'detects attacks'};
+
 export function verdictBlock(data) {
   const v = (data.meta && data.meta.verdict) || {};
   const preliminary = Boolean(data.meta && data.meta.preliminary);
   const margin = v.margin_pts || 2;
   const jev = jevOf(data);
   const n = jev ? jev.n : null;
+  const phrase = TASK_PHRASE[data.meta && data.meta.task] || TASK_PHRASE.task2;
   const near = nearestClaude(data);
   const half = near ? Math.max(1, Math.round((near.p.hi_pts - near.p.lo_pts) / 2)) : null;
-  const labels = v.equivalent_tier_label || {};
-  const tierLabel = labels['claude-nothink'] || labels['claude-think'] || null;
 
-  let headline;
+  const labels = v.equivalent_tier_label || {};
+  const tiers = v.equivalent_tier || {};
+  const tierId = tiers['claude-nothink'] || tiers['claude-think'] || null;
+  const tierLabel = labels['claude-nothink'] || labels['claude-think'] || null;
+  const tierSys = tierId ? byId(data, tierId) : null;
+
+  // how many times faster Jev is than whichever model the sentence names
+  const jevP50 = (jev && jev.latency_ms && jev.latency_ms.p50) || null;
+  const speedVs = (sys) => {
+    const p = sys && sys.latency_ms ? sys.latency_ms.p50 : null;
+    return jevP50 && p ? Math.round(p / jevP50) : null;
+  };
+  const fastestClaude = (data.systems || [])
+    .filter((s) => s && s.family !== 'jev' && s.latency_ms && s.latency_ms.p50)
+    .sort((a, b) => a.latency_ms.p50 - b.latency_ms.p50)[0];
+
+  let headline = '';
+  let small = '';
+  const cases = n + ' cases';
+
   if (tierLabel) {
-    // the non-inferiority test passed against a tier: say so and stop
-    headline = 'Jev is as good as ' + tierLabel + '.';
-  } else if (!preliminary && near && near.p.hi_pts < -margin) {
-    // even the closest Claude's interval clears the margin, so every Claude does
-    headline = 'Jev is behind every Claude by more than ' + margin + ' points.';
-  } else if (near) {
-    const d = Math.round(Math.abs(near.p.diff_pts));
-    const tail = ' Too close to call on ' + n + ' cases.';
+    // (a) the non-inferiority test passed against a tier
+    const k = speedVs(tierSys || near?.sys);
+    headline = `Jev ${phrase} as well as ${tierLabel}${k ? ', ' + k + '\u00d7 faster' : ''}.`;
+    small = `Within ${margin} points of ${tierLabel} on ${cases}.`;
+  } else if (near && near.p.lo_pts <= 0 && near.p.hi_pts >= 0) {
+    // (b) the nearest model's paired interval still includes zero
+    const k = speedVs(near.sys);
+    headline = `Jev ${phrase} on par with ${near.sys.label}${k ? ', ' + k + '\u00d7 faster' : ''}.`;
+    small = `Difference within the margin of error on ${cases}${half ? ' (about \u00b1' + half + ' points)' : ''}.`;
+  } else if (near && !preliminary && near.p.hi_pts < -margin) {
+    // (c) even the closest Claude's interval clears the margin
+    const k = speedVs(fastestClaude);
     headline =
-      d === 0
-        ? 'Jev ties ' + near.sys.label + '.' + tail
-        : 'Jev is ' + d + ' point' + (d === 1 ? '' : 's') + ' behind ' + near.sys.label + '.' + tail;
-  } else {
-    headline = '';
+      `Jev ${phrase} less accurately than every Claude` +
+      (k ? `, but ${k}\u00d7 faster than the fastest.` : '.');
+    small = `Behind ${near.sys.label} by ${Math.round(Math.abs(near.p.diff_pts))} points on ${cases}.`;
+  } else if (near) {
+    // behind the nearest model, but not by enough to claim (c) yet
+    const k = speedVs(near.sys);
+    const d = Math.round(Math.abs(near.p.diff_pts));
+    headline =
+      `Jev ${phrase} ${d} point${d === 1 ? '' : 's'} less accurately than ${near.sys.label}` +
+      (k ? `, but ${k}\u00d7 faster.` : '.');
+    small = `On ${cases}${half ? ', about \u00b1' + half + ' points' : ''}.`;
   }
 
-  const parts = [];
-  if (preliminary) parts.push('Preliminary');
-  if (n) parts.push(n + ' cases');
-  parts.push('the same cases for every model');
-  if (half) parts.push('margin of error about ±' + half + ' points');
-
-  return {headline, smallPrint: parts.join(' · '), nearest: near, marginPts: margin, preliminary};
+  const smallPrint = (preliminary && small ? 'Preliminary \u00b7 ' : '') + small;
+  return {headline, smallPrint, nearest: near, marginPts: margin, preliminary};
 }
