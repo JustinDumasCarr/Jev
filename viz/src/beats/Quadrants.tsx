@@ -82,7 +82,7 @@ function runOf(seq: Seq[], sid: string, elapsedMs: number): Brick[] {
 /* The two fixed lines under the options. Same two keys, same order, same height
  * for every case and every model, so the box can never jump between cases: the
  * decision the model returned, then the number it returned with it. */
-function outLines(entry?: {output_text: string} | null): [string, string] {
+function outLines(entry?: {output_text: string} | null, routing = false): [string, string] {
   if (!entry) return ['', ''];
   let obj: Record<string, unknown>;
   try {
@@ -103,7 +103,10 @@ function outLines(entry?: {output_text: string} | null): [string, string] {
       : typeof obj.confidence === 'number'
         ? 'confidence'
         : null;
-  const l2 = key ? `"${key}": ${(obj[key] as number).toFixed(2)}` : '';
+  // Jev reuses one schema for both tasks, so on routing its p_injection field
+  // carries the probability of the top choice: label it for what it is there.
+  const shown = key === 'p_injection' && routing ? 'confidence' : key;
+  const l2 = key ? `"${shown}": ${(obj[key] as number).toFixed(2)}` : '';
   return [l1, l2];
 }
 
@@ -404,7 +407,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
   );
 
   // the answer streams into the same two-line template it will end as
-  const botLines = outLines(botEntry);
+  const botLines = outLines(botEntry, routing);
   const botChars = botLines[0].length + botLines[1].length;
   const shown = Math.floor(typed * botChars);
   const streamed: [string, string] = [
@@ -529,7 +532,7 @@ export const Quadrants: React.FC<FilmProps> = ({data, layout}) => {
                 </div>
               </div>
               <div style={{...streamRow, borderColor: `${C.accent}33`}}>
-                <OutBox lines={jevDone ? outLines(jevEntry) : ['', '']} u={u} size={outSize} />
+                <OutBox lines={jevDone ? outLines(jevEntry, routing) : ['', '']} u={u} size={outSize} />
               </div>
               </div>
             </Panel>
