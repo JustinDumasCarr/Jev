@@ -200,3 +200,19 @@
 {"task": "task1", "system": "opus48-nothink", "counts": {"ok": 200, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 466.8, "pauses": []}
   10/191 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
   20/191 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/191 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/191 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/191 {'ok': 49, 'truncated': 0, 'refusal': 1, 'error': 0}
+  60/191 {'ok': 59, 'truncated': 0, 'refusal': 1, 'error': 0}
+  70/191 {'ok': 69, 'truncated': 0, 'refusal': 1, 'error': 0}
+  80/191 {'ok': 79, 'truncated': 0, 'refusal': 1, 'error': 0}
+  90/191 {'ok': 89, 'truncated': 0, 'refusal': 1, 'error': 0}
+  100/191 {'ok': 98, 'truncated': 0, 'refusal': 2, 'error': 0}
+  110/191 {'ok': 108, 'truncated': 0, 'refusal': 2, 'error': 0}
+  120/191 {'ok': 118, 'truncated': 0, 'refusal': 2, 'error': 0}
+  130/191 {'ok': 128, 'truncated': 0, 'refusal': 2, 'error': 0}
+[pause] usage limit; sleeping 3600s until 2026-09-22T18:30:01Z: You've hit your session limit · resets 8pm (Europe/Paris)
+[pause] usage limit; sleeping 3600s until 2026-09-22T18:30:03Z: You've hit your session limit · resets 8pm (Europe/Paris)
+[pause] usage limit; sleeping 3600s until 2026-09-22T18:30:03Z: You've hit your session limit · resets 8pm (Europe/Paris)
+{"task": "task1", "system": "sonnet5", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
+{"task": "task2", "system": "sonnet5", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}

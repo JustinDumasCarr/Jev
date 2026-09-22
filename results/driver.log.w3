@@ -203,3 +203,21 @@
   160/200 {'ok': 160, 'truncated': 0, 'refusal': 0, 'error': 0}
   170/200 {'ok': 170, 'truncated': 0, 'refusal': 0, 'error': 0}
   180/200 {'ok': 180, 'truncated': 0, 'refusal': 0, 'error': 0}
+  190/200 {'ok': 190, 'truncated': 0, 'refusal': 0, 'error': 0}
+  200/200 {'ok': 200, 'truncated': 0, 'refusal': 0, 'error': 0}
+{"task": "task1", "system": "opus5-nothink", "counts": {"ok": 200, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 453.3, "pauses": []}
+  10/191 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/191 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/191 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/191 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/191 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/191 {'ok': 60, 'truncated': 0, 'refusal': 0, 'error': 0}
+  70/191 {'ok': 70, 'truncated': 0, 'refusal': 0, 'error': 0}
+  80/191 {'ok': 80, 'truncated': 0, 'refusal': 0, 'error': 0}
+  90/191 {'ok': 90, 'truncated': 0, 'refusal': 0, 'error': 0}
+  100/191 {'ok': 99, 'truncated': 0, 'refusal': 1, 'error': 0}
+[pause] usage limit; sleeping 3600s until 2026-09-22T18:29:58Z: You've hit your session limit · resets 8pm (Europe/Paris)
+[pause] usage limit; sleeping 3600s until 2026-09-22T18:29:59Z: You've hit your session limit · resets 8pm (Europe/Paris)
+[pause] usage limit; sleeping 3600s until 2026-09-22T18:30:00Z: You've hit your session limit · resets 8pm (Europe/Paris)
+{"task": "task1", "system": "sonnet46-nothink", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
+{"task": "task2", "system": "sonnet46-nothink", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}

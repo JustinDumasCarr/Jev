@@ -1,0 +1,84 @@
+{
+  "adapter": {
+    "claude_code_version": "2.1.276",
+    "effort": "low",
+    "env_passthrough": [
+      "PATH",
+      "HOME",
+      "USER",
+      "TERM",
+      "LANG"
+    ],
+    "extra_env": {},
+    "flag_set_sha256": "03d06a45df6f7460d017647120b83b998825d9f0132637bc2aa823e0a6396b5a",
+    "flag_template": [
+      "-p",
+      "{prompt}",
+      "--model",
+      "{model}",
+      "--effort",
+      "{effort}",
+      "--system-prompt",
+      "{system_prompt}",
+      "--json-schema",
+      "{json_schema}",
+      "--output-format",
+      "json",
+      "--tools",
+      "",
+      "--no-session-persistence",
+      "--setting-sources",
+      "",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "{\"mcpServers\":{}}",
+      "--disable-slash-commands",
+      "--no-chrome"
+    ],
+    "kind": "claude",
+    "model": "claude-opus-4-8",
+    "strict_served_model": false
+  },
+  "cases_path": "/Users/justin/projects/Jev/data/task1_cases.jsonl",
+  "cases_run": 200,
+  "cases_skipped_resume": 0,
+  "cases_total": 200,
+  "counts": {
+    "error": 0,
+    "ok": 200,
+    "refusal": 0,
+    "truncated": 0
+  },
+  "data_sha256": {
+    "data/catalogue.json": "9c85e07da3554044a3260639e8bf36eb8558c6db5be12f742340683b09521650",
+    "data/splits.json": "717b67ec8209f3e36d0e520696914b6ba7732dcda541bb2997425615e9948607",
+    "data/task1_cases.jsonl": "712bf31b7f12c2f4a016c42ffb71bbd4c23f2c89228a419f1817e75f54fb6630"
+  },
+  "elapsed_s": 495.7,
+  "ended": "2026-09-22T17:27:29Z",
+  "git_sha": "f128d47c93675db91253ffca3af3aafaddb01e50",
+  "limit": null,
+  "packages": {
+    "httpx": "0.28.1",
+    "numpy": "2.4.6",
+    "pydantic": "2.13.5",
+    "pytest": "9.1.1",
+    "python-dotenv": "1.2.3",
+    "scikit-learn": "1.9.1"
+  },
+  "pauses": [],
+  "prompt_sha256": {
+    "catalogue": "d82c93bf82fc2cf465d2a2afc782710fd277d0fb8a224ea5daffd7cedacd9625",
+    "task1_system": "38a1ae48adc0d6b003e8ac4d78640346df1f7ffcaaf2b7eeb83d7d99765aa0a6",
+    "task2_system": "35df7dd74c2dcde14e70e1b1460df2cc983c3dc636da88cee9adbfeaf9f7a886",
+    "task2_user_template": "1f2dec1fea142d33c12b9808b667227eebcd48c0e8e96c3234e4209db1092e6d"
+  },
+  "python": "3.11.15",
+  "rep": 1,
+  "seed": 20260922,
+  "split": "variance",
+  "started": "2026-09-22T17:19:13Z",
+  "strict_served_model": false,
+  "system": "opus48",
+  "task": "task1"
+}
