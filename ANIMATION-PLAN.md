@@ -2,6 +2,21 @@
 
 **Purpose.** One 60–75 second animation that makes the speed gap between Jev and every Claude model *felt*, not read: the viewer waits in real time for the Claude answers after Jev has already returned. It ends on quality, so speed is never shown alone (PLAN.md §8: cost and latency alongside quality, never as a ratio alone). **Status:** planned 2026-09-22, not started. **Work package:** WP9 in `PLAN.md` §10, brief in `SUBAGENT-BRIEFS.md`.
 
+## 0. Creative direction (2026-09-22, after Justin rejected the first build)
+
+The first build was a dashboard with a scrubber: thin bars on an axis, small type, tick marks, footnote paragraphs, a table at the end, Jev an invisible sliver. **That is not the deliverable.** The deliverable is a short film for a LinkedIn feed. Every frame must pass one test: *would someone stop scrolling for this?* Rules that override anything below that reads as "chart":
+
+- **Cinematic, not analytic.** Dark full-bleed background, one idea per frame, huge type (the stopwatch fills a third of the frame), no axes, no tick labels, no gridlines, no legends, no footnote paragraphs. Provenance is one small line at the very end, plus the `.srt`. The numbers are in the animation itself, stamped large at the moment they matter.
+- **Real objects with physics.** Glasses that look like glass: outline with a highlight, a visible pouring stream from above, liquid with a meniscus and a slight slosh when the pour stops, a lid that drops with a small bounce, droplets. Coins that drop and settle with a bounce. Drops that fall and splash into puddles. Use springs and eased motion for objects and transitions; only the liquid level itself stays strictly linear in time (the measurement).
+- **Camera.** Push in on Jev's glass at the instant it caps (the sliver becomes full-frame, the number slams in), hold, then a fast pull-back to reveal the other eight still pouring. Later, a slow lateral dolly along the row while the stopwatch keeps counting. Motion between scenes is a cut or a whip, never a fade to a new chart.
+- **Kinetic typography.** The stopwatch is the protagonist: enormous, tabular numerals, ticking. Jev's time punches in. The verdict line at the end is typed, one word at a time, with weight.
+- **Tension by waiting.** After Jev caps, nothing happens on purpose. Let the viewer sit with the stopwatch climbing and the other glasses still filling. That silence is the point of the whole piece.
+- **Accuracy scene as an image, not a dot plot.** Nine targets; each system's arrow lands where its accuracy puts it, the CI is the spread of the arrow cluster. Jev's arrow lands last. The verdict types in.
+- **End card, not a table.** Three enormous numbers for Jev (time, cost, accuracy) with the tier verdict, and the row of capped glasses behind it as the thumbnail.
+- **Reference feel:** Apple keynote product reveal, or a Kurzgesagt sequence: bold shapes, confident motion, nothing that looks like a spreadsheet. Palette: near-black background, one warm accent for Jev, cool desaturated blues for the Claude family, white type.
+
+**Tooling.** Video is rendered with **Remotion** (React, springs, sequences, deterministic frames, its own encoder) via the `remotion-best-practices` skill, not by screenshotting a page. The interactive page is the same composition inside Remotion's `<Player>` with a scrubber, so page and video still cannot disagree. The dashboard page from the first build is deleted, not kept as a fallback.
+
 ## 1. What the viewer takes away
 
 1. A decision that takes Jev about a tenth of a second takes a Claude model one to several seconds. You sit through that gap once, in real time.
