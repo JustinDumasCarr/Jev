@@ -73,3 +73,5 @@
   100/200 {'ok': 98, 'truncated': 0, 'refusal': 2, 'error': 0}
   110/200 {'ok': 108, 'truncated': 0, 'refusal': 2, 'error': 0}
   120/200 {'ok': 118, 'truncated': 0, 'refusal': 2, 'error': 0}
+  130/200 {'ok': 128, 'truncated': 0, 'refusal': 2, 'error': 0}
+  140/200 {'ok': 137, 'truncated': 0, 'refusal': 3, 'error': 0}

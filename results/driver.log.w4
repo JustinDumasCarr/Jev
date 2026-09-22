@@ -82,3 +82,5 @@
   190/200 {'ok': 187, 'truncated': 0, 'refusal': 3, 'error': 0}
   200/200 {'ok': 197, 'truncated': 0, 'refusal': 3, 'error': 0}
 {"task": "task2", "system": "sonnet46", "counts": {"ok": 197, "truncated": 0, "refusal": 3, "error": 0}, "elapsed_s": 295.5, "pauses": []}
+  10/200 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/200 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
