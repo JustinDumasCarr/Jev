@@ -17,13 +17,15 @@ For each task we run **1,000 labelled prompts** through Jev and through every cu
 |---|---|---|---|
 | jev | OpenRouter `typesafe/jev-1.13` (served as `typesafe/jev-1.13-20260917`, PREFLIGHT.md) | n/a | Pinned; served-model check is a `startswith("typesafe/jev-1.13")` prefix match. The rolling alias is `~typesafe/jev-latest` (leading tilde; the bare slug 400s), used only in the smoke test to confirm it resolves to the same build. |
 | fable51 | `claude-fable-5-1` | `low` | Served through the subscription (verified 2026-09-22, `PREFLIGHT.md`). Refusals are recorded outcomes, never rescued. |
-| opus5 | `claude-opus-5` | `low` | Secondary config `opus5-nothink`: `MAX_THINKING_TOKENS=0` in the subprocess environment (verified 2026-09-22: thinking tokens go to 0). |
+| opus5 | `claude-opus-5` | `low` | |
 | opus48 | `claude-opus-4-8` | `low` | |
 | opus47 | `claude-opus-4-7` | `low` | |
 | opus46 | `claude-opus-4-6` | `low` | |
 | sonnet5 | `claude-sonnet-5` | `low` | |
 | sonnet46 | `claude-sonnet-4-6` | `low` | |
 | haiku45 | `claude-haiku-4-5` | `low` (accepted by the CLI; whether it reaches the model is not observable) | |
+
+**No-thinking family (added 2026-09-22 at Justin's request).** Every Claude model above also runs as `<id>-nothink`: same model, effort `low`, thinking disabled with `MAX_THINKING_TOKENS=0` in the subprocess environment (verified: thinking tokens go to 0). These are primary systems on both tasks, because the smoke run showed thinking dominating latency even at effort `low` (Haiku spent 200–1,000 thinking tokens per call, most of a 7 s p50), and a guardrail or router with thinking off is the cheapest and fastest Claude shape, so it is the fairest speed comparison against Jev. The matrix is therefore Jev + 8 thinking + 8 no-thinking = 17 systems.
 
 **How Claude is called.** Every Claude call is one `claude -p` process under Justin's Claude Code subscription, with a fixed flag set that strips Claude Code's own context so the model sees only our prompt (about 1,300 tokens of prefix, measured; see §6 for the exact command). Consequences, stated up front:
 
@@ -169,11 +171,11 @@ Harness rules (from the eval checklist, all mandatory):
 
 | Run | Cases | Systems | Reps | Purpose |
 |---|---|---|---|---|
-| Smoke | 5 per task | all 9 + `~typesafe/jev-latest` | 1 | wiring, served-model assertion, cost per call |
-| Pilot | 50 per task (stratified) | all 9 | 1 | extrapolate cost, check failure spread, fix prompts once if a model misreads the schema (then the change applies to every model) |
-| Full | 1,000 per task | all 9 | 1 | headline |
-| Variance | 200 per task (fixed subset) | all 9 | +2 reps | run-to-run spread; Jev gets 3 reps on the full set since it costs cents |
-| Effort sweep | 1,000 task 2 | opus5 `high`, fable51 `medium`, `opus5-nothink` | 1 | headroom and the cheapest-Claude comparison |
+| Smoke | 5 per task | all 17 + `~typesafe/jev-latest` | 1 | wiring, served-model assertion, cost per call |
+| Pilot | 50 per task (stratified) | all 17 | 1 | extrapolate cost, check failure spread, fix prompts once if a model misreads the schema (then the change applies to every model) |
+| Full | 1,000 per task | all 17 | 1 | headline |
+| Variance | 200 per task (fixed subset) | all 17 | +2 reps | run-to-run spread; Jev gets 3 reps on the full set since it costs cents |
+| Effort sweep | 1,000 task 2 | opus5 `high`, fable51 `medium` | 1 | headroom (the no-thinking family is now in the primary run) |
 
 **Split.** `splits.json` fixes a stratified 300/700 train/test split per task (by `tags[0]`, seed 20260922). Thresholds (Jev `noul`, Claude `p_injection`, the `confidence` gate for task 1 `none`) are tuned on train; **every reported number is on test** unless labelled otherwise.
 
@@ -181,7 +183,7 @@ Harness rules (from the eval checklist, all mandatory):
 
 - Per system: point estimate and 95% bootstrap CI on every metric in §3 and §4 (1,000 resamples, seed fixed).
 - Pairwise Jev − Claude_M on the same cases: paired bootstrap CI of the accuracy difference and of F1 difference.
-- **Non-inferiority margin: 2 points**, fixed now, before any data. Jev "is as good as" model M when the lower bound of the paired 95% CI of (acc_Jev − acc_M) is above −2. The **equivalent Claude tier** is the strongest M (ordered fable51 > opus5 > opus48 > opus47 > opus46 > sonnet5 > sonnet46 > haiku45) for which that holds. Reported per task, per language, and for task 2 per vector (direct / indirect).
+- **Non-inferiority margin: 2 points**, fixed now, before any data. Jev "is as good as" model M when the lower bound of the paired 95% CI of (acc_Jev − acc_M) is above −2. The **equivalent Claude tier** is the strongest M (ordered fable51 > opus5 > opus48 > opus47 > opus46 > sonnet5 > sonnet46 > haiku45) for which that holds, reported twice: against the thinking family and against the no-thinking family (same order, `-nothink` ids). Reported per task, per language, and for task 2 per vector (direct / indirect). The thinking vs no-thinking paired difference per model is reported alongside, as the measured price of thinking on these tasks.
 - Agreement: Cohen's kappa between every pair of systems, and Jev vs the Claude majority vote; the disagreement set (Jev ≠ majority) is read in full by the analysis subagent, 30 cases summarised in the report.
 - Calibration: reliability diagrams and ECE for Jev's `noul`/`probabilities` and for each Claude's stated `p`/`confidence`. Hypothesis H2 below is judged on this.
 - Cost and latency: absolute per 1,000 calls, alongside quality, never as a ratio alone.
@@ -195,7 +197,7 @@ Harness rules (from the eval checklist, all mandatory):
 
 **Notional list-price cost** is still computed per row from logged tokens, because the report answers "what would this cost at API prices": per 1,000 cases, input ≈ 1,300 tokens of fixed prefix plus 700 (task 2) or 2,300 (task 1) of ours, output ≈ 80 tokens plus whatever thinking the CLI applies at effort `low` (measured 0–140 tokens in the probe). Estimates, both tasks, primary run: fable51 ≈ $40, each Opus ≈ $20, sonnet5 ≈ $8, sonnet46 ≈ $12, haiku45 ≈ $4; total ≈ $150 at list. This number is reported, not paid.
 
-**Usage windows are the real constraint.** The subscription meters usage in 5-hour windows plus a weekly cap. About 18,000 Claude calls at roughly 2,000 input and 200 output tokens each is a lot of windows. The pilot (§7) measures how much of a window 450 calls consume and extrapolates the number of windows the full plan needs; WP5 reports that alongside the go / no-go. The runner pauses on a usage-limit response and resumes when the window resets, so the full run is expected to take several days of wall time and must never block Justin's interactive use: it runs at night or when told to.
+**Usage windows are the real constraint.** The subscription meters usage in 5-hour windows plus a weekly cap. About 36,000 Claude calls (17 systems minus Jev, two tasks, 1,000 cases, plus variance and sweep) at roughly 2,000 input and 200 output tokens each is a lot of windows; the no-thinking half is cheaper and faster per call. The pilot (§7) measures how much of a window 450 calls consume and extrapolates the number of windows the full plan needs; WP5 reports that alongside the go / no-go. The runner pauses on a usage-limit response and resumes when the window resets, so the full run is expected to take several days of wall time and must never block Justin's interactive use: it runs at night or when told to.
 
 ## 10. Work packages and order
 

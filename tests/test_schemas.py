@@ -62,6 +62,13 @@ def test_model_matrix_matches_plan_section_2():
         assert SYSTEMS[sid].model == model
         assert SYSTEMS[sid].effort == effort
     assert set(CLAUDE_TIER_ORDER) == set(expected)
+    # No-thinking family: one per Claude model, same model id, effort low, thinking off.
+    from harness.schemas import CLAUDE_NOTHINK_TIER_ORDER
+    assert CLAUDE_NOTHINK_TIER_ORDER == tuple(f"{s}-nothink" for s in CLAUDE_TIER_ORDER)
+    for sid, (model, effort) in expected.items():
+        nt = SYSTEMS[f"{sid}-nothink"]
+        assert nt.model == model and nt.effort == effort and nt.primary
+        assert nt.extra_env == {"MAX_THINKING_TOKENS": "0"}
     assert SYSTEMS["jev"].model == "typesafe/jev-1.13"
 
 

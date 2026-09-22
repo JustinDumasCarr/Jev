@@ -58,6 +58,12 @@ CLAUDE_TIER_ORDER = (
     "haiku45",
 )
 
+#: Same order for the no-thinking family (PLAN.md §2, §8).
+CLAUDE_NOTHINK_TIER_ORDER = tuple(f"{sid}-nothink" for sid in CLAUDE_TIER_ORDER)
+
+#: Every Claude system that takes part in majority votes and kappa matrices.
+CLAUDE_ALL = CLAUDE_TIER_ORDER + CLAUDE_NOTHINK_TIER_ORDER
+
 SYSTEMS: dict[str, System] = {
     # --- Jev (OpenRouter) --------------------------------------------------------------
     "jev": System(id="jev", kind="jev", model="typesafe/jev-1.13"),
@@ -89,16 +95,30 @@ SYSTEMS: dict[str, System] = {
         id="fable51-medium", kind="claude", model="claude-fable-5-1", effort="medium",
         primary=False, note="effort sweep (PLAN.md §7)",
     ),
-    # PLAN.md §2 makes this config conditional on Claude Code exposing a way to disable
-    # thinking for a print call. WP1 probe 2026-09-22: MAX_THINKING_TOKENS=0 is documented
-    # at https://code.claude.com/docs/en/model-config.md ("Extended Thinking" -> "Disable
-    # thinking"). It is an environment variable, so it rides in extra_env on top of the
-    # reduced subprocess environment. See PREFLIGHT.md "Thinking control".
-    "opus5-nothink": System(
-        id="opus5-nothink", kind="claude", model="claude-opus-5", effort="low",
-        extra_env={"MAX_THINKING_TOKENS": "0"}, primary=False,
-        note="effort sweep (PLAN.md §7); thinking disabled via MAX_THINKING_TOKENS=0",
-    ),
+    # --- No-thinking family: every Claude model with thinking disabled (PLAN.md §2, added
+    # 2026-09-22 at Justin's request). MAX_THINKING_TOKENS=0 is documented at
+    # https://code.claude.com/docs/en/model-config.md ("Extended Thinking" -> "Disable
+    # thinking"); WP1 verified thinking tokens go to 0 (PREFLIGHT.md "Thinking control").
+    # These are primary systems: they run both tasks on all 1,000 cases, because a guardrail
+    # or router with thinking off is the cheapest and fastest Claude shape and the fairest
+    # latency comparison against Jev.
+    **{
+        f"{sid}-nothink": System(
+            id=f"{sid}-nothink", kind="claude", model=model, effort="low",
+            extra_env={"MAX_THINKING_TOKENS": "0"},
+            note="no-thinking family (PLAN.md §2); thinking disabled via MAX_THINKING_TOKENS=0",
+        )
+        for sid, model in (
+            ("fable51", "claude-fable-5-1"),
+            ("opus5", "claude-opus-5"),
+            ("opus48", "claude-opus-4-8"),
+            ("opus47", "claude-opus-4-7"),
+            ("opus46", "claude-opus-4-6"),
+            ("sonnet5", "claude-sonnet-5"),
+            ("sonnet46", "claude-sonnet-4-6"),
+            ("haiku45", "claude-haiku-4-5"),
+        )
+    },
     # --- Fakes: offline tests and the oracle / null runs of PLAN.md §5 -----------------
     "oracle": System(id="oracle", kind="fake", model="oracle", primary=False,
                      note="answers gold; must score 100% (PLAN.md §5)"),

@@ -20,7 +20,7 @@ from typing import Any, Callable, Iterable, Optional, Sequence
 
 import numpy as np
 
-from harness.schemas import CLAUDE_TIER_ORDER, SEED
+from harness.schemas import CLAUDE_ALL, CLAUDE_NOTHINK_TIER_ORDER, CLAUDE_TIER_ORDER, SEED
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 RESULTS_DIR = REPO_ROOT / "results"
@@ -417,9 +417,9 @@ def paired_table(
     return out
 
 
-def equivalent_tier(paired: dict[str, Any]) -> Optional[str]:
-    """PLAN.md §8: the strongest Claude model the reference is non-inferior to."""
-    for sysid in CLAUDE_TIER_ORDER:
+def equivalent_tier(paired: dict[str, Any], order: tuple[str, ...] = CLAUDE_TIER_ORDER) -> Optional[str]:
+    """PLAN.md §8: the strongest Claude model (in `order`) the reference is non-inferior to."""
+    for sysid in order:
         entry = paired.get(sysid)
         if entry and entry.get("non_inferior"):
             return sysid
@@ -491,9 +491,12 @@ def compute(
         report["reference"] = ref
         report["paired_vs_reference"] = paired_table(per_system, ref)
         report["equivalent_claude_tier"] = equivalent_tier(report["paired_vs_reference"])
+        report["equivalent_claude_tier_nothink"] = equivalent_tier(
+            report["paired_vs_reference"], CLAUDE_NOTHINK_TIER_ORDER
+        )
     if len(systems) > 1:
         report["kappa"] = kappa_matrix(per_system)
-        claude_members = [s for s in systems if s in CLAUDE_TIER_ORDER]
+        claude_members = [s for s in systems if s in CLAUDE_ALL]
         if claude_members and ref in per_system:
             mv = majority_vote(per_system, claude_members)
             ref_dec = {r["case_id"]: r["decision"] for r in scorable(per_system[ref])}
