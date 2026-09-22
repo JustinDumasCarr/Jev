@@ -42,24 +42,112 @@
     "strict_served_model": false
   },
   "cases_path": "/Users/justin/projects/Jev/data/task2_cases.jsonl",
-  "cases_run": 50,
-  "cases_skipped_resume": 0,
-  "cases_total": 50,
+  "cases_run": 950,
+  "cases_skipped_resume": 50,
+  "cases_total": 1000,
   "counts": {
     "error": 0,
-    "ok": 50,
+    "ok": 950,
     "refusal": 0,
     "truncated": 0
   },
   "data_sha256": {
     "data/catalogue.json": "9c85e07da3554044a3260639e8bf36eb8558c6db5be12f742340683b09521650",
     "data/splits.json": "717b67ec8209f3e36d0e520696914b6ba7732dcda541bb2997425615e9948607",
-    "data/task2_cases.jsonl": "ec962cf8013e1ae18ad8862840fb6f2c81795d46345d5bb3918d9185ac170736"
+    "data/task2_cases.jsonl": "a068f51f3f250c1dacf478f03dca1c305155af163cb6c69095cf50345a9c04a4"
   },
-  "elapsed_s": 87.4,
-  "ended": "2026-09-22T13:50:12Z",
-  "git_sha": "244b8b73cc146d3e55b1da347aa052a931647de8",
-  "limit": 50,
+  "elapsed_s": 1808.7,
+  "ended": "2026-09-22T15:02:58Z",
+  "git_sha": "44df3b3d379ffa88f4dfdda9ec37a0086636380b",
+  "history": [
+    {
+      "adapter": {
+        "claude_code_version": "2.1.276",
+        "effort": "low",
+        "env_passthrough": [
+          "PATH",
+          "HOME",
+          "USER",
+          "TERM",
+          "LANG"
+        ],
+        "extra_env": {
+          "MAX_THINKING_TOKENS": "0"
+        },
+        "flag_set_sha256": "03d06a45df6f7460d017647120b83b998825d9f0132637bc2aa823e0a6396b5a",
+        "flag_template": [
+          "-p",
+          "{prompt}",
+          "--model",
+          "{model}",
+          "--effort",
+          "{effort}",
+          "--system-prompt",
+          "{system_prompt}",
+          "--json-schema",
+          "{json_schema}",
+          "--output-format",
+          "json",
+          "--tools",
+          "",
+          "--no-session-persistence",
+          "--setting-sources",
+          "",
+          "--strict-mcp-config",
+          "--mcp-config",
+          "{\"mcpServers\":{}}",
+          "--disable-slash-commands",
+          "--no-chrome"
+        ],
+        "kind": "claude",
+        "model": "claude-haiku-4-5",
+        "strict_served_model": false
+      },
+      "cases_path": "/Users/justin/projects/Jev/data/task2_cases.jsonl",
+      "cases_run": 50,
+      "cases_skipped_resume": 0,
+      "cases_total": 50,
+      "counts": {
+        "error": 0,
+        "ok": 50,
+        "refusal": 0,
+        "truncated": 0
+      },
+      "data_sha256": {
+        "data/catalogue.json": "9c85e07da3554044a3260639e8bf36eb8558c6db5be12f742340683b09521650",
+        "data/splits.json": "717b67ec8209f3e36d0e520696914b6ba7732dcda541bb2997425615e9948607",
+        "data/task2_cases.jsonl": "ec962cf8013e1ae18ad8862840fb6f2c81795d46345d5bb3918d9185ac170736"
+      },
+      "elapsed_s": 87.4,
+      "ended": "2026-09-22T13:50:12Z",
+      "git_sha": "244b8b73cc146d3e55b1da347aa052a931647de8",
+      "limit": 50,
+      "packages": {
+        "httpx": "0.28.1",
+        "numpy": "2.4.6",
+        "pydantic": "2.13.5",
+        "pytest": "9.1.1",
+        "python-dotenv": "1.2.3",
+        "scikit-learn": "1.9.1"
+      },
+      "pauses": [],
+      "prompt_sha256": {
+        "catalogue": "d82c93bf82fc2cf465d2a2afc782710fd277d0fb8a224ea5daffd7cedacd9625",
+        "task1_system": "38a1ae48adc0d6b003e8ac4d78640346df1f7ffcaaf2b7eeb83d7d99765aa0a6",
+        "task2_system": "35df7dd74c2dcde14e70e1b1460df2cc983c3dc636da88cee9adbfeaf9f7a886",
+        "task2_user_template": "1f2dec1fea142d33c12b9808b667227eebcd48c0e8e96c3234e4209db1092e6d"
+      },
+      "python": "3.11.15",
+      "rep": 1,
+      "seed": 20260922,
+      "split": "all",
+      "started": "2026-09-22T13:48:45Z",
+      "strict_served_model": false,
+      "system": "haiku45-nothink",
+      "task": "task2"
+    }
+  ],
+  "limit": null,
   "packages": {
     "httpx": "0.28.1",
     "numpy": "2.4.6",
@@ -79,7 +167,7 @@
   "rep": 1,
   "seed": 20260922,
   "split": "all",
-  "started": "2026-09-22T13:48:45Z",
+  "started": "2026-09-22T14:30:48Z",
   "strict_served_model": false,
   "system": "haiku45-nothink",
   "task": "task2"
