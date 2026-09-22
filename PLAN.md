@@ -117,6 +117,7 @@ Both sets go through `claude-api`'s eval health checklist (`shared/evals/eval-au
 - Tier 2: 50-case stratified read per task by the audit subagent; 100 per task by Justin (sign-off recorded in `data/SIGNOFF.md`).
 - Tier 3: per-case LLM auditor (Sonnet 5, the audit prompt from the checklist) over all 2,000 cases; every `broken` fixed at the generator, every `review` read.
 - Gold provenance recorded per case (`source:` tag). Because Opus 5 helps generate cases and is also under test, the generator writes prompts *from* labels rather than labelling prompts, and the human sample is the check against self-preference.
+- Determinism: anything seeded "with seed 20260922" must derive its per-item seeds with a stable function (`zlib.crc32`, `hashlib`), never Python's `hash()` on a string, which is salted per process. WP2 hit this: the generator's language assignment silently differed between runs until fixed. `splits.json` and every audit sample must be re-derivable byte for byte from the seed.
 - Oracle and null runs: the gold answers score 100% through the grader; a constant `benign` / constant `none` answer scores the majority-class baseline; an empty output is `status: error`, not a wrong answer.
 
 ## 6. Harness
