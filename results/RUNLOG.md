@@ -30,3 +30,4 @@ task1 jev: rows=700  scored=700  errors=0 refusals=0 acc=0.939 [0.920, 0.956] p5
 task1 jev: rows=700  scored=700  errors=0 refusals=0 acc=0.939 [0.921, 0.956] p50=542ms cost/1k=$0.171   (rep 2, --split test)
 task1 jev: rows=700  scored=700  errors=0 refusals=0 acc=0.939 [0.921, 0.956] p50=688ms cost/1k=$0.171   (rep 3, --split test)
 ```
+| task2 | 2026-09-22 15:48:41 | task2 jev: rows=1000 scored=1000 errors=0 refusals=0 acc=0.915 [0.898, 0.933] p50=501ms cost/1k=$0.032
