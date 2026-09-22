@@ -24,82 +24,45 @@ The first build was a dashboard with a scrubber: thin bars on an axis, small typ
 3. Over a batch, the gap compounds into throughput and dollars.
 4. And here is what the speed costs in accuracy, per system, with confidence intervals. The verdict shown is whatever `REPORT.md` says, including the strata where Jev is weaker.
 
-## 2. Two deliverables, one codebase
+## 1. The sentence
+
+**"Jev has categorized before Claude has finished thinking."** Justin, 2026-09-22: the point of the piece is to compare Jev's categorizing speed to the Claude models. Every scene serves that sentence; the closing accuracy scene is there so the speed claim is never made alone.
+
+## 2. Deliverables
 
 | Deliverable | Path | Use |
 |---|---|---|
-| Interactive page | `viz/latency-race.html` (single file, data inlined) | Publish as an Artifact for Justin and Jerome; play, pause, scrub, change speed, hover any bar for the exact numbers and n. |
-| Video | `viz/out/latency-race-1080sq.mp4` (1080×1080, 30 fps) **and** `viz/out/latency-race-1080p.mp4` (1920×1080) | **LinkedIn is the primary destination (Justin, 2026-09-22): the square cut is designed first**, the 16:9 cut is for slides and the report. Same `render(t)` with a layout switch. |
+| Square video | `viz/out/jev-vs-claude-1080sq.mp4` (1080×1080, 30 fps, ≤ 35 s) | LinkedIn, primary. Silent, captions burned in. |
+| Wide video | `viz/out/jev-vs-claude-1080p.mp4` (1920×1080, 30 fps, ≤ 50 s) | Slides and the report. May carry the extra beats cut from the square. |
+| Captions and poster | `viz/out/*.srt`, `viz/out/poster.png` | Accessibility; the LinkedIn thumbnail (the end card). |
 
-The page is written as a pure function of time: `render(t_ms)` draws the frame for that instant, and playback just advances `t`. The video is produced by stepping `t` frame by frame in a headless browser (`playwright-cli`, one screenshot per frame) and encoding with `ffmpeg`. One codebase, so the video and the page can never disagree.
+Rendered with **Remotion** in a Node subproject at `viz/` (`package.json`, `src/`), one composition with a `layout` prop (`square` | `wide`). No interactive HTML page: the video is the deliverable, and the report embeds it. The dashboard page from the first build is deleted.
 
 ## 3. Data
 
-Everything on screen comes from `viz/data.json`, produced by `harness/viz_data.py` from `results/` and the WP7 metrics output. Nothing is typed by hand.
+Everything on screen comes from `viz/data.json`, produced by `harness/viz_data.py` from `results/` and the WP7 metrics output. Nothing is typed by hand. Per system (all 17 primary systems in PLAN.md §2, `family` jev / claude-think / claude-nothink, `pair`, `thinking`): latency p50/p95, cost per 1,000 (notional list for Claude, real for Jev), accuracy point and 95% CI, n, output-token and thinking-token medians. Plus a **hero case** block: one chosen test case (short, self-explanatory, no personal data by construction) with, for every system, the verbatim structured output it returned on that case, its output tokens, thinking tokens and `duration_api_ms`, so the typing scene replays exactly what each model wrote at exactly the rate it wrote it. The `hero` field names the Claude system in the hero shot: `sonnet5-nothink` until real data exists, then the equivalent tier from the report (thinking-off family) if one exists, else `sonnet5-nothink`. `meta` carries task, split, filter, run date, git sha and the `fixture` flag.
 
-Per system (all 17 primary systems in PLAN.md §2; which ones are drawn in which cut is decision D6; the effort sweep is excluded):
-
-```json
-{"system": "sonnet5-nothink", "label": "Sonnet 5", "family": "claude-nothink", "pair": "sonnet5", "thinking": false, "n": 700,
- "latency_ms": {"p50": 0, "p95": 0, "min": 0, "max": 0, "sample": [/* 300 latencies drawn with fixed seed */]},
- "cost_per_1000_usd": 0.0,
- "accuracy": {"point": 0.0, "ci_low": 0.0, "ci_high": 0.0},
- "equivalent_tier_note": null}
-```
-
-Plus a `meta` block: task shown, split (`test`), filter (`prefilter:passed` for task 2), run date, git sha, machine/region the harness ran from, and the footnotes below.
-
-**Footnotes that always render** (small, bottom of frame, in every scene that shows latency):
-
-- Jev latency is measured via OpenRouter (one extra network hop); a direct key would be faster.
-- Claude latencies are `duration_api_ms` as reported by Claude Code (`claude -p`, the subscription route), at effort `low`; this is the API round trip as the CLI sees it, the routine-guardrail shape, not the fastest possible.
-- Latency is wall time of the final successful request, measured from one machine on one day; n per lane is shown.
-
-**Fixture mode.** Until WP6 finishes there are no real rows. `viz/data.fixture.json` holds obviously fake round numbers (Jev 100 ms; the Claude lanes 1,000 to 5,000 ms in even steps; accuracy all 0.80) so the animation can be built and reviewed in parallel with WP1–WP3. The page draws a diagonal **PLACEHOLDER DATA** watermark whenever `meta.fixture` is true. The watermark is not removable by a flag; it goes away only when real `data.json` is loaded.
+**Fixture mode.** `viz/data.fixture.json` holds obviously fake round numbers and a fabricated hero case, `meta.fixture = true`, and the render burns a diagonal PLACEHOLDER DATA watermark into every frame that no prop can remove. A second fixture, `data.fixture-jev-loses.json`, puts Jev's accuracy clearly below Haiku's so the templated verdict is tested both ways.
 
 ## 4. The task shown
 
-The headline run uses **task 2, prompt-injection validation**, because it is the guardrail that would sit on every chat turn and the 1,000 texts are self-explanatory on screen. Task 1 (skill routing) is a second, optional chapter using the same scenes with `data.task1.json` (open decision D3).
+Task 2, prompt-injection validation: the guardrail that would sit on every chat turn, and a text on screen explains itself. Task 1 is a second composition using the same scenes if wanted later.
 
-## 5a. Visual metaphor (decided 2026-09-22): glasses filling with time
+## 5. Storyboard (square cut, 35 s; wide cut may add the bracketed beats)
 
-Justin asked for something more physical than bars. The animation uses one metaphor carried through every scene:
+The stopwatch is the protagonist: enormous tabular numerals, present from the first frame to the last, always showing real elapsed time for the current call.
 
-**The race (Scene 2).** Ten glasses in a row, one per system, in PLAN.md tier order with Jev last in the accent colour. When the case is asked, every glass starts filling at the same steady rate: liquid is elapsed time, and the pour rate is identical for all, so nothing can be fudged. The moment a system answers, its pour stops, a lid caps the glass and the answer stamps on it (`injection`, p = 0.93). Jev's pour stops almost immediately: a thin film at the bottom. The others keep filling while the stopwatch runs. Final liquid level is the wait, to the pixel. Glass height equals the race cap (8 s) so no glass overflows; a system past the cap is shown still pouring and labelled "still waiting". A small magnifier inset on Jev's glass shows its sliver with the number, so it is never invisible in the square frame.
-
-**Slow motion (Scene 3)** replays the first 500 ms: Jev's film rises and caps; the others barely wet the bottom.
-
-**Distribution (Scene 4).** The glasses tip and pour onto one horizontal timeline (log axis, labelled 100 ms, 1 s, 10 s). Each system's 300 sampled latencies fall as drops and pool where they land. Jev's puddle sits tight at the left edge; the others spread. p50 and p95 markers are drawn over each puddle with their values. Puddles then re-sort by p50.
-
-**Throughput (Scene 5).** One large glass for the slowest system fills once; beside it, Jev's small glass fills and empties N times, a counter ticking up. N is shown with the two p50s it comes from.
-
-**Cost (Scene 6).** The liquid freezes into stacks of coins, one stack per system, stack height being notional cost per 1,000 decisions (log dollar axis, labelled). Jev's stack is a single thin coin with its price written beside it.
-
-**Accuracy (Scene 7).** Each stack gets a target ring: how close each system got, with the 95% CI as a band around the point, and the verdict line typed in from `data.json`. This scene deliberately drops the metaphor for a plain, honest chart form.
-
-**End frame (Scene 8).** The ten capped glasses again, now with three numbers under each (p50, cost per 1,000, accuracy with CI). This still is the LinkedIn thumbnail.
-
-**Honesty rules for the metaphor.** Liquid level is linear in time, same pour rate for every glass, glass height equals the shared cap, no glass is drawn taller or narrower than another, and every level is annotated with its number. The metaphor decorates the encoding; it never replaces it.
-
-**No clock faces.** Justin ruled them out (2026-09-22). Glasses are the metaphor; no dial or arc variant is built.
-
-## 5. Scenes
-
-Timings assume a slowest p95 of about 6 s. The build reads the real value and stretches or trims Scene 2 accordingly; total length stays between 60 and 75 s.
-
-| # | Scene | Duration | What happens |
+| # | Beat | Time | What happens |
 |---|---|---|---|
-| 0 | Title | 3 s | "How long does one decision take?" Subtitle: task, n, date. |
-| 1 | The case | 3 s | One real test case fades in as a chat bubble (a benign or injection text from the test split, chosen for length under 200 chars, no personal data by construction). The question under it: "Is this a prompt injection?" |
-| 2 | The race, real time | ≈ p95 of the slowest system, capped at 8 s | The glasses of §5a fill at real speed; each caps with its answer when its **p50** elapses. Jev caps almost immediately. Then nothing happens for a while, deliberately, while the stopwatch keeps counting. Each cap stamps its time in tabular numerals. A system past the 8 s cap is "still waiting" and the scene cuts. |
-| 3 | Replay, slow motion | 6 s | "That was real time. Here is the first half second at 1/20 speed." The stopwatch re-runs 0 to 500 ms over 6 s (~12× slower, tuned so Jev's bar visibly travels). Jev completes; the Claude bars barely move. Cuts back to real speed for one second to land the contrast. |
-| 4 | It is a distribution | 10 s | The tracks re-scale to a **log** time axis (100 ms, 1 s, 10 s gridlines, labelled). For each lane, 300 sampled latencies stream in as small dots in 4 s, jittered vertically inside the lane, so the viewer sees the spread. p50 and p95 markers draw in over the dots with their values. Lanes then re-sort by p50 (animated) so the order is now by measured speed. |
-| 5 | Throughput | 8 s | "In the time [slowest model] answers once, Jev answers N times." A counter in Jev's lane ticks up to N while a single bar fills in the slowest lane, both at real speed scaled to fit 6 s. N is computed from the p50 ratio and shown with its inputs. |
-| 6 | Cost | 8 s | Same lanes, the metric switches to cost per 1,000 decisions, log axis in dollars. Bars grow from zero; dollar labels count up. Jev's bar is a sliver with its value written next to it. Footnote: Claude cost is notional list price computed from logged tokens (the run itself was on a subscription); Jev is the real OpenRouter charge recorded in PREFLIGHT.md. |
-| 7 | What speed costs | 12 s | Metric switches to **accuracy** on the test split. One dot per system with a horizontal 95% CI whisker. Jev's dot draws last. Then the verdict text from REPORT.md types in: "Jev is as good as [tier] on this task" or "Jev is below Haiku 4.5 on this task", followed by the weakest stratum, e.g. "French recall: −X points vs EN". The build must handle both outcomes with the same code; the copy is templated from `data.json`, not hard-coded. |
-| 8 | Summary card | 6 s | A compact table: system, p50, cost per 1,000, accuracy with CI. Jev's row highlighted. Footnotes and the date. Hold. |
+| 1 | The prompt | 0–3 s | Dark frame. A chat message types itself in: the hero case text. One word appears under it: **Injection?** The stopwatch fades in at 0.000. Hook: something is about to be timed. |
+| 2 | Jev answers | 3–4.5 s | The frame splits. Right: a pulse leaves, comes back, and a stamp slams down: **INJECTION · 98%** with a small probability bar. The stopwatch freezes for Jev at its real time, punched in large next to the stamp (e.g. **0.37 s**). Left side is still empty except a blinking cursor. |
+| 3 | Claude writes | 4.5–12 s | Left: a "thinking" shimmer with a live token counter climbing to the real count (thinking content is never shown; Claude Code does not return it). Then the answer is typed character by character at the real rate (output tokens over measured time): the JSON verdict and its ≤ 20-word reason. The stopwatch keeps running until Claude's real time. Jev's stamp just sits there. Nothing else moves. This is the sentence. |
+| 4 | The wall | 12–16 s | Fast pull-back: eight Claude panels typing side by side at their own real rates, some still in the thinking shimmer, each capping with its time when it finishes; Jev's stamp already there, small, in the corner. [Wide cut: 8 s, both families as paired panels.] |
+| 5 | A thousand in a row | 16–27 s | "Now do it 1,000 times." Two odometers and two clocks in time-lapse (a "×N speed" tag on screen). Jev's odometer hits 1,000 while its clock reads seconds. Claude's odometer is still climbing at scene end, its clock reading minutes or hours (from p50 × 1,000, single-stream, stated). A small cost counter under each clock ticks up: cents against dollars. |
+| 6 | What speed costs | 27–33 s | Nine targets. Each system's arrow flies in and lands where its accuracy puts it; the CI is the spread of a small cluster around it. Jev's arrow lands last. The verdict types in one word at a time from `data.json`: "Jev is as good as [tier]" or "Jev is below Haiku 4.5", then the weakest stratum in one short line. |
+| 7 | End card | 33–35 s | Three enormous numbers for Jev (time, cost per 1,000, accuracy with CI), the verdict, one provenance line (n, split, date, "Claude via Claude Code, Jev via OpenRouter"). Hold. This frame is the poster. |
 
-**Interactive extras (page only):** play/pause, a scrubber across the whole timeline with scene markers, speed control (0.25×, 1×, 4×), hover on any lane shows the exact numbers and n, a toggle between task 2 and task 1 if D3 is yes, a "show placeholder watermark" indicator that cannot be turned off in fixture mode.
+**Honesty rules.** Typing rate, thinking counter, stopwatch, odometers and clocks are all driven by measured values from `data.json`; springs and easing apply to objects (stamp, arrows, panels, camera), never to a quantity that encodes a measurement. Every number on screen is traceable to a results row. The verdict copy is templated; the render must be correct on both fixtures. The watermark is unremovable in fixture mode.
 
 ## 5b. LinkedIn constraints (primary destination)
 
@@ -113,7 +76,7 @@ LinkedIn autoplays muted in a feed the viewer is scrolling past. That sets four 
 
 ## 6. Design rules
 
-Load the `dataviz` skill before writing any drawing code and take the palette from its `references/palette.md`. Beyond that:
+Load the `remotion-best-practices` skill before writing any composition code, and the `dataviz` skill for the accuracy scene's palette (its `references/palette.md`). Beyond that:
 
 - **Two hues, not nine.** The story is Jev versus the Claude family. Claude lanes use one neutral hue at graded lightness (darker for higher tier); Jev uses the single accent. Jev also carries a text label and a distinct marker shape so the encoding is never colour-only.
 - **Lane order is fixed in Scenes 2–3** (tier order, so the eye learns the layout) and **re-sorts once** in Scene 4. No other reordering.
