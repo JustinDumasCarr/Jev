@@ -166,7 +166,7 @@ Harness rules (from the eval checklist, all mandatory):
 - Concurrency: 4 `claude` processes in flight per Claude system (each is a full CLI start-up), 32 for Jev. One Claude system at a time.
 - Cost from logged usage at the `claude-api` skill rates for the served model; Jev from each response's `usage.cost` (the actual charge per row, PREFLIGHT.md). Judge and auditor usage is tracked separately.
 - Full raw result JSON saved per row (`raw`, with `session_id`, `permission_denials` and stderr), so any surprising score can be traced without re-running.
-- Determinism: cases run in sorted id order; no timestamps in prompts; the system prompt is byte-stable.
+- Determinism: cases run in sorted id order; no timestamps in our prompts; our system prompt is byte-stable. The CLI wraps it in its own environment block (working directory, platform, the model's own name and id, the account email, today's date; see PREFLIGHT.md), which changes once per calendar day and differs per model in the identity line. The report states this; the variance subset names it as a confound.
 
 ## 7. Runs
 

@@ -181,3 +181,22 @@ here rather than silently applied. **Justin's decision is wanted on items 1 and 
 `duration_api_ms` p50 7.7 s (task 1) and 7.7 s (task 2), notional list cost $3.83 and $4.40 per 1,000 calls.
 Thinking dominates: 197–990 thinking tokens per task-1 call at effort `low`, which is most of the latency.
 The Jev half of the smoke was **not run** — WP1 was instructed not to spend money; WP5 runs it.
+
+## What the frozen prefix still contains (WP4 finding, verified 2026-09-22)
+
+The ~1,300-token prefix of the frozen flag set is Claude Code's own environment block, not ours. Probed by asking Haiku to quote its context verbatim (`--exclude-dynamic-system-prompt-sections` changes nothing):
+
+- the working directory (the neutral temp dir, so the repo name is not leaked), "Is a git repository: false", platform `darwin`, OS version
+- "You are powered by the model named <name>. The exact model ID is <id>." and the model's knowledge cutoff
+- the logged-in user's email address
+- "Today's date is <date>"
+- a "tokens left" figure
+
+Consequences, recorded so REPORT.md can state what the models saw:
+
+1. **Date.** The prefix changes each calendar day, so PLAN.md §6's "byte-stable system prompt" holds only within a day. Our task prompt is byte-stable; the CLI block around it is not. Runs spanning days carry a one-line difference in the prefix; the variance subset (§7) reports run-to-run spread with that confound named.
+2. **Model identity.** Each model is told its own name and id before answering. The task prompt is identical across systems; the CLI block is not. This is the same condition a Claude Code user's model runs under, so it is representative of the "via Claude Code" route and is disclosed as such.
+3. **Email.** The account email is in every call's context, as in ordinary Claude Code use. Justin has been told.
+
+`--bare` would strip this block but cannot authenticate when launched from inside a session (above). Whether it authenticates from a plain terminal is recorded below when tested.
+
