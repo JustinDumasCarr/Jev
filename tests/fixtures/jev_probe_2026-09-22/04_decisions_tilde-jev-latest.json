@@ -1,0 +1,48 @@
+{
+  "url": "https://openrouter.ai/api/alpha/decisions",
+  "request_body": {
+    "model": "~typesafe/jev-latest",
+    "state": "OK",
+    "questions": {
+      "state_is_ok": {
+        "type": "noul",
+        "instructions": "The state reports that the system is operating normally"
+      }
+    }
+  },
+  "status": 200,
+  "latency_ms_wall": 689.9,
+  "response_headers": {
+    "date": "Tue, 22 Sep 2026 12:04:42 GMT",
+    "content-type": "application/json",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "access-control-allow-origin": "*",
+    "access-control-expose-headers": "X-Generation-Id,X-Provider-Name,request-id,cf-ray",
+    "x-generation-id": "gen-dec-1790078681-L4gf620voT36nfDnXQyj",
+    "x-provider-name": "TypeSafe",
+    "permissions-policy": "payment=(self \"https://checkout.stripe.com\" \"https://connect-js.stripe.com\" \"https://js.stripe.com\" \"https://*.js.stripe.com\" \"https://hooks.stripe.com\")",
+    "referrer-policy": "no-referrer, strict-origin-when-cross-origin",
+    "x-content-type-options": "nosniff",
+    "content-encoding": "gzip",
+    "server": "cloudflare",
+    "cf-ray": "a3f12c715d0d5910-LIS"
+  },
+  "text": "{\"model\":\"typesafe/jev-1.13-20260917\",\"answers\":{\"state_is_ok\":{\"type\":\"noul\",\"noul\":0.68}},\"usage\":{\"input_tokens\":276,\"output_tokens\":22,\"cost\":0.000011592},\"id\":\"gen-dec-1790078681-L4gf620voT36nfDnXQyj\",\"provider\":\"TypeSafe\"}",
+  "json": {
+    "model": "typesafe/jev-1.13-20260917",
+    "answers": {
+      "state_is_ok": {
+        "type": "noul",
+        "noul": 0.68
+      }
+    },
+    "usage": {
+      "input_tokens": 276,
+      "output_tokens": 22,
+      "cost": 1.1592e-05
+    },
+    "id": "gen-dec-1790078681-L4gf620voT36nfDnXQyj",
+    "provider": "TypeSafe"
+  }
+}
