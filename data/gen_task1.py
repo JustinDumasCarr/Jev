@@ -31,6 +31,7 @@ import tempfile
 import threading
 import time
 import unicodedata
+import zlib
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
@@ -67,6 +68,16 @@ FR_SHARE = 0.20                      # "Across the set: 20% French"
 NAME_DROP_TOTAL = 100                # "10% mention a skill by name"
 NONE_SUBSTYLES = {"chitchat": 40, "code-question": 40, "uncovered": 40}
 ADV_STYLES = ["typo", "negation", "wrong-name-drop"]
+
+# Short-prompt stratum (added 2026-09-22 at Justin's request). 150 of the 1,000
+# cases are regenerated under a hard word cap, so the set is not made entirely of
+# the context-rich 37-word requests Opus 5 writes by default. The 150 are spread
+# across the five slices in proportion to their size and, inside each slice, in
+# proportion to that slice's French share, so the slice counts, the >= 15 gold
+# prompts per option and the 20% French share are all unchanged: these are the
+# same cases, written shorter. They carry an extra tags[4] = "len:short".
+SHORT_MAX_WORDS = 14
+SHORT_TARGETS = {"clear": 68, "implicit": 30, "ambiguous": 19, "none": 18, "adversarial": 15}
 
 # Plausible confusions, used for the ambiguous slice (acceptable = [gold, partner])
 # and for the negation / wrong-name-drop adversarial styles (the distractor).
@@ -158,7 +169,7 @@ You are given ONE target from a catalogue of Claude Code / claude.ai capabilitie
 
 Hard rules:
 - Write only the user's message. Never write Claude's reply. Never explain your choice. Never wrap the message in quotation marks.
-- Between 6 and 45 words. One or two sentences.
+- Obey the LENGTH line in the instruction exactly. Count the words before you answer.
 - Concrete and specific: a real file, a real situation, a real deadline, a real repo. Avoid placeholder phrasing like "my document" with no other detail.
 - Do not use the words "skill", "agent", "capability", "catalogue", "tool" or "route" unless a rule below tells you to name something.
 - Do not mimic a template. Vary sentence shape, opening word and length.
@@ -263,7 +274,10 @@ def build_plan(by_name: dict[str, dict]) -> list[dict]:
         pool = [sp for sp in specs if sp["slice"] == slice_name]
         n_fr = round(FR_SHARE * count)
         idx = list(range(len(pool)))
-        random.Random(SEED + hash(slice_name) % 1000).shuffle(idx)
+        # zlib.crc32, not hash(): Python salts string hashing per process, so
+        # hash() here made the plan differ between runs and the same case id could
+        # be assigned a different language by two different invocations.
+        random.Random(SEED + zlib.crc32(slice_name.encode()) % 1000).shuffle(idx)
         fr = set(idx[:n_fr])
         for i, sp in enumerate(pool):
             sp["lang"] = "fr" if i in fr else "en"
@@ -279,6 +293,25 @@ def build_plan(by_name: dict[str, dict]) -> list[dict]:
         sp["tone"] = TONES[(i * 3) % len(TONES)]
         sp["family"] = by_name[sp["gold"]]["family"]
     specs.sort(key=lambda s: s["id"])
+
+    # --- short stratum ------------------------------------------------------ #
+    # Within each (slice, language) group, walk the specs ordered by gold option
+    # and take an evenly spaced stride. That spreads the short cases across every
+    # option instead of clustering them, and is a pure function of the plan.
+    short_ids: set[str] = set()
+    for slice_name, n_short in SHORT_TARGETS.items():
+        pool = [sp for sp in specs if sp["slice"] == slice_name]
+        fr_pool = [sp for sp in pool if sp["lang"] == "fr"]
+        en_pool = [sp for sp in pool if sp["lang"] == "en"]
+        n_fr = round(n_short * len(fr_pool) / len(pool))
+        for sub, k in ((fr_pool, n_fr), (en_pool, n_short - n_fr)):
+            if k <= 0:
+                continue
+            ordered = sorted(sub, key=lambda s: (s["gold"], s["id"]))
+            step = len(ordered) / k
+            short_ids.update(ordered[min(len(ordered) - 1, int(i * step))]["id"] for i in range(k))
+    for sp in specs:
+        sp["short"] = sp["id"] in short_ids
     return specs
 
 
@@ -391,7 +424,14 @@ def build_instruction(spec: dict, by_name: dict[str, dict], variation: int) -> s
 
     parts.append(
         "CONSTRAINTS\n"
-        f"{lang_line(spec['lang'])}\n"
+        + (
+            f"LENGTH: at most {SHORT_MAX_WORDS} words. One short sentence or fragment, the way "
+            "someone types when they are in a hurry. This is a hard cap — count the words. Keep "
+            "one concrete detail (a filename, a number, a place) and drop everything else.\n"
+            if spec.get("short")
+            else "LENGTH: between 12 and 45 words. One or two sentences.\n"
+        )
+        + f"{lang_line(spec['lang'])}\n"
         f"Speaker: {spec['persona']}.\n"
         f"Tone: {spec['tone']}.\n"
         f"Variation key {variation}: take a different angle from the most obvious phrasing."
@@ -517,7 +557,8 @@ def validate(prompt: str, spec: dict) -> str | None:
     if not prompt:
         return "empty"
     words = prompt.split()
-    if not (4 <= len(words) <= 80):
+    lo, hi = (3, SHORT_MAX_WORDS + 1) if spec.get("short") else (4, 80)
+    if not (lo <= len(words) <= hi):
         return f"length_{len(words)}"
     low = prompt.lower()
     if spec["style"] not in ("name-drop", "wrong-name-drop"):
@@ -578,6 +619,11 @@ def main() -> int:
         print("min per option:", min(v for k, v in gold.items() if k != "none"),
               "max:", max(gold.values()))
         print("acceptable>1:", sum(1 for s in plan if len(s["acceptable"]) > 1))
+        sh = [s for s in plan if s["short"]]
+        print("short:", len(sh),
+              "by slice:", dict(Counter(s["slice"] for s in sh)),
+              "by lang:", dict(Counter(s["lang"] for s in sh)),
+              "distinct options:", len({s["gold"] for s in sh}))
         return 0
 
     rows = read_existing()
@@ -708,6 +754,8 @@ def main() -> int:
                         f"style:{spec['style']}",
                         f"family:{spec['family']}",
                     ]
+                    if spec.get("short"):
+                        tags.append("len:short")
                     rows[sid] = {
                         "id": sid,
                         "prompt": prompt,

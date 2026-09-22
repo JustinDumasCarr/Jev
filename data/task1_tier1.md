@@ -13,21 +13,23 @@
 | Slice counts vs plan | +/-5 | exact | ok |
 | Minimum gold prompts per option | >= 15 | 24 | ok |
 | Duplicate rate | 0 | 0.000 | ok |
-| French share | 20% | 19.7% | ok |
+| French share | 20% | 20.0% | ok |
 | Names a skill correctly | 10% | 10.0% | ok |
 | Ambiguous cases with 2 acceptable | 130 | 130 | ok |
 | `none` cases | 120 | 120 | ok |
+| Short stratum (`len:short`) | 150 | 150 | ok |
+| Short cases within the word cap | <= 15 | max 15 | ok |
 
 ## Slice distribution (`tags[0]`, the stratification key)
 
 | Slice | Plan | Actual | FR | Share |
 |---|---|---|---|---|
-| `slice:clear` | 450 | 450 | 87 | 45.0% |
-| `slice:implicit` | 200 | 200 | 41 | 20.0% |
-| `slice:ambiguous` | 130 | 130 | 25 | 13.0% |
+| `slice:clear` | 450 | 450 | 90 | 45.0% |
+| `slice:implicit` | 200 | 200 | 40 | 20.0% |
+| `slice:ambiguous` | 130 | 130 | 26 | 13.0% |
 | `slice:none` | 120 | 120 | 24 | 12.0% |
 | `slice:adversarial` | 100 | 100 | 20 | 10.0% |
-| **total** | 1000 | 1000 | 197 | |
+| **total** | 1000 | 1000 | 200 | |
 
 ## Style and family
 
@@ -92,41 +94,65 @@ Routable options (excluding `none`): min 24, max 26, mean 25.1.
 
 | Language | Count | Share |
 |---|---|---|
-| `lang:en` | 803 | 80.3% |
-| `lang:fr` | 197 | 19.7% |
+| `lang:en` | 800 | 80.0% |
+| `lang:fr` | 200 | 20.0% |
 
 Options with no French prompt: 0
 
 ## Length distribution
 
-Words: min 17, p10 30, median 37, p90 45, max 60. Characters: min 90, median 220, max 314.
+Words: min 9, p10 14, median 36, p90 43, max 60. Characters: min 58, median 211, max 308.
 
 | Words | Count | |
 |---|---|---|
-| 0-9 | 0 |  |
-| 10-14 | 0 |  |
-| 15-19 | 2 |  |
-| 20-24 | 16 | # |
-| 25-29 | 75 | ###### |
-| 30-34 | 201 | ################ |
-| 35-39 | 348 | ############################ |
-| 40-49 | 339 | ########################### |
-| 50+ | 19 | ## |
+| 0-9 | 2 |  |
+| 10-14 | 130 | ########### |
+| 15-19 | 19 | ## |
+| 20-24 | 10 | # |
+| 25-29 | 63 | ##### |
+| 30-34 | 182 | ################ |
+| 35-39 | 328 | ############################ |
+| 40-49 | 252 | ###################### |
+| 50+ | 14 | # |
 
 | Slice | median words | min | max |
 |---|---|---|---|
-| `slice:clear` | 37 | 21 | 54 |
-| `slice:implicit` | 41 | 25 | 60 |
-| `slice:ambiguous` | 37 | 28 | 51 |
-| `slice:none` | 35 | 17 | 46 |
-| `slice:adversarial` | 40 | 27 | 54 |
+| `slice:clear` | 36 | 9 | 57 |
+| `slice:implicit` | 38 | 11 | 60 |
+| `slice:ambiguous` | 36 | 11 | 47 |
+| `slice:none` | 34 | 11 | 45 |
+| `slice:adversarial` | 39 | 11 | 54 |
+
+### Short stratum (`len:short`)
+
+150 of the 1000 cases were generated under a hard 14-word cap, so the set is not made entirely of the context-rich requests Opus 5 writes by default. They are the same cases — same slice, same gold option, same language — written short, so every other distribution in this report is unaffected.
+
+| Stratum | Cases | min | median | p90 | max |
+|---|---|---|---|---|---|
+| `len:short` | 150 | 9 | 13 | 15 | 15 |
+| rest | 850 | 19 | 37 | 44 | 60 |
+
+| Slice | Short | Share of slice | | Language | Short |
+|---|---|---|---|---|---|
+| `slice:clear` | 68 | 15.1% | | `lang:en` | 119 |
+| `slice:implicit` | 30 | 15.0% | | `lang:fr` | 31 |
+| `slice:ambiguous` | 19 | 14.6% | |  |  |
+| `slice:none` | 18 | 15.0% | |  |  |
+| `slice:adversarial` | 15 | 15.0% | |  |  |
+
+The short stratum is 20.7% French (set overall 20.0%) and covers 36/36 options.
+
+Examples:
+- `keybindings-help` (clear, 9 words) — keybindings-help: make Shift+Enter insert newline, Ctrl+Enter submit in ~/.claude/keybindings.json
+- `loop` (clear, 9 words) — Vérifie /var/log/boutique/stripe-webhooks.log aux 10 minutes tant que v2.4.1 plante.
+- `security-review` (clear, 10 words) — Before we push listings-portal v2.3, security-review src/api/showings/booking.php, especially the SQL.
 
 ## Duplicates
 
 Exact duplicates after normalisation (lowercase, accents and punctuation stripped, whitespace collapsed): **0** group(s).
 Near-duplicate pairs at token-set Jaccard >= 0.9: **0**.
-Highest pairwise similarity in the set: 0.705 (t1-0292 / t1-0412).
-`data/gen_task1.py` rejects and regenerates at a stricter 0.78, so the gap between 0.705 and the 0.9 reporting threshold is real headroom, not a threshold artefact.
+Highest pairwise similarity in the set: 0.690 (t1-0090 / t1-0660).
+`data/gen_task1.py` rejects and regenerates at a stricter 0.78, so the gap between 0.690 and the 0.9 reporting threshold is real headroom, not a threshold artefact.
 Duplicate rate: **0.0000**.
 
 ## Ambiguous pairs
@@ -190,5 +216,5 @@ Duplicate rate: **0.0000**.
 - Tier-1 only. Tier 2 (a 50-case stratified read plus Justin's 100) and Tier 3 (the per-case Sonnet 5 auditor over all 2,000 cases) are WP4's job, per PLAN.md section 5.
 - Gold provenance: every case is label-first synthetic — the option was chosen by `data/gen_task1.py` from a fixed plan (seed 20260922) and `claude-opus-5` was then asked to write a user request for it. No prompt was labelled after the fact, and no real user, client or prospect text is in this file.
 - Per-call tokens, durations and cost for every generation call are in `data/gen_task1_log.jsonl`.
-- **Known skew:** the median prompt is 37 words long (p10 30, p90 45). Opus 5 was asked for 6-45 words and consistently wrote at the top of that range, so this set is richer in context than the one-line requests a production router often sees. It is uniform across slices (no length tell for the label), but it probably flatters any system that reads carefully and may understate Jev's literal-reading weakness. Flagged for WP4 and for the report's limitations section.
+- **Length:** the median prompt is 36 words (p10 14, p90 43). Opus 5 writes at the top of whatever range it is given, so the first pass came out uniformly verbose; 150 cases were then regenerated under a 14-word cap to give the analysis a short-prompt stratum (`len:short`, section above). Length is still uniform across slices, so it is not a tell for the label; accuracy on `len:short` versus the rest is the contrast to report, and it is where Jev's documented literal-reading weakness should show if it is real.
 

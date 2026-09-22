@@ -35,6 +35,8 @@ EXPECTED_SLICES = {
 SLICE_TOLERANCE = 5
 EXPECTED_TOTAL = 1000
 MIN_PER_OPTION = 15
+SHORT_TARGET = 150          # cases carrying tags[4] == "len:short"
+SHORT_MAX_WORDS = 15        # the generator caps at 14 and tolerates one over
 FR_TARGET = 0.20
 NAME_DROP_TARGET = 0.10
 SIM_THRESHOLD = 0.9
@@ -125,9 +127,11 @@ def main() -> int:
                 if a not in options:
                     schema_errors.append(f"{rid}: acceptable {a!r} not in catalogue")
         tags = r.get("tags")
-        if not isinstance(tags, list) or len(tags) != 4:
-            schema_errors.append(f"{rid}: tags not a 4-element list")
+        if not isinstance(tags, list) or len(tags) not in (4, 5):
+            schema_errors.append(f"{rid}: tags not a 4- or 5-element list")
         else:
+            if len(tags) == 5 and tags[4] != "len:short":
+                schema_errors.append(f"{rid}: tags[4] {tags[4]!r} is not len:short")
             if tags[0] not in EXPECTED_SLICES:
                 schema_errors.append(f"{rid}: tags[0] {tags[0]!r} not a known slice")
             if not tags[1].startswith("lang:"):
@@ -221,6 +225,25 @@ def main() -> int:
         if abs(med - overall) > 12:
             warnings.append(f"{s} median length {med} words vs overall {overall} (possible length tell)")
 
+    # ---------------- short stratum ----------------------------------------- #
+    short = [r for r in rows if "len:short" in r["tags"]]
+    long_ = [r for r in rows if "len:short" not in r["tags"]]
+    short_wl = [len(r["prompt"].split()) for r in short]
+    long_wl = [len(r["prompt"].split()) for r in long_]
+    over_cap = [r["id"] for r, w in zip(short, short_wl) if w > SHORT_MAX_WORDS]
+    if len(short) != SHORT_TARGET:
+        failures.append(f"short stratum {len(short)} != {SHORT_TARGET}")
+    if over_cap:
+        failures.append(f"{len(over_cap)} short case(s) over {SHORT_MAX_WORDS} words: {over_cap[:8]}")
+    short_by_slice = Counter(r["tags"][0] for r in short)
+    short_by_lang = Counter(r["tags"][1] for r in short)
+    short_fr = short_by_lang.get("lang:fr", 0) / max(1, len(short))
+    if abs(short_fr - FR_TARGET) > 0.05:
+        warnings.append(f"short stratum is {short_fr:.1%} French vs {FR_TARGET:.0%} overall")
+    short_opts = {r["gold"] for r in short}
+    if len(short_opts) < len(options):
+        warnings.append(f"short stratum covers {len(short_opts)}/{len(options)} options")
+
     # ---------------- ambiguous pairs --------------------------------------- #
     pair_counts = Counter(
         tuple(sorted(r["acceptable"])) for r in rows if len(r["acceptable"]) == 2
@@ -265,6 +288,10 @@ def main() -> int:
          sum(1 for r in rows if len(r["acceptable"]) == 2) == EXPECTED_SLICES["slice:ambiguous"]),
         ("`none` cases", "120", str(gold_counts.get("none", 0)),
          gold_counts.get("none", 0) == EXPECTED_SLICES["slice:none"]),
+        ("Short stratum (`len:short`)", str(SHORT_TARGET), str(len(short)),
+         len(short) == SHORT_TARGET),
+        ("Short cases within the word cap", f"<= {SHORT_MAX_WORDS}",
+         f"max {max(short_wl) if short_wl else 0}", not over_cap),
     ]
     for name, target, actual, ok in checks:
         a(f"| {name} | {target} | {actual} | {'ok' if ok else 'FAIL'} |")
@@ -348,6 +375,44 @@ def main() -> int:
         a(f"| `{s}` | {v[len(v) // 2]} | {v[0]} | {v[-1]} |")
     a("")
 
+    a("### Short stratum (`len:short`)")
+    a("")
+    a(f"{len(short)} of the {len(rows)} cases were generated under a hard {SHORT_MAX_WORDS - 1}-word "
+      "cap, so the set is not made entirely of the context-rich requests Opus 5 writes by default. "
+      "They are the same cases — same slice, same gold option, same language — written short, so "
+      "every other distribution in this report is unaffected.")
+    a("")
+    sw = sorted(short_wl)
+    lw = sorted(long_wl)
+    a("| Stratum | Cases | min | median | p90 | max |")
+    a("|---|---|---|---|---|---|")
+    a(f"| `len:short` | {len(sw)} | {sw[0]} | {sw[len(sw) // 2]} | "
+      f"{sw[min(len(sw) - 1, int(0.9 * len(sw)))]} | {sw[-1]} |")
+    a(f"| rest | {len(lw)} | {lw[0]} | {lw[len(lw) // 2]} | "
+      f"{lw[min(len(lw) - 1, int(0.9 * len(lw)))]} | {lw[-1]} |")
+    a("")
+    a("| Slice | Short | Share of slice | | Language | Short |")
+    a("|---|---|---|---|---|---|")
+    langs_s = sorted(short_by_lang.items())
+    sl_s = list(EXPECTED_SLICES)
+    for i in range(max(len(sl_s), len(langs_s))):
+        if i < len(sl_s):
+            s = sl_s[i]
+            left = f"`{s}` | {short_by_slice.get(s, 0)} | {short_by_slice.get(s, 0) / max(1, slices.get(s, 1)):.1%}"
+        else:
+            left = " |  | "
+        right = f"`{langs_s[i][0]}` | {langs_s[i][1]}" if i < len(langs_s) else " | "
+        a(f"| {left} | | {right} |")
+    a("")
+    a(f"The short stratum is {short_fr:.1%} French (set overall {fr:.1%}) and covers "
+      f"{len(short_opts)}/{len(options)} options.")
+    a("")
+    a("Examples:")
+    for r in sorted(short, key=lambda r: len(r["prompt"].split()))[:3]:
+        a(f"- `{r['gold']}` ({r['tags'][0].split(':')[1]}, {len(r['prompt'].split())} words) — "
+          f"{r['prompt']}")
+    a("")
+
     a("## Duplicates")
     a("")
     a(f"Exact duplicates after normalisation (lowercase, accents and punctuation stripped, "
@@ -400,12 +465,13 @@ def main() -> int:
       "client or prospect text is in this file.")
     a("- Per-call tokens, durations and cost for every generation call are in "
       "`data/gen_task1_log.jsonl`.")
-    a(f"- **Known skew:** the median prompt is {pct(0.50)} words long (p10 {pct(0.10)}, "
-      f"p90 {pct(0.90)}). Opus 5 was asked for 6-45 words and consistently wrote at the top of "
-      "that range, so this set is richer in context than the one-line requests a production "
-      "router often sees. It is uniform across slices (no length tell for the label), but it "
-      "probably flatters any system that reads carefully and may understate Jev's literal-reading "
-      "weakness. Flagged for WP4 and for the report's limitations section.")
+    a(f"- **Length:** the median prompt is {pct(0.50)} words (p10 {pct(0.10)}, p90 {pct(0.90)}). "
+      "Opus 5 writes at the top of whatever range it is given, so the first pass came out "
+      f"uniformly verbose; {len(short)} cases were then regenerated under a "
+      f"{SHORT_MAX_WORDS - 1}-word cap to give the analysis a short-prompt stratum "
+      "(`len:short`, section above). Length is still uniform across slices, so it is not a tell "
+      "for the label; accuracy on `len:short` versus the rest is the contrast to report, and it "
+      "is where Jev's documented literal-reading weakness should show if it is real.")
     a("")
 
     report = "\n".join(L) + "\n"
