@@ -858,3 +858,6 @@
 2026-09-22 20:06:11 [w1] run task2 opus46 variance-first
 2026-09-22 20:06:11 [w4] run task2 opus47-nothink variance-first
 2026-09-22 20:06:12 [w2] run task1 opus47 variance-first
+2026-09-22 20:06:12 [w1] run task1 opus48-nothink variance-first
+2026-09-22 20:06:12 [w3] committed: 200-case subset sonnet46, both tasks
+2026-09-22 20:06:12 [w3] run task1 opus48 variance-first
