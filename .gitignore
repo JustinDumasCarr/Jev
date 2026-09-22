@@ -12,6 +12,17 @@ viz/frames/
 viz/node_modules/
 viz/out/*
 !viz/out/jev-vs-claude-1080sq.FIXTURE.mp4
+!viz/out/jev-vs-claude-injection-1080sq.FIXTURE.mp4
+!viz/out/jev-vs-claude-routing-1080sq.FIXTURE.mp4
+!viz/out/jev-vs-claude-injection-scoreboard-1080sq.FIXTURE.mp4
+!viz/out/jev-vs-claude-routing-scoreboard-1080sq.FIXTURE.mp4
+!viz/out/jev-vs-claude-injection-1080p.FIXTURE.mp4
+!viz/out/jev-vs-claude-routing-1080p.FIXTURE.mp4
+!viz/out/jev-vs-claude-injection-1080sq.mp4
+!viz/out/jev-vs-claude-routing-1080sq.mp4
+!viz/out/jev-vs-claude-injection-scoreboard-1080sq.mp4
+!viz/out/jev-vs-claude-routing-scoreboard-1080sq.mp4
+!viz/out/jev-vs-claude-1080sq.mp4
 !viz/out/jev-vs-claude-1080p.FIXTURE.mp4
 !viz/out/jev-vs-claude-1080sq.FIXTURE.srt
 !viz/out/jev-vs-claude-1080p.FIXTURE.srt
