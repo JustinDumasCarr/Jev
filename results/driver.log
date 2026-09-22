@@ -813,3 +813,5 @@
 2026-09-22 18:59:05 [w3] run task2 sonnet5-nothink variance-first
 2026-09-22 18:59:05 [w4] run task2 sonnet46-nothink variance-first
 2026-09-22 18:59:05 [w1] run task2 haiku45 variance-first
+2026-09-22 18:59:08 [w1] committed: 200-case subset haiku45, both tasks
+2026-09-22 18:59:08 [w1] run task1 sonnet46 variance-first

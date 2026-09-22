@@ -121,3 +121,14 @@
   200/953 {'ok': 195, 'truncated': 0, 'refusal': 5, 'error': 0}
   210/953 {'ok': 204, 'truncated': 0, 'refusal': 6, 'error': 0}
 {"task": "task1", "system": "sonnet46-nothink", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
+  10/148 {'ok': 9, 'truncated': 0, 'refusal': 1, 'error': 0}
+  20/148 {'ok': 19, 'truncated': 0, 'refusal': 1, 'error': 0}
+  30/148 {'ok': 29, 'truncated': 0, 'refusal': 1, 'error': 0}
+  40/148 {'ok': 39, 'truncated': 0, 'refusal': 1, 'error': 0}
+  50/148 {'ok': 49, 'truncated': 0, 'refusal': 1, 'error': 0}
+  60/148 {'ok': 58, 'truncated': 0, 'refusal': 2, 'error': 0}
+  70/148 {'ok': 68, 'truncated': 0, 'refusal': 2, 'error': 0}
+  80/148 {'ok': 78, 'truncated': 0, 'refusal': 2, 'error': 0}
+  90/148 {'ok': 88, 'truncated': 0, 'refusal': 2, 'error': 0}
+  100/148 {'ok': 98, 'truncated': 0, 'refusal': 2, 'error': 0}
+  110/148 {'ok': 107, 'truncated': 0, 'refusal': 3, 'error': 0}

@@ -73,3 +73,15 @@
   230/1000 {'ok': 230, 'truncated': 0, 'refusal': 0, 'error': 0}
 {"task": "task1", "system": "haiku45", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
 {"task": "task2", "system": "haiku45", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
+  10/163 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/163 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/163 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/163 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/163 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/163 {'ok': 60, 'truncated': 0, 'refusal': 0, 'error': 0}
+  70/163 {'ok': 70, 'truncated': 0, 'refusal': 0, 'error': 0}
+  80/163 {'ok': 80, 'truncated': 0, 'refusal': 0, 'error': 0}
+  90/163 {'ok': 90, 'truncated': 0, 'refusal': 0, 'error': 0}
+  100/163 {'ok': 100, 'truncated': 0, 'refusal': 0, 'error': 0}
+  110/163 {'ok': 110, 'truncated': 0, 'refusal': 0, 'error': 0}
+  120/163 {'ok': 120, 'truncated': 0, 'refusal': 0, 'error': 0}
