@@ -23,6 +23,9 @@ results/     <task>/<system>/results.jsonl  errors.jsonl  run_meta.json         
 
 ## Rules
 
+- **Any animation, video, chart or diagram follows `docs/adr/0001-animation-and-diagram-design.md`.** Read it before touching `viz/` or proposing a visual.
+
+
 - Read `PLAN.md` before touching anything. Model ids, thinking/effort configs and API rules are in §2 and are not
   negotiable per model: if the API rejects something, fix the harness, never the matrix.
 - Secrets come from `.env` at the repo root only. Never commit `.env` or any key. Never accept a key pasted in chat; Justin edits `.env` himself.
