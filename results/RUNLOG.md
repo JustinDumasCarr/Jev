@@ -45,3 +45,4 @@ task1 jev: rows=700  scored=700  errors=0 refusals=0 acc=0.939 [0.921, 0.956] p5
 | task1 | 2026-09-22 20:13:43 | task1 sonnet5: rows=1000 scored=1000 errors=0 refusals=0 acc=0.954 [0.941, 0.966] p50=2604ms cost/1k=$4.828
 | task1 | 2026-09-22 20:19:31 | task1 sonnet46-nothink: rows=1000 scored=1000 errors=0 refusals=0 acc=0.934 [0.919, 0.948] p50=3105ms cost/1k=$7.000
 | task2 | 2026-09-22 20:24:51 | task2 sonnet5-nothink: rows=1000 scored=981 errors=0 refusals=19 acc=0.969 [0.958, 0.981] p50=2885ms cost/1k=$5.110
+| task2 | 2026-09-22 20:28:38 | task2 sonnet5: rows=1000 scored=981 errors=0 refusals=19 acc=0.971 [0.960, 0.982] p50=2999ms cost/1k=$5.186

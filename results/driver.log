@@ -899,3 +899,6 @@
 2026-09-22 20:20:06 [w4] committed: 200-case subset fable51, both tasks
 2026-09-22 20:20:06 [w4] run task1 sonnet46 full
 2026-09-22 20:24:51 [w3] full task2 sonnet5-nothink: error rate 0%
+2026-09-22 20:25:08 [w3] committed: full run sonnet5-nothink, both tasks
+2026-09-22 20:25:08 [w3] run task1 opus46-nothink full
+2026-09-22 20:28:38 [w2] full task2 sonnet5: error rate 0%

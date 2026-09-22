@@ -291,3 +291,14 @@
   390/514 {'ok': 384, 'truncated': 0, 'refusal': 6, 'error': 0}
   400/514 {'ok': 394, 'truncated': 0, 'refusal': 6, 'error': 0}
   410/514 {'ok': 404, 'truncated': 0, 'refusal': 6, 'error': 0}
+  420/514 {'ok': 414, 'truncated': 0, 'refusal': 6, 'error': 0}
+  430/514 {'ok': 424, 'truncated': 0, 'refusal': 6, 'error': 0}
+  440/514 {'ok': 434, 'truncated': 0, 'refusal': 6, 'error': 0}
+  450/514 {'ok': 444, 'truncated': 0, 'refusal': 6, 'error': 0}
+  460/514 {'ok': 454, 'truncated': 0, 'refusal': 6, 'error': 0}
+  470/514 {'ok': 464, 'truncated': 0, 'refusal': 6, 'error': 0}
+  480/514 {'ok': 474, 'truncated': 0, 'refusal': 6, 'error': 0}
+  490/514 {'ok': 484, 'truncated': 0, 'refusal': 6, 'error': 0}
+  500/514 {'ok': 494, 'truncated': 0, 'refusal': 6, 'error': 0}
+  510/514 {'ok': 503, 'truncated': 0, 'refusal': 7, 'error': 0}
+{"task": "task2", "system": "sonnet5", "counts": {"ok": 506, "truncated": 0, "refusal": 8, "error": 0}, "elapsed_s": 888.8, "pauses": []}
