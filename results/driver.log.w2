@@ -127,3 +127,4 @@
   260/953 {'ok': 253, 'truncated': 0, 'refusal': 7, 'error': 0}
   270/953 {'ok': 263, 'truncated': 0, 'refusal': 7, 'error': 0}
   280/953 {'ok': 272, 'truncated': 0, 'refusal': 8, 'error': 0}
+{"task": "task1", "system": "sonnet5", "counts": {"ok": 0, "truncated": 0, "refusal": 0, "error": 0}, "elapsed_s": 0.0, "pauses": []}
