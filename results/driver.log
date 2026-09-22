@@ -882,3 +882,7 @@
 2026-09-22 20:10:31 [w3] full task1 haiku45: error rate 0%
 2026-09-22 20:10:38 [w3] run task2 haiku45 full
 2026-09-22 20:10:39 [w3] full task2 haiku45: error rate 0%
+2026-09-22 20:10:47 [w3] committed: full run haiku45, both tasks
+2026-09-22 20:10:47 [w3] run task1 sonnet5-nothink full
+2026-09-22 20:10:48 [w3] full task1 sonnet5-nothink: error rate 0%
+2026-09-22 20:10:54 [w3] run task2 sonnet5-nothink full
