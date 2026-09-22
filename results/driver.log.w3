@@ -36,3 +36,7 @@
   150/200 {'ok': 147, 'truncated': 0, 'refusal': 3, 'error': 0}
   160/200 {'ok': 157, 'truncated': 0, 'refusal': 3, 'error': 0}
   170/200 {'ok': 167, 'truncated': 0, 'refusal': 3, 'error': 0}
+  180/200 {'ok': 177, 'truncated': 0, 'refusal': 3, 'error': 0}
+  190/200 {'ok': 187, 'truncated': 0, 'refusal': 3, 'error': 0}
+  200/200 {'ok': 197, 'truncated': 0, 'refusal': 3, 'error': 0}
+{"task": "task2", "system": "sonnet46-nothink", "counts": {"ok": 197, "truncated": 0, "refusal": 3, "error": 0}, "elapsed_s": 373.7, "pauses": []}
