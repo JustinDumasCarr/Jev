@@ -269,3 +269,18 @@
   180/191 {'ok': 178, 'truncated': 0, 'refusal': 2, 'error': 0}
   190/191 {'ok': 187, 'truncated': 0, 'refusal': 3, 'error': 0}
 {"task": "task2", "system": "fable51", "counts": {"ok": 188, "truncated": 0, "refusal": 3, "error": 0}, "elapsed_s": 338.6, "pauses": []}
+  10/598 {'ok': 10, 'truncated': 0, 'refusal': 0, 'error': 0}
+  20/598 {'ok': 20, 'truncated': 0, 'refusal': 0, 'error': 0}
+  30/598 {'ok': 30, 'truncated': 0, 'refusal': 0, 'error': 0}
+  40/598 {'ok': 40, 'truncated': 0, 'refusal': 0, 'error': 0}
+  50/598 {'ok': 50, 'truncated': 0, 'refusal': 0, 'error': 0}
+  60/598 {'ok': 60, 'truncated': 0, 'refusal': 0, 'error': 0}
+  70/598 {'ok': 70, 'truncated': 0, 'refusal': 0, 'error': 0}
+  80/598 {'ok': 80, 'truncated': 0, 'refusal': 0, 'error': 0}
+  90/598 {'ok': 90, 'truncated': 0, 'refusal': 0, 'error': 0}
+  100/598 {'ok': 100, 'truncated': 0, 'refusal': 0, 'error': 0}
+  110/598 {'ok': 110, 'truncated': 0, 'refusal': 0, 'error': 0}
+  120/598 {'ok': 120, 'truncated': 0, 'refusal': 0, 'error': 0}
+  130/598 {'ok': 130, 'truncated': 0, 'refusal': 0, 'error': 0}
+  140/598 {'ok': 140, 'truncated': 0, 'refusal': 0, 'error': 0}
+  150/598 {'ok': 150, 'truncated': 0, 'refusal': 0, 'error': 0}

@@ -278,3 +278,20 @@
   340/529 {'ok': 336, 'truncated': 0, 'refusal': 4, 'error': 0}
   350/529 {'ok': 346, 'truncated': 0, 'refusal': 4, 'error': 0}
   360/529 {'ok': 356, 'truncated': 0, 'refusal': 4, 'error': 0}
+  370/529 {'ok': 365, 'truncated': 0, 'refusal': 5, 'error': 0}
+  380/529 {'ok': 375, 'truncated': 0, 'refusal': 5, 'error': 0}
+  390/529 {'ok': 384, 'truncated': 0, 'refusal': 6, 'error': 0}
+  400/529 {'ok': 394, 'truncated': 0, 'refusal': 6, 'error': 0}
+  410/529 {'ok': 404, 'truncated': 0, 'refusal': 6, 'error': 0}
+  420/529 {'ok': 414, 'truncated': 0, 'refusal': 6, 'error': 0}
+  430/529 {'ok': 424, 'truncated': 0, 'refusal': 6, 'error': 0}
+  440/529 {'ok': 434, 'truncated': 0, 'refusal': 6, 'error': 0}
+  450/529 {'ok': 444, 'truncated': 0, 'refusal': 6, 'error': 0}
+  460/529 {'ok': 454, 'truncated': 0, 'refusal': 6, 'error': 0}
+  470/529 {'ok': 464, 'truncated': 0, 'refusal': 6, 'error': 0}
+  480/529 {'ok': 474, 'truncated': 0, 'refusal': 6, 'error': 0}
+  490/529 {'ok': 484, 'truncated': 0, 'refusal': 6, 'error': 0}
+  500/529 {'ok': 494, 'truncated': 0, 'refusal': 6, 'error': 0}
+  510/529 {'ok': 504, 'truncated': 0, 'refusal': 6, 'error': 0}
+  520/529 {'ok': 513, 'truncated': 0, 'refusal': 7, 'error': 0}
+{"task": "task2", "system": "sonnet5-nothink", "counts": {"ok": 521, "truncated": 0, "refusal": 8, "error": 0}, "elapsed_s": 835.4, "pauses": []}
