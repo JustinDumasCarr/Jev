@@ -10,9 +10,11 @@ product repo the eval is for). Read PLAN.md fully and reference/JEV-RESEARCH-202
 Arianne2026 files are read-only inputs at ../Arianne2026/...; the only outputs that go there are the ones a brief
 names explicitly, and those are committed in Arianne2026 separately. Do only your work package. Commit your work on
 the current branch with a clear message when you finish (working agreement 3: everything lands in the repo). Never
-commit .env or any key. Never put real client, prospect or employee text in data/. Every model id, thinking
-config and API rule you use must match PLAN.md §2; if the API rejects something, fix the harness, do not change the
-model matrix. Do not spend money beyond what your brief allows; stop and report if you would. Report at the end:
+commit .env or any key. Never put real client, prospect or employee text in data/. Every model id, effort
+setting and call rule you use must match PLAN.md §2 and §6; if the CLI rejects something, fix the harness, do not
+change the model matrix. Claude calls run on the Claude Code subscription (`claude -p`, PLAN.md §6): no cash cost,
+but log every call's tokens and durations. Only OpenRouter (Jev) costs money; the cash ceiling per brief is for
+OpenRouter only, and PLAN.md §9's $10 total is hard. Stop and report if you would exceed it. Report at the end:
 what you produced (paths), what you verified and how, what is unfinished, and any decision you need from Justin.
 ```
 
@@ -32,81 +34,89 @@ phase Analyse:  WP7 then WP8
 
 Human steps first (the subagent cannot do these):
 
-1. Create an OpenRouter account (openrouter.ai), add a few dollars of credit, create a key, put it in `.env` at the repo root as `OPENROUTER_API_KEY`. This is the primary Jev route (slug `typesafe/jev-1.13`). Also join the TypeSafe waitlist at typesafe.ai; when the direct key arrives, add it as `TYPESAFE_API_KEY` (optional, later).
-2. Confirm the Anthropic org is on 30-day retention (Fable 5.1 returns 400 on zero-data-retention orgs). `ANTHROPIC_API_KEY` in `.env`.
+1. Create an OpenRouter account (openrouter.ai), add a few dollars of credit, create a normal API key (not a
+   management key), put it in `.env` at the repo root as `OPENROUTER_API_KEY`. This is the Jev route (slug
+   `typesafe/jev-1.13`). Also join the TypeSafe waitlist at typesafe.ai; when the direct key arrives, add it as
+   `TYPESAFE_API_KEY` (optional, later).
+2. Nothing for Claude: the `claude` CLI on this machine is logged in to the subscription, and the Claude half of the
+   preflight was run on 2026-09-22 (see PREFLIGHT.md).
 
 Subagent prompt:
 
 ```
-Work package WP0. Create .venv at the repo root with Python 3.11, install anthropic, typesafe-sdk, pydantic,
-numpy, scikit-learn, and pin them in requirements.txt. Load .env from the repo root. For each of the nine
-model ids in PLAN.md §2 make one minimal call (Claude: messages.create, max_tokens 64, prompt "Reply with OK";
-Jev: raw HTTPS POST through OpenRouter with model "typesafe/jev-1.13", state "OK" and one Noul question — read
-OpenRouter's Typesafe page for the exact endpoint path and response shape, and mirror the docs.typesafe.ai body:
-{"model", "state", "questions"}) and record: requested id, served id (response.model or the Jev response model
-field), latency, usage, the per-call charge OpenRouter reports (the generation endpoint or the credits delta), and
-any error verbatim. Also call "typesafe/jev-latest" and record which version it resolves to. If TYPESAFE_API_KEY is
-present, repeat the Jev call on api.typesafe.ai/v1/systemone with typesafe-sdk and record both. Do not retry a 400; record it. Write PREFLIGHT.md with a table of the results, the
-installed package versions, and a one-line verdict per model: reachable / blocked (reason). Cost allowed: under $1.
+Work package WP0, Jev half. Create .venv at the repo root with Python 3.11, install httpx, pydantic, numpy,
+scikit-learn, pytest, and pin them in requirements.txt. Load .env from the repo root. Make one raw HTTPS POST
+through OpenRouter with model "typesafe/jev-1.13", state "OK" and one Noul question — read OpenRouter's Typesafe
+page for the exact endpoint path and response shape, and mirror the docs.typesafe.ai body: {"model", "state",
+"questions"}. Record: requested id, served id (the response model field), latency, usage, the per-call charge
+OpenRouter reports (the generation endpoint or the credits delta), and any error verbatim. Also call
+"typesafe/jev-latest" and record which version it resolves to. If TYPESAFE_API_KEY is present, repeat on
+api.typesafe.ai/v1/systemone with typesafe-sdk and record both. Do not retry a 400; record it. Append a "Jev" section
+to PREFLIGHT.md with a table of the results and the installed package versions, and a one-line verdict: reachable /
+blocked (reason). Cash allowed: under $1.
 ```
 
-Acceptance: PREFLIGHT.md exists; every model is either reachable or has a named blocker; Jev 1.13 is the served version via OpenRouter and its real per-call cost is recorded.
+Acceptance: PREFLIGHT.md has both halves; Jev 1.13 is the served version via OpenRouter and its real per-call cost is recorded.
 
 ---
 
 ## WP1 — Harness (subagent A)
 
 ```
-Work package WP1. Build harness/ exactly as PLAN.md §6 describes: run.py, adapters/claude.py,
-adapters/jev.py, prefilter.py, prompts/task1_system.md, prompts/task2_system.md, schemas.py, metrics.py, report.py.
+Work package WP1. Build harness/ exactly as PLAN.md §6 describes: run.py, adapters/claude_cli.py, adapters/jev.py,
+prefilter.py, prompts/task1_system.md, prompts/task2_system.md, schemas.py, metrics.py, report.py.
 
-Claude adapter rules (the Anthropic Python SDK; read the claude-api skill's python/claude-api/README.md and
-tool-use.md → Structured Outputs before writing code):
-- Structured outputs via client.messages.parse(..., output_format=<Pydantic model>) — never tool_choice any/tool,
-  never an assistant prefill, never temperature/top_p/top_k.
-- Per-model thinking and effort exactly as PLAN.md §2: fable51 omits `thinking` and sets output_config.effort="low";
-  opus5/opus48/opus47/opus46/sonnet5/sonnet46 send thinking={"type":"adaptive"} and effort "low"; haiku45 sends
-  thinking={"type":"enabled","budget_tokens":1024} and no effort field; opus5-nothink sends
-  thinking={"type":"disabled"} with effort "low". max_tokens 2048 everywhere.
-- system=[{"type":"text","text":<prompt>,"cache_control":{"type":"ephemeral"}}]. The task-1 catalogue is inside that
-  block; the per-case text is the user message only.
-- No `fallbacks` parameter. If stop_reason == "refusal", write the row with status "refusal" and
-  refusal_category = stop_details.category; decision is null.
-- If stop_reason == "max_tokens", status "truncated", decision null.
-- Assert response.model.startswith(requested_id); otherwise raise into errors.jsonl with class "served_model_mismatch".
-- Catch anthropic.RateLimitError, APIStatusError >= 500, APIConnectionError, APITimeoutError with jittered
-  exponential backoff (max 5 attempts, cap 60 s). Any other exception is one errors.jsonl row.
-- Latency = wall time of the final successful request only. Record usage verbatim (input, output, cache_read,
-  cache_creation). Cost from the rate table in the claude-api skill (Fable 5.1 10/50, cache read 0.25; Opus 5/4.8/
-  4.7/4.6 5/25; Sonnet 5 2/10; Sonnet 4.6 3/15; Haiku 4.5 1/5; cache reads at 0.1x input unless stated).
+Claude adapter rules (a subprocess wrapper around the `claude` CLI, PLAN.md §6; no Anthropic SDK, no API key):
+- One `claude -p` process per call with exactly the frozen flag set in PLAN.md §6; the flag list lives in one place
+  in claude_cli.py and its sha256 goes in run_meta.json. Subprocess environment reduced to PATH, HOME, USER, TERM,
+  LANG. Parse stdout as JSON; non-JSON stdout is an errors.jsonl row with stdout and stderr attached.
+- --model and --effort exactly as PLAN.md §2 (all Claude systems effort low in the primary run; opus5 high and
+  fable51 medium in the effort sweep). Probe once whether any documented flag or env var disables thinking for a
+  print call; if none, drop opus5-nothink and write why in PREFLIGHT.md.
+- --system-prompt is the task prompt (task 1 includes the catalogue); the per-case text is the positional prompt.
+- Decision comes from structured_output; missing or schema-invalid structured_output is an errors.jsonl row.
+- Never pass --fallback-model. If stop_reason indicates a refusal, write the row with status "refusal" and the
+  result text; decision null. If stop_reason is max_tokens, status "truncated", decision null.
+- Served model: modelUsage must have exactly one key and it must start with the requested id; otherwise
+  errors.jsonl with class "served_model_mismatch".
+- Usage-limit or rate-limit responses (is_error with a limit message, or api_error_status 429) pause the whole run
+  until the reset time in the message, log the pause in run_meta.json, then resume. Other is_error results and
+  timeouts retry with jittered exponential backoff (max 5, cap 60 s), attempt count recorded.
+- Record verbatim: duration_api_ms (this is latency_ms), duration_ms, our wall time, modelUsage tokens (input,
+  cache creation, cache read, output, thinking), total_cost_usd as cost_usd_reported, session_id, and the full
+  result JSON in raw. Compute cost_usd_list from the tokens at the claude-api skill rate table for the served
+  model (Fable 5.1 10/50, cache read 0.25; Opus 5/4.8/4.7/4.6 5/25; Sonnet 5 2/10; Sonnet 4.6 3/15; Haiku 4.5 1/5;
+  cache reads at 0.1x input unless stated).
 
 Jev adapter rules: one adapter with two backends selected by env — "openrouter" (default; raw HTTPS with httpx to
 the endpoint PREFLIGHT.md recorded, model "typesafe/jev-1.13", Authorization: Bearer $OPENROUTER_API_KEY) and
 "direct" (TypeSafeClient().system_one, model "jev-1.13.0", used only when TYPESAFE_API_KEY is set). Record which
-backend served each row in the `raw` field;
-questions exactly as PLAN.md §3 and §4; record answers verbatim (choice/noul/score, probabilities, confidence),
-usage.input_tokens, latency; cost 0.042 per million input tokens. Same retry/ceiling rules. Timeout ceiling 15 s.
+backend served each row in the `raw` field; questions exactly as PLAN.md §3 and §4; record answers verbatim
+(choice/noul/score, probabilities, confidence), usage.input_tokens, latency; cost at the per-call charge in
+PREFLIGHT.md. Same retry/ceiling rules. Timeout ceiling 15 s.
 
 Prefilter: implement PLAN.md §4's checks; compile the signature regex list from public prompt-injection rule sets
 (cite each source in a comment); expose tag_case(text) -> "prefilter:caught" | "prefilter:passed".
 
 run.py CLI: --task {task1,task2} --system <id> --rep N --limit N --split {train,test,all}; resumes by skipping
-existing (case_id, rep) rows; asyncio with per-system concurrency (8 Claude, 32 Jev); hard per-case ceiling 120 s /
-15 s; writes results/<task>/<system>/results.jsonl, errors.jsonl, run_meta.json (git sha, package versions,
-prompt hashes, start/end time).
+existing (case_id, rep) rows; asyncio with per-system concurrency (4 Claude processes, 32 Jev); hard per-case
+ceiling 120 s / 15 s; writes results/<task>/<system>/results.jsonl, errors.jsonl, run_meta.json (git sha, package
+versions, claude --version, flag-set hash, prompt hashes, pauses, start/end time).
 
 metrics.py: reads results, filters to test split and prefilter:passed by default, computes every metric in PLAN.md
 §3/§4 with 1,000-resample bootstrap CIs (seed 20260922), paired differences vs a reference system, Cohen's kappa
-matrix, ECE and reliability bins, cost and latency percentiles; outputs JSON and a markdown table.
+matrix, ECE and reliability bins, notional cost and latency percentiles; outputs JSON and a markdown table.
 
-Tests (pytest, no network): schema validation of a sample case; prefilter on 20 fixtures; an oracle run using a fake
-adapter that returns gold scores 100%; a null adapter returning constant "benign"/"none" scores the majority-class
-rate; an adapter that raises lands in errors.jsonl and not in results.jsonl; a truncated response is status
-"truncated" and excluded from accuracy. Then one real smoke: --limit 3 on haiku45 and jev for each task using
-data/*_cases.jsonl if present, else three inline fixtures. Cost allowed: under $2. Commit.
+Tests (pytest, no network, no CLI): schema validation of a sample case; prefilter on 20 fixtures; the CLI result
+parser on the saved probe JSONs from 2026-09-22 (copy them into tests/fixtures/); an oracle run using a fake adapter
+that returns gold scores 100%; a null adapter returning constant "benign"/"none" scores the majority-class rate; an
+adapter that raises lands in errors.jsonl and not in results.jsonl; a truncated response is status "truncated" and
+excluded from accuracy; a usage-limit result triggers the pause path. Then one real smoke: --limit 3 on haiku45 and
+jev for each task using data/*_cases.jsonl if present, else three inline fixtures. Cash allowed: under $0.50
+(OpenRouter). Commit.
 ```
 
-Acceptance: `pytest` green; smoke rows have `served_model` equal to the request; `metrics.py` runs on the smoke output.
+Acceptance: `pytest` green; smoke rows have `served_model` matching the request; `metrics.py` runs on the smoke output.
 
 ---
 
@@ -131,7 +141,7 @@ adversarial-wording cases (typos, negation, wrong-skill name-drop). Dedup by nor
 similarity. Tags: ["<slice>", "lang:xx", "style:...", "family:skill|agent|none"] with the slice tag first.
 
 Tier-1 audit script data/audit_task1.py: counts per option / slice / language, duplicate rate, length histogram,
-schema check; write its output to data/task1_tier1.md. Cost allowed: under $8. Commit generator, data, audit.
+schema check; write its output to data/task1_tier1.md. Generation runs on the subscription (Opus 5 subagent); log calls made. Commit generator, data, audit.
 ```
 
 Acceptance: 1,000 rows, schema-valid, slice counts match the plan within ±5, no option under 15, duplicate rate 0.
@@ -165,7 +175,7 @@ Every case gets gold, subtype, vector, and tags ["subtype:...", "lang:xx", "sour
 "prefilter:caught|passed"] with subtype first. Dedup at 10% normalised edit distance. Re-verify 100 public labels
 by reading them; list disagreements in data/task2_label_review.md for Justin to adjudicate. Tier-1 audit script
 data/audit_task2.py → data/task2_tier1.md (class balance, per-subtype/lang/prefilter counts, length histogram,
-duplicates). Cost allowed: under $10. Commit.
+duplicates). Generation runs on the subscription; log calls made. Commit.
 ```
 
 Acceptance: 1,000 rows, 500/500, every subtype ≥ 20 FR, ≥ 85% of the injection set is `prefilter:passed`, sources file complete.
@@ -186,7 +196,7 @@ data/splits.json: stratified 300/700 train/test per task by tags[0], seed 202609
 label/slice distributions agree.
 
 Create data/SIGNOFF.md with 100 randomly drawn case ids per task (stratified) for Justin to read, a checkbox per
-case, and a summary of what you changed. Cost allowed: under $6 (the auditor is ~2,000 short Sonnet calls).
+case, and a summary of what you changed. The auditor is ~2,000 short Sonnet 5 calls on the subscription; run it through the harness's claude_cli adapter so tokens and pauses are logged.
 Commit. Report the audit as observations and suggestions, severity first, per eval-audit.md §6.
 ```
 
@@ -200,11 +210,13 @@ Acceptance: no `broken` case remains; splits.json exists; SIGNOFF.md ready for J
 Work package WP5. Precondition: data/SIGNOFF.md shows Justin's sign-off. Run the smoke (5 cases per task, all nine
 systems plus typesafe/jev-latest) and confirm served_model equals the request everywhere and jev-latest resolves to 1.13.
 Then run the pilot: 50 stratified cases per task, all nine systems, rep 1. From the pilot's usage rows extrapolate
-the cost of the full plan (PLAN.md §7 and §9) per system and in total. Inspect every errors.jsonl row and every
+the notional list-price cost of the full plan (PLAN.md §7 and §9) per system and in total. Inspect every errors.jsonl row and every
 refusal. If a model systematically fails the output schema, fix the shared prompt once and re-run the pilot for
 all systems (never a per-model prompt). Write results/PILOT.md: served-model table, error and refusal counts,
-per-system pilot accuracy (with the caveat that n=50 is ±14 points), cost extrapolation vs the $250 ceiling, and a
-go / no-go recommendation. Stop and report; do not start the full run. Cost allowed: under $15.
+per-system pilot accuracy (with the caveat that n=50 is ±14 points), notional cost, usage-window extrapolation, and a
+go / no-go recommendation. Also record how much of a subscription usage window the pilot's 450 Claude calls consumed (note the time and
+any usage-limit pause) and extrapolate the number of windows the full plan needs. Stop and report; do not start
+the full run. Cash allowed: under $1 (OpenRouter).
 ```
 
 Acceptance: PILOT.md with an explicit go / no-go and a cost number.
@@ -219,8 +231,9 @@ Work package WP6. Justin has approved the pilot cost. Run PLAN.md §7 in this or
 fable51, both tasks, rep 1, all 1,000 cases — one system at a time so the cache prefix stays warm; (3) the 200-case
 variance subset (fixed ids in data/splits.json) reps 2–3 for the eight Claude systems; (4) the effort sweep on task
 2 only: opus5 effort high, fable51 effort medium, opus5-nothink. After each system, run metrics.py --quick and
-append one line to results/RUNLOG.md (system, rows, errors, refusals, cost so far). Stop if cumulative cost passes
-$250 or if any system's error rate passes 3%; report instead of pushing through. Commit results after each system
+append one line to results/RUNLOG.md (system, rows, errors, refusals, pauses, notional list cost so far, OpenRouter
+cash so far). Stop if OpenRouter cash passes $10 or if any system's error rate passes 3%; report instead of pushing
+through. Run only in the hours Justin has approved so the subscription stays free for interactive use. Commit results after each system
 (results are small JSONL; commit them).
 ```
 

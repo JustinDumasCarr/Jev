@@ -17,7 +17,7 @@ reference/   JEV-RESEARCH-2026-09-22.md
 data/        catalogue.json  task1_cases.jsonl  task2_cases.jsonl  splits.json  SIGNOFF.md   (WP2–WP4)
 harness/     run.py  adapters/  prefilter.py  prompts/  schemas.py  metrics.py  report.py   (WP1)
 results/     <task>/<system>/results.jsonl  errors.jsonl  run_meta.json                   (WP5–WP7)
-.env         ANTHROPIC_API_KEY, OPENROUTER_API_KEY, optional TYPESAFE_API_KEY — never committed
+.env         OPENROUTER_API_KEY, optional TYPESAFE_API_KEY — never committed. No Anthropic key: Claude runs via `claude -p` on the subscription
 .venv/       Python 3.11 (`/usr/local/bin/python3.11`), deps pinned in requirements.txt
 ```
 
@@ -25,17 +25,18 @@ results/     <task>/<system>/results.jsonl  errors.jsonl  run_meta.json         
 
 - Read `PLAN.md` before touching anything. Model ids, thinking/effort configs and API rules are in §2 and are not
   negotiable per model: if the API rejects something, fix the harness, never the matrix.
-- Secrets come from `.env` at the repo root only. Never commit `.env` or any key.
+- Secrets come from `.env` at the repo root only. Never commit `.env` or any key. Never accept a key pasted in chat; Justin edits `.env` himself.
+- Claude models are called through the Claude Code CLI on Justin's subscription with the frozen flag set in PLAN §6. No Anthropic SDK, no API key. Log tokens and durations on every call; dollar costs are notional list prices.
 - No real client, prospect or employee text in `data/`. Domain-realistic cases are synthesised.
 - Arianne2026 is a read-only input: `../Arianne2026/.planning/HUB-PLAN.md`, `../Arianne2026/.planning/specs/`,
   `../Arianne2026/content/`. The only writes to Arianne2026 are the ones `SUBAGENT-BRIEFS.md` names explicitly
   (the WP8 summary in `../Arianne2026/reports/`), committed there separately.
-- Spending: each brief carries a cost ceiling; total ceiling $250 (PLAN §9). Stop and report before exceeding.
+- Spending: only OpenRouter (Jev) costs cash, ceiling $10 (PLAN §9). The real constraint is subscription usage windows; long runs pause on a limit and resume, and run only in approved hours.
 - Results are small JSONL and are committed after each system (WP6).
 - Work packages run in the order of PLAN §10; WP1, WP2, WP3 in parallel. Justin signs `data/SIGNOFF.md` before any
   paid run and gives the go on the pilot cost before WP6.
 
 ## Status
 
-Planned 2026-09-22. Nothing run yet. Next: WP0 human steps (OpenRouter key, Anthropic retention check), then
-WP0 preflight subagent.
+Planned 2026-09-22. Claude half of WP0 preflight done the same day (`PREFLIGHT.md`): all eight Claude ids served
+through the subscription. Next: Justin puts an OpenRouter API key in `.env`, then the WP0 Jev-half subagent.

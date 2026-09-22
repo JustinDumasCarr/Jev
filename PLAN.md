@@ -1,6 +1,6 @@
 # Jev vs Claude — evaluation plan
 
-**Owner:** Justin (AI engineer). **Executors:** Opus 5 subagents, one per work package (briefs in `SUBAGENT-BRIEFS.md`). **Status:** planned 2026-09-22, not started. **Background:** `reference/JEV-RESEARCH-2026-09-22.md`. **Repo:** this folder (`Jev`) is a sibling of `../Arianne2026`, the product repo the eval is for; Arianne2026 files are referenced as `../Arianne2026/...`.
+**Owner:** Justin (AI engineer). **Executors:** Opus 5 subagents, one per work package (briefs in `SUBAGENT-BRIEFS.md`). **Status:** planned 2026-09-22, not started. **Background:** `reference/JEV-RESEARCH-2026-09-22.md`. **Access (decided 2026-09-22):** Claude runs through the Claude Code subscription (`claude -p`), not the Anthropic API; Jev through OpenRouter. See §2 and §6. **Repo:** this folder (`Jev`) is a sibling of `../Arianne2026`, the product repo the eval is for; Arianne2026 files are referenced as `../Arianne2026/...`.
 
 ## 1. Question we are answering
 
@@ -13,26 +13,27 @@ For each task we run **1,000 labelled prompts** through Jev and through every cu
 
 ## 2. Systems under test
 
-| Id | Model id | Thinking config | Effort | Notes |
-|---|---|---|---|---|
-| jev | `jev-1.13.0` | n/a | n/a | Pinned. `jev-latest` only in the smoke test, to confirm it resolves to 1.13.0. |
-| fable51 | `claude-fable-5-1` | omit (always on) | `low` | No `fallbacks` (a refusal is a recorded outcome, never rescued). Org needs 30-day retention. |
-| opus5 | `claude-opus-5` | `{type: adaptive}` | `low` | Secondary config `opus5-nothink`: `{type: disabled}` at `low`, the cheapest Opus guardrail shape. |
-| opus48 | `claude-opus-4-8` | `{type: adaptive}` | `low` | |
-| opus47 | `claude-opus-4-7` | `{type: adaptive}` | `low` | |
-| opus46 | `claude-opus-4-6` | `{type: adaptive}` | `low` | |
-| sonnet5 | `claude-sonnet-5` | `{type: adaptive}` | `low` | |
-| sonnet46 | `claude-sonnet-4-6` | `{type: adaptive}` | `low` | |
-| haiku45 | `claude-haiku-4-5` | `{type: enabled, budget_tokens: 1024}` | n/a (rejects `effort`) | `max_tokens` 2048. |
+| Id | Model id | Effort (`--effort`) | Notes |
+|---|---|---|---|
+| jev | `jev-1.13.0` (OpenRouter `typesafe/jev-1.13`) | n/a | Pinned. `jev-latest` only in the smoke test, to confirm it resolves to 1.13.0. |
+| fable51 | `claude-fable-5-1` | `low` | Served through the subscription (verified 2026-09-22, `PREFLIGHT.md`). Refusals are recorded outcomes, never rescued. |
+| opus5 | `claude-opus-5` | `low` | Secondary config `opus5-nothink` only if Claude Code exposes a way to disable thinking for a print call; otherwise dropped and the report says so. |
+| opus48 | `claude-opus-4-8` | `low` | |
+| opus47 | `claude-opus-4-7` | `low` | |
+| opus46 | `claude-opus-4-6` | `low` | |
+| sonnet5 | `claude-sonnet-5` | `low` | |
+| sonnet46 | `claude-sonnet-4-6` | `low` | |
+| haiku45 | `claude-haiku-4-5` | `low` (accepted by the CLI; whether it reaches the model is not observable) | |
 
-Rules that apply to every Claude call (the harness enforces them, see §6):
+**How Claude is called.** Every Claude call is one `claude -p` process under Justin's Claude Code subscription, with a fixed flag set that strips Claude Code's own context so the model sees only our prompt (about 1,300 tokens of prefix, measured; see §6 for the exact command). Consequences, stated up front:
 
-- Output through structured outputs (`client.messages.parse` with a Pydantic model / `output_config.format`). Never forced `tool_choice` (400 on Fable 5.1), never assistant prefill (400 on all of these).
-- No `temperature` / `top_p` / `top_k` (rejected on 4.7+). Same prompt for every model; no per-model prompt tuning in the primary run.
-- `max_tokens` 2048. A `stop_reason` of `max_tokens` is recorded as `status: truncated`, not scored wrong.
-- Assert `response.model` starts with the requested id on every call; a mismatch fails the attempt into `errors.jsonl`.
-- `stop_reason == "refusal"` is a graded outcome, recorded with `stop_details.category`, never an error and never a fallback.
-- Prompt caching on the system block (`cache_control: ephemeral`); the skill catalogue lives in the cached prefix.
+- **Thinking is not configurable per call.** Claude Code exposes `--effort`, not the API's `thinking` object. Every Claude system runs at effort `low` with whatever thinking Claude Code applies for that model; `thinkingTokens` is recorded per row so the report can show how much thinking each model actually did. The secondary effort sweep (§7) uses `--effort high` / `medium`.
+- **Structured output** via `--json-schema`; the parsed object arrives in the result's `structured_output` field. No `tool_choice`, no prefill, no sampling parameters (none are exposed).
+- **Served model** is asserted from the result's `modelUsage` keys: exactly one key, and it must start with the requested id (the CLI resolves e.g. `claude-haiku-4-5` to its dated snapshot). A mismatch fails the attempt into `errors.jsonl`.
+- **Refusals and truncation** are read from the result's `stop_reason` and `is_error`: a refusal is a graded outcome recorded with the result text, never an error and never a fallback (`--fallback-model` is never passed). `max_tokens` is recorded as `status: truncated`, not scored wrong.
+- **Latency** is `duration_api_ms` from the result JSON: the API round trip as measured inside the CLI, excluding process start-up. `duration_ms` (CLI total) and our own process wall time are recorded alongside. Every latency figure is labelled "via Claude Code".
+- **Cost** is notional: the subscription is not billed per call. The harness logs every call's `inputTokens`, `cacheCreationInputTokens`, `cacheReadInputTokens`, `outputTokens` and `thinkingTokens` and computes list-price cost from the `claude-api` skill rate table after the fact; the CLI's own `total_cost_usd` (also list price) is recorded for cross-check. The real constraint is the subscription's usage window, see §9.
+- **Same prompt for every model**; no per-model prompt tuning in the primary run. The task-1 catalogue lives in the `--system-prompt`; the per-case text is the user message.
 - Effort `low` is the primary config because a guardrail or router is a routine, latency-sensitive call. One secondary sweep (opus5 at `high`, fable51 at `medium`) on the injection task only, to show what headroom effort buys.
 
 ## 3. Task 1 — skill and agent search
@@ -118,36 +119,51 @@ Both sets go through `claude-api`'s eval health checklist (`shared/evals/eval-au
 
 ## 6. Harness
 
-Location: the repo root — Python 3.11, its own `.venv`, `requirements.txt` pinned (`anthropic`, `typesafe-sdk`, `pydantic`, `numpy`, `scikit-learn`). Secrets from `.env` at the repo root (`ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, optionally `TYPESAFE_API_KEY` once the direct key arrives); never committed.
+Location: the repo root — Python 3.11, its own `.venv`, `requirements.txt` pinned (`httpx`, `pydantic`, `numpy`, `scikit-learn`, `pytest`; `typesafe-sdk` only if the direct key arrives). Secrets from `.env` at the repo root (`OPENROUTER_API_KEY`; optionally `TYPESAFE_API_KEY`); never committed. No Anthropic key: Claude calls use the `claude` CLI (2.1.276 at planning time) already logged in to the subscription on this machine.
 
 ```
 Jev/                       (repo root)
-  PLAN.md  SUBAGENT-BRIEFS.md  PREFLIGHT.md  REPORT.md
+  PLAN.md  SUBAGENT-BRIEFS.md  ANIMATION-PLAN.md  PREFLIGHT.md  REPORT.md
   data/        catalogue.json  task1_cases.jsonl  task2_cases.jsonl  splits.json  SIGNOFF.md
-  harness/     run.py  adapters/{claude.py,jev.py}  prefilter.py  prompts/{task1_system.md,task2_system.md}  schemas.py  metrics.py  report.py
+  harness/     run.py  adapters/{claude_cli.py,jev.py}  prefilter.py  prompts/{task1_system.md,task2_system.md}  schemas.py  metrics.py  report.py
   results/     <task>/<system>/results.jsonl  errors.jsonl  run_meta.json
 ```
+
+**The Claude command** (one per case; the flag set is frozen in `adapters/claude_cli.py` and its hash goes in `run_meta.json`):
+
+```
+claude -p <user text> --model <model id> --effort low \
+  --system-prompt <task prompt> --json-schema <schema> --output-format json \
+  --tools "" --no-session-persistence --setting-sources "" \
+  --strict-mcp-config --mcp-config '{"mcpServers":{}}' --disable-slash-commands --no-chrome
+```
+
+Measured 2026-09-22 on Haiku: about 1,300 input tokens of prefix, none of it Claude Code's default prompt, memory, skills or MCP tools. `--bare` would be smaller still but cannot authenticate when launched from inside a session, so it is not used. The environment passed to the subprocess is reduced to `PATH`, `HOME`, `USER`, `TERM`, `LANG` so the run does not inherit the parent session's variables.
 
 `run.py --task task2 --system opus5 --rep 1 --limit 50` writes one row per `(case, rep)`:
 
 ```json
 {"case_id": "t2-0417", "system": "opus5", "rep": 1, "requested_model": "claude-opus-5", "served_model": "claude-opus-5",
  "decision": "injection", "p": 0.93, "raw": {...}, "gold": "injection", "correct": true,
- "status": "ok|truncated|refusal", "stop_reason": "end_turn", "refusal_category": null,
- "usage": {"input_tokens": 612, "output_tokens": 71, "cache_read_input_tokens": 480, "cache_creation_input_tokens": 0},
- "cost_usd": 0.00305, "latency_ms": 1840, "attempts": 1, "ts": "2026-09-23T14:02:11Z"}
+ "status": "ok|truncated|refusal", "stop_reason": "tool_use", "is_error": false,
+ "usage": {"input_tokens": 612, "output_tokens": 71, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0, "thinking_tokens": 0},
+ "cost_usd_list": 0.00305, "cost_usd_reported": 0.00305,
+ "latency_ms": 1840, "duration_ms": 2790, "wall_ms": 3400, "attempts": 1,
+ "claude_code_version": "2.1.276", "ts": "2026-09-23T14:02:11Z"}
 ```
+
+For Jev rows `latency_ms` is the HTTPS round trip to OpenRouter, `cost_usd_list` the real charge at the recorded rate, and the Claude-only fields are null.
 
 Harness rules (from the eval checklist, all mandatory):
 
-- Attempts that produce no scorable output (timeout, 429 after retries, parse failure, served-model mismatch) go to `errors.jsonl` with a failure class, never into `results.jsonl`.
-- Retries: jittered exponential backoff, max 5, attempt count recorded; latency is the final successful request only.
+- Attempts that produce no scorable output (timeout, usage-limit or 5xx after retries, non-JSON stdout, missing `structured_output`, served-model mismatch) go to `errors.jsonl` with a failure class, never into `results.jsonl`.
+- Retries: jittered exponential backoff, max 5, attempt count recorded; latency is the final successful request only. A **usage-limit** response (`is_error` with a rate- or usage-limit message, or `api_error_status` 429) is not a retry: the runner pauses the whole run until the window resets (the message carries the time), logs the pause in `run_meta.json`, and resumes. Runs may therefore span days; resume must be exact.
 - Hard per-case wall-clock ceiling (120 s Claude, 15 s Jev).
 - Resume: an existing `(case, rep)` row is skipped.
-- Concurrency: asyncio semaphore, 8 in flight per Claude model, 32 for Jev (well under 1,200 rpm).
-- Cost from `usage` and the row's served model at the rates in the `claude-api` skill table; Jev at $0.042/M input. Judge/auditor cost is tracked separately.
-- Full raw request and response saved per row (`raw`), so any surprising score can be traced without re-running.
-- Determinism: cases run in sorted id order; no timestamps in prompts; the catalogue is byte-stable so the cache prefix holds.
+- Concurrency: 4 `claude` processes in flight per Claude system (each is a full CLI start-up), 32 for Jev. One Claude system at a time.
+- Cost from logged usage at the `claude-api` skill rates for the served model; Jev at the per-call charge PREFLIGHT.md records. Judge and auditor usage is tracked separately.
+- Full raw result JSON saved per row (`raw`, with `session_id`, `permission_denials` and stderr), so any surprising score can be traced without re-running.
+- Determinism: cases run in sorted id order; no timestamps in prompts; the system prompt is byte-stable.
 
 ## 7. Runs
 
@@ -175,24 +191,17 @@ Harness rules (from the eval checklist, all mandatory):
 
 ## 9. Budget
 
-Per 1,000 cases, input ≈ 700 tokens (task 2) or 2,300 tokens with ~2,000 cached (task 1), output ≈ 80 tokens plus low-effort thinking (~150). Estimates, both tasks, primary run:
+**Cash.** Only Jev costs money: OpenRouter at the per-call charge PREFLIGHT.md records (vendor list $0.042 per million input tokens; 3 reps × 2,000 cases is well under $1). Dataset generation and the Tier-3 audit also run through the subscription (Opus 5 and Sonnet 5 subagents). **Cash ceiling: $10**, all OpenRouter.
 
-| System | Task 1 | Task 2 | Both |
-|---|---|---|---|
-| fable51 | ~$16 | ~$16 | ~$32 |
-| opus5 / 48 / 47 / 46 (each) | ~$8 | ~$8 | ~$16 → $64 for four |
-| sonnet5 | ~$3 | ~$3 | ~$6 |
-| sonnet46 | ~$4.5 | ~$4.5 | ~$9 |
-| haiku45 | ~$1.5 | ~$1.5 | ~$3 |
-| jev (3 reps) | < $0.10 | < $0.10 | < $0.20 |
+**Notional list-price cost** is still computed per row from logged tokens, because the report answers "what would this cost at API prices": per 1,000 cases, input ≈ 1,300 tokens of fixed prefix plus 700 (task 2) or 2,300 (task 1) of ours, output ≈ 80 tokens plus whatever thinking the CLI applies at effort `low` (measured 0–140 tokens in the probe). Estimates, both tasks, primary run: fable51 ≈ $40, each Opus ≈ $20, sonnet5 ≈ $8, sonnet46 ≈ $12, haiku45 ≈ $4; total ≈ $150 at list. This number is reported, not paid.
 
-Primary run ≈ $115. Variance subset (+2 reps × 200 × 8 Claude models) ≈ $45. Effort sweep ≈ $30. Dataset generation and Tier-3 audit (Opus 5 + Sonnet 5) ≈ $25. **Total ceiling $250**; the pilot re-estimates and the run subagent stops for approval if the extrapolation exceeds it.
+**Usage windows are the real constraint.** The subscription meters usage in 5-hour windows plus a weekly cap. About 18,000 Claude calls at roughly 2,000 input and 200 output tokens each is a lot of windows. The pilot (§7) measures how much of a window 450 calls consume and extrapolates the number of windows the full plan needs; WP5 reports that alongside the go / no-go. The runner pauses on a usage-limit response and resumes when the window resets, so the full run is expected to take several days of wall time and must never block Justin's interactive use: it runs at night or when told to.
 
 ## 10. Work packages and order
 
 | WP | Name | Executor | Depends on | Output |
 |---|---|---|---|---|
-| 0 | Access and preflight | Justin (human steps) + one subagent | — | `PREFLIGHT.md`: `OPENROUTER_API_KEY` + `ANTHROPIC_API_KEY` in `.env`, `typesafe/jev-1.13` reachable via OpenRouter with its per-call charge, all nine Claude ids reachable, retention OK for Fable |
+| 0 | Access and preflight | Justin (human steps) + one subagent | — | `PREFLIGHT.md`: `OPENROUTER_API_KEY` in `.env`, `typesafe/jev-1.13` reachable via OpenRouter with its per-call charge. Claude half done 2026-09-22: all eight Claude ids served through the subscription with matching ids |
 | 1 | Harness | Opus 5 subagent A | 0 | `harness/` runnable, oracle and null tests pass, `--limit 3` smoke green on Jev + Haiku |
 | 2 | Task 1 dataset | Opus 5 subagent B | — | `data/catalogue.json`, `data/task1_cases.jsonl`, generator script, Tier-1 report |
 | 3 | Task 2 dataset | Opus 5 subagent C | — | `data/task2_cases.jsonl`, source licences, prefilter tags, Tier-1 report |
@@ -203,7 +212,7 @@ Primary run ≈ $115. Variance subset (+2 reps × 200 × 8 Claude models) ≈ $4
 | 8 | Report + decision | subagent F + Justin | 7 | `REPORT.md`, `../Arianne2026/reports/jev-vs-claude-2026-09.md` summary (committed in Arianne2026), open-brain capture, register entry if we adopt |
 | 9 | Latency animation | Opus 5 subagent G | 1 (fixture build), 7 (real data) | `viz/latency-race.html` + `viz/out/latency-race-1080p.mp4` per `ANIMATION-PLAN.md`: a real-time race of one decision across all nine systems, then distribution, throughput, cost and accuracy with CIs |
 
-WP1, WP2 and WP3 run in parallel. WP9 builds against fixture data any time after WP1 and swaps in real data after WP7. WP0's human steps (OpenRouter key, retention setting) take ten minutes: do them first.
+WP1, WP2 and WP3 run in parallel. WP9 builds against fixture data any time after WP1 and swaps in real data after WP7. WP0's remaining human step (OpenRouter key into `.env`) takes five minutes: do it first.
 
 ## 11. What we do with the answer
 
@@ -214,7 +223,7 @@ WP1, WP2 and WP3 run in parallel. WP9 builds against fixture data any time after
 ## 12. Assumptions and open items
 
 - **Jev access (updated 2026-09-22):** the direct TypeSafe key is waitlisted, but Jev is self-serve today through resellers. **Primary route: OpenRouter**, slug `typesafe/jev-1.13` (pinned; `typesafe/jev-latest` is the rolling alias), same `state` + `questions` body. Alternatives: Cloudflare AI (`typesafe/jev`), AI/ML API (`typesafe/jev` on `/v1/decisions`, 32K context), Vercel AI Gateway. Cloudflare and AI/ML API expose only the unversioned alias, so OpenRouter first. Latency is reported as "via OpenRouter" (one extra hop); accuracy is unaffected. Reseller pricing is not published on the listing pages, so WP0 records the actual charge of one call. If the direct key arrives later, re-run the 200-case variance subset on it to confirm parity and switch.
-- Fable 5.1 requires 30-day data retention on the org. If the org is zero-data-retention, fable51 is dropped from the matrix and the report says so.
+- **Claude access is the Claude Code subscription**, not the API. Verified 2026-09-22 that all eight Claude ids are served with matching ids and that structured output, `--effort` and `duration_api_ms` work. What this costs the design: thinking is not controllable per call (only effort), the `opus5-nothink` config may not exist, latency is measured as the CLI's API round trip ("via Claude Code"), dollar costs are notional list prices computed from logged tokens, and throughput is bounded by usage windows rather than rate limits. If any Claude model later stops being served through the subscription, it is dropped from the matrix and the report says so.
 - "Opus x" in the request is read as every served Opus (4.6, 4.7, 4.8, 5). Legacy Opus 4.5 and Sonnet 4.5 are excluded; add them only if Justin asks.
 - The skill catalogue mirrors what Claude Code lists in the Arianne2026 repo today plus the five planned team skills; it is an approximation of the production router, not the router itself.
 - No real client or prospect text goes into `data/`; every domain-realistic case is synthesised.

@@ -21,7 +21,7 @@ per language and per attack vector.
 /usr/local/bin/python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt      # written by WP0
-cp .env.example .env                 # then fill in ANTHROPIC_API_KEY and OPENROUTER_API_KEY
+cp .env.example .env                 # then fill in OPENROUTER_API_KEY (Claude runs via the logged-in `claude` CLI)
 ```
 
 This repo sits next to `../Arianne2026`, which it reads for the skill catalogue and domain content. Status and
