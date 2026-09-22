@@ -15,7 +15,7 @@ For each task we run **1,000 labelled prompts** through Jev and through every cu
 
 | Id | Model id | Effort (`--effort`) | Notes |
 |---|---|---|---|
-| jev | `jev-1.13.0` (OpenRouter `typesafe/jev-1.13`) | n/a | Pinned. `jev-latest` only in the smoke test, to confirm it resolves to 1.13.0. |
+| jev | OpenRouter `typesafe/jev-1.13` (served as `typesafe/jev-1.13-20260917`, PREFLIGHT.md) | n/a | Pinned; served-model check is a `startswith("typesafe/jev-1.13")` prefix match. The rolling alias is `~typesafe/jev-latest` (leading tilde; the bare slug 400s), used only in the smoke test to confirm it resolves to the same build. |
 | fable51 | `claude-fable-5-1` | `low` | Served through the subscription (verified 2026-09-22, `PREFLIGHT.md`). Refusals are recorded outcomes, never rescued. |
 | opus5 | `claude-opus-5` | `low` | Secondary config `opus5-nothink` only if Claude Code exposes a way to disable thinking for a print call; otherwise dropped and the report says so. |
 | opus48 | `claude-opus-4-8` | `low` | |
@@ -161,7 +161,7 @@ Harness rules (from the eval checklist, all mandatory):
 - Hard per-case wall-clock ceiling (120 s Claude, 15 s Jev).
 - Resume: an existing `(case, rep)` row is skipped.
 - Concurrency: 4 `claude` processes in flight per Claude system (each is a full CLI start-up), 32 for Jev. One Claude system at a time.
-- Cost from logged usage at the `claude-api` skill rates for the served model; Jev at the per-call charge PREFLIGHT.md records. Judge and auditor usage is tracked separately.
+- Cost from logged usage at the `claude-api` skill rates for the served model; Jev from each response's `usage.cost` (the actual charge per row, PREFLIGHT.md). Judge and auditor usage is tracked separately.
 - Full raw result JSON saved per row (`raw`, with `session_id`, `permission_denials` and stderr), so any surprising score can be traced without re-running.
 - Determinism: cases run in sorted id order; no timestamps in prompts; the system prompt is byte-stable.
 
@@ -169,7 +169,7 @@ Harness rules (from the eval checklist, all mandatory):
 
 | Run | Cases | Systems | Reps | Purpose |
 |---|---|---|---|---|
-| Smoke | 5 per task | all 9 + `jev-latest` | 1 | wiring, served-model assertion, cost per call |
+| Smoke | 5 per task | all 9 + `~typesafe/jev-latest` | 1 | wiring, served-model assertion, cost per call |
 | Pilot | 50 per task (stratified) | all 9 | 1 | extrapolate cost, check failure spread, fix prompts once if a model misreads the schema (then the change applies to every model) |
 | Full | 1,000 per task | all 9 | 1 | headline |
 | Variance | 200 per task (fixed subset) | all 9 | +2 reps | run-to-run spread; Jev gets 3 reps on the full set since it costs cents |
@@ -191,7 +191,7 @@ Harness rules (from the eval checklist, all mandatory):
 
 ## 9. Budget
 
-**Cash.** Only Jev costs money: OpenRouter at the per-call charge PREFLIGHT.md records (vendor list $0.042 per million input tokens; 3 reps × 2,000 cases is well under $1). Dataset generation and the Tier-3 audit also run through the subscription (Opus 5 and Sonnet 5 subagents). **Cash ceiling: $10**, all OpenRouter.
+**Cash.** Only Jev costs money: OpenRouter at `usage.cost` per response (input tokens × $0.042 per million, 276-token fixed overhead; WP0 projects about $0.52 for 3 reps × 2,000 cases). Dataset generation and the Tier-3 audit also run through the subscription (Opus 5 and Sonnet 5 subagents). **Cash ceiling: $10**, all OpenRouter.
 
 **Notional list-price cost** is still computed per row from logged tokens, because the report answers "what would this cost at API prices": per 1,000 cases, input ≈ 1,300 tokens of fixed prefix plus 700 (task 2) or 2,300 (task 1) of ours, output ≈ 80 tokens plus whatever thinking the CLI applies at effort `low` (measured 0–140 tokens in the probe). Estimates, both tasks, primary run: fable51 ≈ $40, each Opus ≈ $20, sonnet5 ≈ $8, sonnet46 ≈ $12, haiku45 ≈ $4; total ≈ $150 at list. This number is reported, not paid.
 
@@ -222,7 +222,7 @@ WP1, WP2 and WP3 run in parallel. WP9 builds against fixture data any time after
 
 ## 12. Assumptions and open items
 
-- **Jev access (updated 2026-09-22):** the direct TypeSafe key is waitlisted, but Jev is self-serve today through resellers. **Primary route: OpenRouter**, slug `typesafe/jev-1.13` (pinned; `typesafe/jev-latest` is the rolling alias), same `state` + `questions` body. Alternatives: Cloudflare AI (`typesafe/jev`), AI/ML API (`typesafe/jev` on `/v1/decisions`, 32K context), Vercel AI Gateway. Cloudflare and AI/ML API expose only the unversioned alias, so OpenRouter first. Latency is reported as "via OpenRouter" (one extra hop); accuracy is unaffected. Reseller pricing is not published on the listing pages, so WP0 records the actual charge of one call. If the direct key arrives later, re-run the 200-case variance subset on it to confirm parity and switch.
+- **Jev access (updated 2026-09-22):** the direct TypeSafe key is waitlisted, but Jev is self-serve today through resellers. **Primary route: OpenRouter**, slug `typesafe/jev-1.13` (pinned; `~typesafe/jev-latest`, with the tilde, is the rolling alias). Verified 2026-09-22: `POST /api/alpha/decisions`, ~280 ms upstream, 400–700 ms wall via the hop, billed at input tokens × $0.042/M with a 276-token fixed overhead per call; not deterministic run to run (same body gave `noul` 0.70 then 0.68), which is why Jev gets 3 reps, same `state` + `questions` body. Alternatives: Cloudflare AI (`typesafe/jev`), AI/ML API (`typesafe/jev` on `/v1/decisions`, 32K context), Vercel AI Gateway. Cloudflare and AI/ML API expose only the unversioned alias, so OpenRouter first. Latency is reported as "via OpenRouter" (one extra hop); accuracy is unaffected. Reseller pricing is not published on the listing pages, so WP0 records the actual charge of one call. If the direct key arrives later, re-run the 200-case variance subset on it to confirm parity and switch.
 - **Claude access is the Claude Code subscription**, not the API. Verified 2026-09-22 that all eight Claude ids are served with matching ids and that structured output, `--effort` and `duration_api_ms` work. What this costs the design: thinking is not controllable per call (only effort), the `opus5-nothink` config may not exist, latency is measured as the CLI's API round trip ("via Claude Code"), dollar costs are notional list prices computed from logged tokens, and throughput is bounded by usage windows rather than rate limits. If any Claude model later stops being served through the subscription, it is dropped from the matrix and the report says so.
 - "Opus x" in the request is read as every served Opus (4.6, 4.7, 4.8, 5). Legacy Opus 4.5 and Sonnet 4.5 are excluded; add them only if Justin asks.
 - The skill catalogue mirrors what Claude Code lists in the Arianne2026 repo today plus the five planned team skills; it is an approximation of the production router, not the router itself.

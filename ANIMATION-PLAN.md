@@ -14,7 +14,7 @@
 | Deliverable | Path | Use |
 |---|---|---|
 | Interactive page | `viz/latency-race.html` (single file, data inlined) | Publish as an Artifact for Justin and Jerome; play, pause, scrub, change speed, hover any bar for the exact numbers and n. |
-| Video | `viz/out/latency-race-1080p.mp4` (1920×1080, 30 fps) | Slides, the report, LinkedIn. Optional square cut `-1080sq.mp4` if wanted (open decision D1). |
+| Video | `viz/out/latency-race-1080sq.mp4` (1080×1080, 30 fps) **and** `viz/out/latency-race-1080p.mp4` (1920×1080) | **LinkedIn is the primary destination (Justin, 2026-09-22): the square cut is designed first**, the 16:9 cut is for slides and the report. Same `render(t)` with a layout switch. |
 
 The page is written as a pure function of time: `render(t_ms)` draws the frame for that instant, and playback just advances `t`. The video is produced by stepping `t` frame by frame in a headless browser (`playwright-cli`, one screenshot per frame) and encoding with `ffmpeg`. One codebase, so the video and the page can never disagree.
 
@@ -64,6 +64,16 @@ Timings assume a slowest p95 of about 6 s. The build reads the real value and st
 
 **Interactive extras (page only):** play/pause, a scrubber across the whole timeline with scene markers, speed control (0.25×, 1×, 4×), hover on any lane shows the exact numbers and n, a toggle between task 2 and task 1 if D3 is yes, a "show placeholder watermark" indicator that cannot be turned off in fixture mode.
 
+## 5b. LinkedIn constraints (primary destination)
+
+LinkedIn autoplays muted in a feed the viewer is scrolling past. That sets four hard rules for the square cut:
+
+- **Hook in the first 3 seconds, without sound.** Scene 0's title is cut to one line and Scene 1 starts by 1.5 s; the stopwatch is already visible and ticking before the viewer decides whether to stop scrolling. The one-line title is a question, e.g. "One decision. Ten AI models. Who answers first?"
+- **Captions burned in.** Every scene title and the verdict line are rendered into the frame, not only in the `.srt`, because most viewers never unmute.
+- **Length under 60 s** for the square cut (the 16:9 cut may run to 75 s). Scenes 4 and 6 are shortened first; Scene 7 (accuracy with CIs) is never cut.
+- **Legible at phone width.** Square frame 1080×1080; nine lanes stacked means each lane gets about 90 px; lane labels at least 32 px, the stopwatch at least 120 px, one metric on screen at a time. If nine lanes do not read at that size, the square cut groups the Claude lanes into tiers (Fable, Opus ×4, Sonnet ×2, Haiku) with the fastest of each tier animated and the rest shown as tick marks, and the 16:9 cut keeps all nine.
+- **Ends on a still that works as a thumbnail**: the summary card with Jev's row highlighted and the verdict line.
+
 ## 6. Design rules
 
 Load the `dataviz` skill before writing any drawing code and take the palette from its `references/palette.md`. Beyond that:
@@ -107,8 +117,8 @@ Steps 1–3 can run any time after WP1 defines the results schema; step 4 waits 
 
 ## 9. Open decisions (defaults in bold; the build proceeds on the defaults)
 
-- **D1 — formats.** **16:9 only** for now. Add a 1:1 square cut for LinkedIn if wanted (same code, different frame; roughly an hour more).
+- **D1 — formats.** Decided 2026-09-22: **square 1:1 for LinkedIn first**, plus the 16:9 cut for slides and the report.
 - **D2 — lanes.** **Nine primary systems.** Adding `opus5-nothink` and the two effort-sweep configs makes twelve lanes and weakens the race; if wanted, they go in a second "effort" chapter, not the main race.
 - **D3 — second task.** **Task 2 only in the video; both tasks in the page** via a toggle, since the page costs nothing extra per task.
-- **D4 — sound.** **None.** A stopwatch tick and a completion chime would strengthen Scene 2 but add a mute dependency for LinkedIn autoplay; say so if you want it.
+- **D4 — sound.** **None in the square cut** (LinkedIn autoplays muted; everything must work silent). The 16:9 cut may add a stopwatch tick and completion chime as an optional audio track.
 - **D5 — Jev direct key.** If the direct TypeSafe key arrives and the 200-case parity run is done (PLAN.md §12), the Jev lane shows the direct latency with a second, lighter marker for the OpenRouter figure.

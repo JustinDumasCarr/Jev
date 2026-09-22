@@ -92,8 +92,8 @@ Jev adapter rules: one adapter with two backends selected by env — "openrouter
 the endpoint PREFLIGHT.md recorded, model "typesafe/jev-1.13", Authorization: Bearer $OPENROUTER_API_KEY) and
 "direct" (TypeSafeClient().system_one, model "jev-1.13.0", used only when TYPESAFE_API_KEY is set). Record which
 backend served each row in the `raw` field; questions exactly as PLAN.md §3 and §4; record answers verbatim
-(choice/noul/score, probabilities, confidence), usage.input_tokens, latency; cost at the per-call charge in
-PREFLIGHT.md. Same retry/ceiling rules. Timeout ceiling 15 s.
+(choice/noul/score, probabilities, confidence), usage.input_tokens, latency; cost from each response's usage.cost
+(PREFLIGHT.md: the generation and credits endpoints lag ~25 s, so never poll them per row). Same retry/ceiling rules. Timeout ceiling 15 s.
 
 Prefilter: implement PLAN.md §4's checks; compile the signature regex list from public prompt-injection rule sets
 (cite each source in a comment); expose tag_case(text) -> "prefilter:caught" | "prefilter:passed".
@@ -208,7 +208,8 @@ Acceptance: no `broken` case remains; splits.json exists; SIGNOFF.md ready for J
 
 ```
 Work package WP5. Precondition: data/SIGNOFF.md shows Justin's sign-off. Run the smoke (5 cases per task, all nine
-systems plus typesafe/jev-latest) and confirm served_model equals the request everywhere and jev-latest resolves to 1.13.
+systems plus ~typesafe/jev-latest, tilde included) and confirm served_model matches the request everywhere (Jev by
+prefix typesafe/jev-1.13) and jev-latest resolves to the same build.
 Then run the pilot: 50 stratified cases per task, all nine systems, rep 1. From the pilot's usage rows extrapolate
 the notional list-price cost of the full plan (PLAN.md §7 and §9) per system and in total. Inspect every errors.jsonl row and every
 refusal. If a model systematically fails the output schema, fix the shared prompt once and re-run the pilot for
