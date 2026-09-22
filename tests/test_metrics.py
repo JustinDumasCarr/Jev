@@ -156,3 +156,33 @@ def test_report_module_builds(tmp_path):
 
 def test_seed_is_the_plan_seed():
     assert SEED == 20260922 and M.N_BOOT == 1000
+
+
+def test_variable_length_tags_and_the_length_stratum(tmp_path):
+    """WP2 gives 150 of the 1,000 task-1 cases a fifth `len:short` tag."""
+    golds = ["xlsx"] * 8
+    preds = ["xlsx"] * 6 + ["none"] * 2  # both misses are in the short stratum
+    tags = [["slice:clear", "lang:en", "style:natural", "family:skill"]] * 4 + [
+        ["slice:clear", "lang:en", "style:natural", "family:skill", "len:short"]
+    ] * 4
+    write(tmp_path, "task1", "jev", rows("jev", "task1", preds, golds, tags=tags))
+    m = M.compute("task1", split="all", ref="jev", root=tmp_path)["systems"]["jev"]
+    by_len = m["accuracy_by_length"]
+    assert sorted(by_len) == ["rest", "short"]
+    assert by_len["rest"]["point"] == pytest.approx(1.0)
+    assert by_len["rest"]["n"] == 4
+    assert by_len["short"]["point"] == pytest.approx(0.5)
+    assert m["accuracy_by_stratum"]["slice:clear"]["n"] == 8  # tags[0] grouping unaffected
+
+
+def test_real_task1_dataset_parses_if_present():
+    """The committed WP2 dataset must load through the harness's own case model."""
+    from harness.run import default_cases_path, load_cases
+
+    if not default_cases_path("task1").exists():
+        pytest.skip("data/task1_cases.jsonl not present")
+    cases = load_cases("task1")
+    assert len(cases) == 1000
+    assert {len(c.tags) for c in cases} <= {4, 5}
+    assert all(c.gold in c.acceptable for c in cases)
+    assert all(c.stratum.startswith("slice:") for c in cases)

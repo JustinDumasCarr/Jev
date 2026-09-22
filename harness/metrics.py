@@ -294,6 +294,10 @@ def system_metrics(task: str, rows: Sequence[dict[str, Any]], errors: Sequence[d
 
     out["accuracy_by_stratum"] = by(stratum)
     out["accuracy_by_language"] = by(lambda r: tag_value(r, "lang"))
+    # WP2 added a `len:short` tag to 150 task-1 cases (median 13 words vs 37 for the rest)
+    # so the analysis can report the short-prompt contrast, which is where Jev's documented
+    # literal-reading weakness should show. Cases without the tag group as "rest".
+    out["accuracy_by_length"] = by(lambda r: tag_value(r, "len", "rest"))
 
     if task == "task1":
         out.update(_task1_metrics(ok))
