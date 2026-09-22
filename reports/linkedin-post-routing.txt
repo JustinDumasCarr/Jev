@@ -1,20 +1,24 @@
-Which tool should the agent call? We asked a model that cannot write text.
+Which tool should the agent call? We asked a model that cannot write text, and it beat the cheapest Claude.
 
-Jev (TypeSafe) picks from a menu with probabilities instead of generating an answer. We gave it 1,000 user requests and a catalogue of 36 skills and agents, and ran every current Claude model on the same requests.
+Jev (TypeSafe) picks from a menu with probabilities instead of generating an answer.
+
+We gave it real user requests and a catalogue of 36 skills and agents, then ran every current Claude model on the same requests.
 
 Jev → 94% correct pick, 0.5 s, 17 cents per 1,000.
 
-Claude Haiku 4.5, thinking off → 89%, 2.4 s, $2.65 per 1,000.
+Claude Haiku 4.5 → 89%, 2.4 s, $2.66 per 1,000.
 
-Claude Sonnet 5, thinking off → 95%, 2.6 s, $4.80 per 1,000.
+Claude Sonnet 5 → 95%, 2.6 s, $4.82 per 1,000.
 
-Claude Fable 5.1 → 98%, 3.0 s.
+Claude Fable 5.1 → 97%, 3.0 s, $19.51 per 1,000.
 
-So on routing, Jev beats the cheapest Claude, sits in the Sonnet band, and trails the top models by a few points, at five times the speed of any of them.
+So Jev picks the right tool as well as Haiku, five times faster, and lands within a point of Sonnet 5 at a thirtieth of the cost.
+
+All Claude numbers are with thinking off, which is the fastest and cheapest shape for a router. Turning thinking on buys Haiku five points and costs it five seconds.
 
 The video shows the router picking, one request after another, then a thousand, then the ranking.
 
-Measured, not quoted: our own run, Claude via Claude Code at low effort with thinking off, Jev via OpenRouter, 200-case preliminary cut of a 1,000-case set, 95% intervals in the report. Full run and code on GitHub, link in comments.
+Measured, not quoted. Our own run, Claude via Claude Code at low effort, Jev via OpenRouter. Preliminary cut, same cases for every model. Datasets, harness and results are public, link in comments.
 
 Would you put a 0.5 s router in front of your agent's tool calls?
 
