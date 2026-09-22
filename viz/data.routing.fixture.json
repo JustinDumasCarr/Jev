@@ -30,7 +30,7 @@
     },
     "hero_case": {
       "id": "t1-fixture",
-      "text": "peux-tu transformer ce tableau en fichier excel avec une formule de total ?",
+      "text": "Turn this table into a spreadsheet with a total row.",
       "gold": "xlsx",
       "question": "Which skill?",
       "source": "fixture (placeholder text, not a dataset row)"
@@ -61,7 +61,7 @@
   "sequence": [
     {
       "id": "t2-f0000",
-      "text": "peux-tu transformer ce tableau en fichier excel avec une formule de total ?",
+      "text": "Turn this table into a spreadsheet with a total row.",
       "gold": "xlsx",
       "systems": {
         "jev": {
@@ -1109,7 +1109,7 @@
     },
     {
       "id": "t2-f0004",
-      "text": "Write the client a short email confirming the viewing on Tuesday.",
+      "text": "Draft a short email confirming Tuesday's meeting time.",
       "gold": "dataviz",
       "systems": {
         "jev": {
@@ -1371,7 +1371,7 @@
     },
     {
       "id": "t2-f0005",
-      "text": "Quelle est la meilleure façon de présenter ces chiffres ?",
+      "text": "What is the clearest way to present these numbers?",
       "gold": "artifact-design",
       "systems": {
         "jev": {
@@ -2681,7 +2681,7 @@
     },
     {
       "id": "t2-f0010",
-      "text": "peux-tu transformer ce tableau en fichier excel avec une formule de total ?",
+      "text": "Turn this table into a spreadsheet with a total row.",
       "gold": "claude-api",
       "systems": {
         "jev": {
@@ -3729,7 +3729,7 @@
     },
     {
       "id": "t2-f0014",
-      "text": "Write the client a short email confirming the viewing on Tuesday.",
+      "text": "Draft a short email confirming Tuesday's meeting time.",
       "gold": "canvas-design",
       "systems": {
         "jev": {
@@ -3991,7 +3991,7 @@
     },
     {
       "id": "t2-f0015",
-      "text": "Quelle est la meilleure façon de présenter ces chiffres ?",
+      "text": "What is the clearest way to present these numbers?",
       "gold": "update-config",
       "systems": {
         "jev": {
@@ -5301,7 +5301,7 @@
     },
     {
       "id": "t2-f0020",
-      "text": "peux-tu transformer ce tableau en fichier excel avec une formule de total ?",
+      "text": "Turn this table into a spreadsheet with a total row.",
       "gold": "marketing-analysis",
       "systems": {
         "jev": {
@@ -6349,7 +6349,7 @@
     },
     {
       "id": "t2-f0024",
-      "text": "Write the client a short email confirming the viewing on Tuesday.",
+      "text": "Draft a short email confirming Tuesday's meeting time.",
       "gold": "none",
       "systems": {
         "jev": {
@@ -6611,7 +6611,7 @@
     },
     {
       "id": "t2-f0025",
-      "text": "Quelle est la meilleure façon de présenter ces chiffres ?",
+      "text": "What is the clearest way to present these numbers?",
       "gold": "xlsx",
       "systems": {
         "jev": {
@@ -7921,7 +7921,7 @@
     },
     {
       "id": "t2-f0030",
-      "text": "peux-tu transformer ce tableau en fichier excel avec une formule de total ?",
+      "text": "Turn this table into a spreadsheet with a total row.",
       "gold": "artifact-design",
       "systems": {
         "jev": {
@@ -8969,7 +8969,7 @@
     },
     {
       "id": "t2-f0034",
-      "text": "Write the client a short email confirming the viewing on Tuesday.",
+      "text": "Draft a short email confirming Tuesday's meeting time.",
       "gold": "simplify",
       "systems": {
         "jev": {
@@ -9231,7 +9231,7 @@
     },
     {
       "id": "t2-f0035",
-      "text": "Quelle est la meilleure façon de présenter ces chiffres ?",
+      "text": "What is the clearest way to present these numbers?",
       "gold": "claude-api",
       "systems": {
         "jev": {
@@ -10541,7 +10541,7 @@
     },
     {
       "id": "t2-f0040",
-      "text": "peux-tu transformer ce tableau en fichier excel avec une formule de total ?",
+      "text": "Turn this table into a spreadsheet with a total row.",
       "gold": "update-config",
       "systems": {
         "jev": {
@@ -11589,7 +11589,7 @@
     },
     {
       "id": "t2-f0044",
-      "text": "Write the client a short email confirming the viewing on Tuesday.",
+      "text": "Draft a short email confirming Tuesday's meeting time.",
       "gold": "client-email",
       "systems": {
         "jev": {
@@ -11851,7 +11851,7 @@
     },
     {
       "id": "t2-f0045",
-      "text": "Quelle est la meilleure façon de présenter ces chiffres ?",
+      "text": "What is the clearest way to present these numbers?",
       "gold": "marketing-analysis",
       "systems": {
         "jev": {
@@ -13161,7 +13161,7 @@
     },
     {
       "id": "t2-f0050",
-      "text": "peux-tu transformer ce tableau en fichier excel avec une formule de total ?",
+      "text": "Turn this table into a spreadsheet with a total row.",
       "gold": "xlsx",
       "systems": {
         "jev": {
@@ -14209,7 +14209,7 @@
     },
     {
       "id": "t2-f0054",
-      "text": "Write the client a short email confirming the viewing on Tuesday.",
+      "text": "Draft a short email confirming Tuesday's meeting time.",
       "gold": "dataviz",
       "systems": {
         "jev": {
@@ -14471,7 +14471,7 @@
     },
     {
       "id": "t2-f0055",
-      "text": "Quelle est la meilleure façon de présenter ces chiffres ?",
+      "text": "What is the clearest way to present these numbers?",
       "gold": "artifact-design",
       "systems": {
         "jev": {
@@ -15781,7 +15781,7 @@
     },
     {
       "id": "t2-f0060",
-      "text": "peux-tu transformer ce tableau en fichier excel avec une formule de total ?",
+      "text": "Turn this table into a spreadsheet with a total row.",
       "gold": "claude-api",
       "systems": {
         "jev": {
@@ -16829,7 +16829,7 @@
     },
     {
       "id": "t2-f0064",
-      "text": "Write the client a short email confirming the viewing on Tuesday.",
+      "text": "Draft a short email confirming Tuesday's meeting time.",
       "gold": "canvas-design",
       "systems": {
         "jev": {
@@ -17091,7 +17091,7 @@
     },
     {
       "id": "t2-f0065",
-      "text": "Quelle est la meilleure façon de présenter ces chiffres ?",
+      "text": "What is the clearest way to present these numbers?",
       "gold": "update-config",
       "systems": {
         "jev": {
@@ -18401,7 +18401,7 @@
     },
     {
       "id": "t2-f0070",
-      "text": "peux-tu transformer ce tableau en fichier excel avec une formule de total ?",
+      "text": "Turn this table into a spreadsheet with a total row.",
       "gold": "marketing-analysis",
       "systems": {
         "jev": {
@@ -19449,7 +19449,7 @@
     },
     {
       "id": "t2-f0074",
-      "text": "Write the client a short email confirming the viewing on Tuesday.",
+      "text": "Draft a short email confirming Tuesday's meeting time.",
       "gold": "none",
       "systems": {
         "jev": {
@@ -19711,7 +19711,7 @@
     },
     {
       "id": "t2-f0075",
-      "text": "Quelle est la meilleure façon de présenter ces chiffres ?",
+      "text": "What is the clearest way to present these numbers?",
       "gold": "xlsx",
       "systems": {
         "jev": {
